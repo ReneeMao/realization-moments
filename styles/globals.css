@@ -1,0 +1,9 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body { background: #F5F0E8; font-family: 'DM Serif Display', Georgia, serif; }
+textarea { font-family: 'DM Sans', sans-serif; resize: none; }
+button { font-family: inherit; }
+a { color: inherit; }
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #DDD5C8; border-radius: 3px; }
