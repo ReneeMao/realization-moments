@@ -185,12 +185,12 @@ SAFETY: If what the person has written suggests self-harm, suicidal ideation, ab
    Grounded in Denborough: notice the person's response to difficulty — they are
    not passive recipients; look for moments of initiative, resistance, or care
    even within the difficulty. Do not locate the problem inside the person. */
-const pS1 = (card, story) =>
-  `${SYS}\n\nSTAGE: REFLECTIVE SUMMARY\nEntry card: "${card}"\n\nPRIVACY REMINDER (include this as one plain sentence before your response, only on this first turn): "A note: as you write, please avoid including your full name, specific schools, workplaces, or immigration details — your story doesn't need those to be meaningful here."\n\nThey wrote:\n<USER_STORY>\n${story}\n</USER_STORY>\n\nYour task: reflect what you heard using their own words — not interpretations or labels.\n\nAlso scan for any "unique outcomes" (White): small moments in their telling when the difficulty did NOT fully define them — a choice they made, something they held onto, a way they responded. If you find one, name it gently in 1 clause. If you find none, do not invent one.\n\nLAYERED SCAFFOLD GUIDANCE (Han 2025): Reflection naturally moves from surface to depth — events first, then interpretation; fragments first, then pattern; what happened before what it means. Stay at the layer the person is actually at. Do not pull them toward meaning-making before they have placed the experience in the room.\n\nAssess depth:\n\nTOO SHORT (1-2 sentences, no concrete scene):\n- Stay at Layer 1 (emotional disclosure): one sentence acknowledging what they named. Then ONE grounding question asking for a specific moment or scene ("Can you tell me about a specific time when...?"). Do not interpret — only invite them to place the experience more concretely.\n- Begin with: [NEEDS_MORE]\n\nSHORT (one clear tension, enough detail):\n- Layer 1 → entering Layer 2: 1-2 sentences using their language to reflect what's at stake — including the specific difficulty AND any response or initiative you noticed. Then ask which part of this they want to go deeper into.\n- Begin with: [READY]\n\nLONG (multiple threads):\n- Layer 2 → touching Layer 3: 2-4 sentences using their specific words. Notice if any thread sounds like a "unique outcome" — a moment outside the main difficulty — or if something about what they care about (values) flickers through. Ask which part feels most important to stay with.\n- Begin with: [READY]\n\nDo not add emotional labels they didn't use. Do not conclude anything about who they are.\nPlain text, no markdown. Include tag at start.`
+const pS1 = (card, story, lang) =>
+  `${SYS}\n\nSTAGE: REFLECTIVE SUMMARY\nEntry card: "${card}"\n\nPRIVACY REMINDER (include this as one plain sentence before your response, only on this first turn): "A note: as you write, please avoid including your full name, specific schools, workplaces, or immigration details — your story doesn't need those to be meaningful here."\n\nThey wrote:\n<USER_STORY>\n${story}\n</USER_STORY>\n\nYour task: reflect what you heard using their own words — not interpretations or labels.\n\nAlso scan for any "unique outcomes" (White): small moments in their telling when the difficulty did NOT fully define them — a choice they made, something they held onto, a way they responded. If you find one, name it gently in 1 clause. If you find none, do not invent one.\n\nLAYERED SCAFFOLD GUIDANCE (Han 2025): Reflection naturally moves from surface to depth — events first, then interpretation; fragments first, then pattern; what happened before what it means. Stay at the layer the person is actually at. Do not pull them toward meaning-making before they have placed the experience in the room.\n\nAssess depth:\n\nTOO SHORT (1-2 sentences, no concrete scene):\n- Stay at Layer 1 (emotional disclosure): one sentence acknowledging what they named. Then ONE grounding question asking for a specific moment or scene ("Can you tell me about a specific time when...?"). Do not interpret — only invite them to place the experience more concretely.\n- Begin with: [NEEDS_MORE]\n\nSHORT (one clear tension, enough detail):\n- Layer 1 → entering Layer 2: 1-2 sentences using their language to reflect what's at stake — including the specific difficulty AND any response or initiative you noticed. Then ask which part of this they want to go deeper into.\n- Begin with: [READY]\n\nLONG (multiple threads):\n- Layer 2 → touching Layer 3: 2-4 sentences using their specific words. Notice if any thread sounds like a "unique outcome" — a moment outside the main difficulty — or if something about what they care about (values) flickers through. Ask which part feels most important to stay with.\n- Begin with: [READY]\n\nDo not add emotional labels they didn't use. Do not conclude anything about who they are.\nPlain text, no markdown. Include tag at start.${langNote(lang)}`
 
 /* pDeep — REFLECTIVE SUMMARY second pass */
-const pDeep = (card, orig, _resp, extra) =>
-  `${SYS}\n\nSTAGE: REFLECTIVE SUMMARY (second pass)\nEntry card: "${card}"\nOriginal:\n<USER_STORY>\n${orig}\n</USER_STORY>\nAdditional:\n<USER_STORY>\n${extra}\n</USER_STORY>\n\nCombine both passes. 2-3 sentences using their language. If a "unique outcome" appears anywhere in their writing — a moment when the difficulty didn't define them — name it once, gently. Then offer one concrete next step: which thread do they most want to sit with?\nBegin with: [READY]\nPlain text, no markdown.`
+const pDeep = (card, orig, _resp, extra, lang) =>
+  `${SYS}\n\nSTAGE: REFLECTIVE SUMMARY (second pass)\nEntry card: "${card}"\nOriginal:\n<USER_STORY>\n${orig}\n</USER_STORY>\nAdditional:\n<USER_STORY>\n${extra}\n</USER_STORY>\n\nCombine both passes. 2-3 sentences using their language. If a "unique outcome" appears anywhere in their writing — a moment when the difficulty didn't define them — name it once, gently. Then offer one concrete next step: which thread do they most want to sit with?\nBegin with: [READY]\nPlain text, no markdown.${langNote(lang)}`
 
 /* pS3 — GUIDED REFLECTION (Stage 3, four questions)
    Grounded in White's narrative therapy maps:
@@ -204,8 +204,8 @@ const pDeep = (card, orig, _resp, extra) =>
    consequences (If..., what might happen?), probing alternative viewpoints (What else
    might we consider?). Ask questions that lead the person to explore their own
    thinking — never provide the answer or interpretation yourself. */
-const pS3 = (card, story, s1, focal) =>
-  `${SYS}\n\nSTAGE: GUIDED REFLECTION\nEntry card: "${card}"\nStory:\n<USER_STORY>\n${story}\n</USER_STORY>\nSummary: "${s1}"\nFocal point: "${focal}"\n\nGenerate exactly 4 questions using their specific words. Each question 1-2 sentences, offered as a gentle invitation. SOCRATIC STANCE (Favero et al. 2024): ask questions that lead the person to explore their own thinking — do not provide interpretations or answers. Probe assumptions, probe alternative viewpoints, probe what they may not yet have considered — without telling them what to think.\n\n1. ANOTHER SIDE (White's externalizing + Socratic probing of alternative viewpoints): The problem is separate from the person. Look for a moment when they were not just inside the difficulty — when they noticed it, stepped back from it, or responded to it in some way. Probe: invite them to consider an alternative perspective on their own situation. Frame as: "Was there a moment when [the thing they named] didn't fully have its way with you — even briefly?"\n\n2. THE BIGGER PICTURE (Freire/Jemal critical consciousness + Denborough's broader conditions + Socratic probing of assumptions): This question should gently probe the assumption that the struggle is entirely personal. Many struggles are also shaped by larger forces — but the person may not yet have considered this. Do not assign a structural interpretation. Ask what surrounding conditions (family expectations, cultural scripts, migration history, language, institutions, what gets defined as "normal" or "successful") may have shaped this experience. Probe the assumption: whose definition of "normal" or "success" might be at work here? Offer as genuine possibility: "I wonder if some of what you're describing has also been shaped by…"\n\n3. A MOMENT THAT DID NOT FIT (White's unique outcomes + Socratic probing of reasons and evidences): Ask for one specific moment when the dominant story about this situation wasn't entirely true — a time it was different, easier, or when they responded in a way that surprised them. Then probe: how do they know that moment was real? What made it possible? (Favero: probe the reasons and evidences behind the exception.)\n\n4. WHAT MATTERS MOST (preferred storyline + Socratic probing of implications): What does this situation reveal about what they care about deeply — what they're reaching toward, protecting, or trying not to lose? Probe the implications: if they held onto that value more fully, what might shift? This is the seed of a preferred story — let them name it, not you.\n\nUse their own words throughout. No theoretical terms. Questions should open up thinking, not close it down.\nJSON: [{"label":"Another side","question":"..."},{"label":"The bigger picture","question":"..."},{"label":"A moment that did not fit","question":"..."},{"label":"What matters most","question":"..."}]\nONLY JSON.`
+const pS3 = (card, story, s1, focal, lang) =>
+  `${SYS}\n\nSTAGE: GUIDED REFLECTION\nEntry card: "${card}"\nStory:\n<USER_STORY>\n${story}\n</USER_STORY>\nSummary: "${s1}"\nFocal point: "${focal}"\n\nGenerate exactly 4 questions using their specific words. Each question 1-2 sentences, offered as a gentle invitation. SOCRATIC STANCE (Favero et al. 2024): ask questions that lead the person to explore their own thinking — do not provide interpretations or answers. Probe assumptions, probe alternative viewpoints, probe what they may not yet have considered — without telling them what to think.\n\n1. ANOTHER SIDE (White's externalizing + Socratic probing of alternative viewpoints): The problem is separate from the person. Look for a moment when they were not just inside the difficulty — when they noticed it, stepped back from it, or responded to it in some way. Probe: invite them to consider an alternative perspective on their own situation. Frame as: "Was there a moment when [the thing they named] didn't fully have its way with you — even briefly?"\n\n2. THE BIGGER PICTURE (Freire/Jemal critical consciousness + Denborough's broader conditions + Socratic probing of assumptions): This question should gently probe the assumption that the struggle is entirely personal. Many struggles are also shaped by larger forces — but the person may not yet have considered this. Do not assign a structural interpretation. Ask what surrounding conditions (family expectations, cultural scripts, migration history, language, institutions, what gets defined as "normal" or "successful") may have shaped this experience. Probe the assumption: whose definition of "normal" or "success" might be at work here? Offer as genuine possibility: "I wonder if some of what you're describing has also been shaped by…"\n\n3. A MOMENT THAT DID NOT FIT (White's unique outcomes + Socratic probing of reasons and evidences): Ask for one specific moment when the dominant story about this situation wasn't entirely true — a time it was different, easier, or when they responded in a way that surprised them. Then probe: how do they know that moment was real? What made it possible? (Favero: probe the reasons and evidences behind the exception.)\n\n4. WHAT MATTERS MOST (preferred storyline + Socratic probing of implications): What does this situation reveal about what they care about deeply — what they're reaching toward, protecting, or trying not to lose? Probe the implications: if they held onto that value more fully, what might shift? This is the seed of a preferred story — let them name it, not you.\n\nUse their own words throughout. No theoretical terms. Questions should open up thinking, not close it down.\nJSON: [{"label":"Another side","question":"..."},{"label":"The bigger picture","question":"..."},{"label":"A moment that did not fit","question":"..."},{"label":"What matters most","question":"..."}]\nONLY JSON.${langNote(lang)}`
 
 /* pS4 — EMERGENCE CHECK-BACK (Stage 4)
    Thread 1 "newly seen" → Miller & C'de Baca: "rupture in the knowing context."
@@ -214,9 +214,9 @@ const pS3 = (card, story, s1, focal) =>
    Thread 4 "who you may be becoming" → Denborough/Han Layer 4: migration of identity + empowered agency.
    REFLECTIVE AMBIGUITY (Kim et al. RA): each item should offer ONE possibility — not a determination.
    The person may see things entirely differently; that openness is the goal. Never reduce to conclusion. */
-const pS4 = (card, story, s1, focal, cr) => {
+const pS4 = (card, story, s1, focal, cr, lang) => {
   const ct = Object.entries(cr).filter(([,v])=>v?.trim()).map(([l,t])=>`[${l}]: ${t}`).join('\n')
-  return `${SYS}\n\nSTAGE: EMERGENCE CHECK-BACK\nEntry: "${card}"\nStory:\n<USER_STORY>\n${story}\n</USER_STORY>\nSummary: "${s1}"\nFocal: "${focal}"\nReflections:\n${ct}\n\nGenerate EXACTLY 4 items — one for each category, in this order:\n\n1. What may be newly seen — look for any "rupture in the knowing context" (Miller & C'de Baca): something that can no longer be seen the way it was before. Name it as ONE possible shift in how they understand this, using their words. REFLECTIVE AMBIGUITY: offer this as a possibility they may confirm, revise, or reject — not a determination.\n2. What still feels unresolved — Denborough reminds us that not everything resolves, and that is not a failure. Name the unresolved thing without pushing it toward resolution. Hold it with care. Do not attempt to provide closure.\n3. What seems to matter enough to guide — Han Layer 3 (values alignment): what value, care, or commitment surfaces in what they've said? Connect experience to intrinsic motivation. Name it tentatively as a thread of a preferred story (White), not a conclusion about who they are.\n4. Who you may be becoming — Han Layer 4 (empowered agency) + Denborough's "migration of identity": identity is not fixed; it moves across contexts and relationships. Notice one possible shift toward agency or direction that may be emerging. Keep it open — as a direction beginning to form, not an arrival.\n\nFor each item return:\n- "thread": a short title for the possible storyline (4-7 words, using the person's own language)\n- "statement": one tentative recognition grounded in their words ("It seems like…", "Could it be that…", "There may be something here about…", "One thing that seems to be shifting is…")\n- "opening": one genuine Socratic question (Favero et al.) that helps them go further. Choose one purpose: test fit · probe an assumption · clarify a discrepancy · connect to values · notice what may endure · imagine a possible self · ask what would make this more real in daily life.\n\nDo not conclude. Do not explain the person to themselves. No polished therapeutic language.\nJSON: [{"thread":"…","statement":"…","opening":"…"}, …]\nONLY JSON.`
+  return `${SYS}\n\nSTAGE: EMERGENCE CHECK-BACK\nEntry: "${card}"\nStory:\n<USER_STORY>\n${story}\n</USER_STORY>\nSummary: "${s1}"\nFocal: "${focal}"\nReflections:\n${ct}\n\nGenerate EXACTLY 4 items — one for each category, in this order:\n\n1. What may be newly seen — look for any "rupture in the knowing context" (Miller & C'de Baca): something that can no longer be seen the way it was before. Name it as ONE possible shift in how they understand this, using their words. REFLECTIVE AMBIGUITY: offer this as a possibility they may confirm, revise, or reject — not a determination.\n2. What still feels unresolved — Denborough reminds us that not everything resolves, and that is not a failure. Name the unresolved thing without pushing it toward resolution. Hold it with care. Do not attempt to provide closure.\n3. What seems to matter enough to guide — Han Layer 3 (values alignment): what value, care, or commitment surfaces in what they've said? Connect experience to intrinsic motivation. Name it tentatively as a thread of a preferred story (White), not a conclusion about who they are.\n4. Who you may be becoming — Han Layer 4 (empowered agency) + Denborough's "migration of identity": identity is not fixed; it moves across contexts and relationships. Notice one possible shift toward agency or direction that may be emerging. Keep it open — as a direction beginning to form, not an arrival.\n\nFor each item return:\n- "thread": a short title for the possible storyline (4-7 words, using the person's own language)\n- "statement": one tentative recognition grounded in their words ("It seems like…", "Could it be that…", "There may be something here about…", "One thing that seems to be shifting is…")\n- "opening": one genuine Socratic question (Favero et al.) that helps them go further. Choose one purpose: test fit · probe an assumption · clarify a discrepancy · connect to values · notice what may endure · imagine a possible self · ask what would make this more real in daily life.\n\nDo not conclude. Do not explain the person to themselves. No polished therapeutic language.\nJSON: [{"thread":"…","statement":"…","opening":"…"}, …]\nONLY JSON.${langNote(lang)}`
 }
 
 /* pS5 — CLOSING NOTE (Stage 5, three types)
@@ -232,13 +232,13 @@ const pS4 = (card, story, s1, focal, cr) => {
    carry forward into the evolving story of who they are becoming.
    Reflective Ambiguity (RA): do not resolve ambiguity in the closing — leave
    it open. The person retains interpretive authority over their own story. */
-const pS5 = (type, conf, story, focal) => {
+const pS5 = (type, conf, story, focal, lang) => {
   const inst = {
     see:   "SEEING NOTE (Denborough's witnessing + Kim et al. Transparency of Mediation): 4-6 sentences. As a witness to their retelling, name what their own story reveals — not your interpretation, but what their words already show. What has this reflection brought into view that was harder to see before? What does the act of telling this story seem to have done? Stay tentative: \"it seems like\", \"one thing that may be newly visible\", \"in the telling, something about [their word] seems to emerge\". Use only their own language. Do not conclude for them. Do not pretend to see more than the words contain.",
     carry: "CARRYING NOTE (Miller & C'de Baca's enduring change + Kim et al. Self-Continuity): 4-6 sentences. Some realizations are vivid, surprising, benevolent, and enduring — they don't fade the way ordinary thoughts do. What in this reflection has that quality? What matters enough here that the person might not want to lose it, even weeks from now? Name it gently. Do not prescribe what they should do with it. Leave it open and in their hands. Think of this as a thread in their ongoing self-narrative — something that may support coherent self-understanding across time.",
     keep:  "KEEPING NOTE (White's identity claim + Kim et al. Self-Continuity and Ethical Flourishing): 2-3 sentences followed by one brief question or one short reminder. The question should name the tension without resolving it — something they can sit with. The reminder should be a short phrase drawn entirely from their words — something portable, personal, that holds a thread of a preferred story on a harder day. Think of it as a seed for the evolving arc of their self-narrative. Keep it simple. Keep it theirs.",
   }
-  return `${SYS}\n\nSTAGE: CLOSING NOTE\nConfirmed statements:\n${conf.map((s,i)=>`${i+1}. ${s}`).join('\n')}\nStory:\n<USER_STORY>\n${story}\n</USER_STORY>\nFocal: "${focal}"\n\n${inst[type]}\nBuild ONLY from their confirmed statements and their own language. No polished therapeutic phrasing. Nothing generic.\n\nCLOSE WITH A REVISE/REJECT INVITATION (1 sentence at the very end): something like "Does any of this feel true to keep? Feel free to revise what doesn't fit or set it aside entirely — it's yours to shape." Keep it plain and brief. This is the Reflective Ambiguity principle in practice: the person retains full interpretive authority.\nONLY plain text, no markdown.`
+  return `${SYS}\n\nSTAGE: CLOSING NOTE\nConfirmed statements:\n${conf.map((s,i)=>`${i+1}. ${s}`).join('\n')}\nStory:\n<USER_STORY>\n${story}\n</USER_STORY>\nFocal: "${focal}"\n\n${inst[type]}\nBuild ONLY from their confirmed statements and their own language. No polished therapeutic phrasing. Nothing generic.\n\nCLOSE WITH A REVISE/REJECT INVITATION (1 sentence at the very end): something like "Does any of this feel true to keep? Feel free to revise what doesn't fit or set it aside entirely — it's yours to shape." Keep it plain and brief. This is the Reflective Ambiguity principle in practice: the person retains full interpretive authority.\nONLY plain text, no markdown.${langNote(lang)}`
 }
 
 /* pSummary — PERIOD SYNTHESIS
@@ -248,7 +248,7 @@ const pS5 = (type, conf, story, focal) => {
    Miller & C'de Baca's "enduring change": which realizations seem to have lasted?
    Han (2025) layered scaffold: what layer is activating across entries — are
    they moving from disclosure → restructuring → values → agency? */
-const pSummary = (period, items) => {
+const pSummary = (period, items, lang) => {
   const entries = items.map((r,i) => {
     const p = [`Reflection ${i+1} (${new Date(r.timestamp).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})}):`]
     if (r.entryCard)           p.push(`Starting point: ${r.entryCard}`)
@@ -259,7 +259,7 @@ const pSummary = (period, items) => {
     return p.join('\n')
   }).join('\n\n---\n\n')
 
-  return `${SYS}\n\nSTAGE: PERIOD SYNTHESIS\nYou have ${items.length} reflection${items.length>1?'s':''} from ${period}.\n\nWrite a synthesis of 4-6 warm, provisional sentences that:\n\n1. Notices any "migration of identity" (Denborough) — what seems to be moving or shifting in how this person understands themselves across these reflections?\n2. Notices any "preferred storyline" (White) — what thread of values, care, or commitment keeps appearing? What does the person seem to be reaching toward or protecting across entries?\n3. Notices any "unique outcomes" across reflections — moments when the dominant story didn't hold, which now appear more than once. If a pattern is emerging, name it gently.\n4. Notices what seems to be "enduring" (Miller & C'de Baca) — which realizations from these reflections appear to have lasted, showing up again in a later entry?\n5. Notices movement through Han's (2025) layered scaffold across entries — are reflections staying at the surface of disclosure, or has the person begun moving toward cognitive restructuring (reframing meaning), values alignment (what they care about), or empowered agency (emerging direction or action)? Name one layer that seems to be activating now, without pushing the person toward the next one.\n\nDo not summarize each reflection. Speak to what moves across them. Use their own language wherever possible. Stay tentative: "it seems like", "what may be forming", "one thing that appears across these", "there may be something here about". REFLECTIVE AMBIGUITY (Kim et al.): offer possibilities, not conclusions — the person retains full interpretive authority over their own story. No definitive claims.\n\nPlain text only, no markdown.\n\nReflections:\n${entries}`
+  return `${SYS}\n\nSTAGE: PERIOD SYNTHESIS\nYou have ${items.length} reflection${items.length>1?'s':''} from ${period}.\n\nWrite a synthesis of 4-6 warm, provisional sentences that:\n\n1. Notices any "migration of identity" (Denborough) — what seems to be moving or shifting in how this person understands themselves across these reflections?\n2. Notices any "preferred storyline" (White) — what thread of values, care, or commitment keeps appearing? What does the person seem to be reaching toward or protecting across entries?\n3. Notices any "unique outcomes" across reflections — moments when the dominant story didn't hold, which now appear more than once. If a pattern is emerging, name it gently.\n4. Notices what seems to be "enduring" (Miller & C'de Baca) — which realizations from these reflections appear to have lasted, showing up again in a later entry?\n5. Notices movement through Han's (2025) layered scaffold across entries — are reflections staying at the surface of disclosure, or has the person begun moving toward cognitive restructuring (reframing meaning), values alignment (what they care about), or empowered agency (emerging direction or action)? Name one layer that seems to be activating now, without pushing the person toward the next one.\n\nDo not summarize each reflection. Speak to what moves across them. Use their own language wherever possible. Stay tentative: "it seems like", "what may be forming", "one thing that appears across these", "there may be something here about". REFLECTIVE AMBIGUITY (Kim et al.): offer possibilities, not conclusions — the person retains full interpretive authority over their own story. No definitive claims.\n\nPlain text only, no markdown.\n\nReflections:\n${entries}${langNote(lang)}`
 }
 
 /* ─── API CALL ─── */
@@ -594,11 +594,11 @@ function Pot({
 const PHASES = ['Clay','Shaped','Fired','Glazed','Blooming']
 const stageIdx = s => ({landing:0,entry:0,stage1:1,stage3:2,stage4:3,stage5:4,artifact:4,closing:4}[s] ?? 0)
 
-function Progress({stage}) {
+function Progress({stage,phases=PHASES}) {
   const idx = stageIdx(stage)
   return(
     <div style={{display:'flex',alignItems:'center',marginBottom:24,padding:'0 4px'}}>
-      {PHASES.map((label,i)=>(
+      {phases.map((label,i)=>(
         <div key={i} style={{display:'flex',alignItems:'center',flex:i<4?1:'none'}}>
           <div style={{display:'flex',flexDirection:'column',alignItems:'center',gap:2}}>
             <div
@@ -609,7 +609,7 @@ function Progress({stage}) {
                 boxShadow:i===idx?`0 0 6px ${C.celadon}66`:'none'
               }}
             />
-            <span style={{fontSize:9,color:i<=idx?C.celadonD:C.ash,fontFamily:'DM Sans,sans-serif',whiteSpace:'nowrap'}}>{label}</span>
+            <span style={{fontSize:11,color:i<=idx?C.celadonD:C.ash,fontFamily:'DM Sans,sans-serif',whiteSpace:'nowrap'}}>{label}</span>
           </div>
           {i<4 && <div style={{flex:1,height:1,background:i<idx?C.celadon:C.line,margin:'0 4px',marginBottom:14,transition:'background 0.4s'}}/>}
         </div>
@@ -641,7 +641,7 @@ function Btn({children,onClick,v='primary',disabled,style={}}) {
     padding:'10px 22px',
     borderRadius:20,
     border:'none',
-    fontSize:13,
+    fontSize:15,
     fontFamily:'DM Serif Display,Georgia,serif',
     cursor:disabled?'not-allowed':'pointer',
     transition:'all 0.2s',
@@ -673,7 +673,7 @@ function TA({value,onChange,placeholder,minH=120}) {
       placeholder={placeholder}
       style={{
         width:'100%',minHeight:minH,padding:16,borderRadius:14,border:`1.5px solid ${C.line}`,
-        background:C.white,color:C.charcoal,fontSize:15,lineHeight:1.7,fontFamily:'DM Sans,sans-serif',
+        background:C.white,color:C.charcoal,fontSize:16,lineHeight:1.7,fontFamily:'DM Sans,sans-serif',
         resize:'none',outline:'none',boxSizing:'border-box',transition:'border-color 0.2s'
       }}
       onFocus={e=>e.target.style.borderColor=C.celadon}
@@ -683,7 +683,7 @@ function TA({value,onChange,placeholder,minH=120}) {
 }
 
 function Tag({children,color=C.celadon}) {
-  return <span style={{display:'inline-block',padding:'2px 10px',borderRadius:12,background:color+'18',color,fontSize:10,fontWeight:600,textTransform:'uppercase',letterSpacing:'0.08em',fontFamily:'DM Sans,sans-serif',marginBottom:4}}>{children}</span>
+  return <span style={{display:'inline-block',padding:'2px 10px',borderRadius:12,background:color+'18',color,fontSize:12,fontWeight:600,textTransform:'uppercase',letterSpacing:'0.08em',fontFamily:'DM Sans,sans-serif',marginBottom:4}}>{children}</span>
 }
 
 function Sep() {
@@ -691,7 +691,7 @@ function Sep() {
 }
 
 function ErrMsg({err}) {
-  return err ? <div style={{background:C.terraP+'66',borderRadius:12,padding:'10px 14px',marginBottom:12,fontSize:12,fontFamily:'DM Sans,sans-serif',color:C.terra,border:`1px solid ${C.terra}44`}}>{err}</div> : null
+  return err ? <div style={{background:C.terraP+'66',borderRadius:12,padding:'10px 14px',marginBottom:12,fontSize:14,fontFamily:'DM Sans,sans-serif',color:C.terra,border:`1px solid ${C.terra}44`}}>{err}</div> : null
 }
 
 /* ─── ENTRY CARDS ─── */
@@ -702,6 +702,82 @@ const CARDS = [
   {label:'Something someone said that stayed with me',nudge:"What did they say? What was the situation? You don't need to know why it stuck."},
   {label:'Two parts of me want different things',nudge:"What does each part want? What does it feel like to be in between?"},
 ]
+
+/* ─── TRANSLATIONS ─── */
+const TRANS = {
+  en: {
+    begin:'Begin', pastReflections:'Past reflections', back:'← Back',
+    beforeYouBegin:'Before you begin', continueBtn:'I understand — continue',
+    whatThisIs:'What this tool is', whatThisIsNot:'What this tool is not',
+    privacy:'Privacy', safety:'Safety',
+    pickStart:"What feels like the easiest place to start?",
+    writeHere:'Write a few lines…', addMore:'Add a bit more…', respondHere:'Respond here…',
+    continue:'Continue',
+    listening:'Listening', exploring:'Exploring',
+    takeWhat:"Take what resonates. Skip what doesn't.",
+    emerging:"What's emerging", fourThreads:"Four possible threads. Mark what fits — or comes close.",
+    fits:'✓ Fits', close:'~ Close', remove:'✗ Remove',
+    optionalDetail:'Want to add more context?',
+    optionalDetailHint:'For items you marked as fitting, you can expand here.',
+    optionalDetailPlaceholder:'Add more detail (optional)…',
+    oneMoreStep:'One more step', suggestedFor:'Suggested for this reflection:',
+    orChoose:'or choose',
+    seeLabel:"What I'm seeing now", carryLabel:'What matters going forward', keepLabel:'What I want to keep with me',
+    saveFinish:'Save & finish', finish:'Finish', saved:'Saved ✓',
+    thisIsYours:'This is yours.', toKeep:'To keep, to change, to come back to.',
+    thankyou:'Thank you for this time.',
+    home:'Home',
+    synthesisReminder:"You can look back at your reflections from this month and synthesize them — try 'Past reflections' to see your journey and generate a synthesis.",
+    histTitle:'Past reflections',
+    phases:['Clay','Shaped','Fired','Glazed','Blooming'],
+    noReflections:'No reflections yet.',
+    cards:[
+      {label:'A moment I keep thinking about', nudge:"What happened? Where were you? You don't need to explain why it matters yet."},
+      {label:"A pattern I've been noticing", nudge:"When does it show up? What does it look like? You don't need to have it figured out."},
+      {label:'Something that feels different lately', nudge:"What feels different about you, or how you see things? Even something subtle counts."},
+      {label:'Something someone said that stayed with me', nudge:"What did they say? What was the situation? You don't need to know why it stuck."},
+      {label:'Two parts of me want different things', nudge:"What does each part want? What does it feel like to be in between?"},
+    ],
+  },
+  zh: {
+    begin:'开始', pastReflections:'历史记录', back:'← 返回',
+    beforeYouBegin:'开始之前', continueBtn:'我已了解 — 继续',
+    whatThisIs:'这个工具是什么', whatThisIsNot:'这个工具不是什么',
+    privacy:'隐私', safety:'安全',
+    pickStart:'从哪里开始，感觉最自然？',
+    writeHere:'写几行…', addMore:'再多说一点…', respondHere:'在这里回应…',
+    continue:'继续',
+    listening:'正在聆听', exploring:'深入探索',
+    takeWhat:'取有共鸣的，跳过不合适的。',
+    emerging:'正在浮现', fourThreads:'四条可能的线索。标注哪些符合你的感受。',
+    fits:'✓ 符合', close:'~ 接近', remove:'✗ 移除',
+    optionalDetail:'想补充更多细节吗？',
+    optionalDetailHint:'对于你标注为符合的部分，可以在这里展开说明。',
+    optionalDetailPlaceholder:'补充更多细节（可选）…',
+    oneMoreStep:'最后一步', suggestedFor:'为这次反思推荐：',
+    orChoose:'或选择',
+    seeLabel:'我现在看到的', carryLabel:'值得带走的', keepLabel:'我想留住的',
+    saveFinish:'保存并完成', finish:'完成', saved:'已保存 ✓',
+    thisIsYours:'这是属于你的。', toKeep:'可以保留，可以修改，可以随时回来。',
+    thankyou:'感谢你今天的时间。',
+    home:'主页',
+    synthesisReminder:'你可以在"历史记录"中查看本月的反思，将它们整合成一次简短的回顾。',
+    histTitle:'历史记录',
+    phases:['原土','成形','烧制','上釉','盛放'],
+    noReflections:'还没有反思记录。',
+    cards:[
+      {label:'一个我反复想到的时刻', nudge:'发生了什么？你当时在哪里？不需要解释为什么它重要。'},
+      {label:'我最近注意到的一个规律', nudge:'它什么时候出现？看起来像什么？不需要完全搞清楚。'},
+      {label:'最近感觉有些不同的事', nudge:'你或你看待事物的方式，有什么不一样？哪怕是微小的变化都算。'},
+      {label:'某人说的话，一直留在我心里', nudge:'他们说了什么？是什么情况？不需要知道为什么它还在。'},
+      {label:'我内心有两个部分想要不同的东西', nudge:'每个部分想要什么？身处两者之间是什么感觉？'},
+    ],
+  }
+}
+
+const langNote = (lang) => lang === 'zh'
+  ? '\n\nLANGUAGE: Respond entirely in Simplified Chinese (简体中文). The user has selected Chinese as their language. All your output must be in Chinese.'
+  : ''
 
 /* ─── JOURNEY ARTIFACT ─── */
 function Journey({data,onEdit,onExport}) {
@@ -734,7 +810,7 @@ function Journey({data,onEdit,onExport}) {
         <Pot phase="blooming" size={44} {...pv} />
         <div>
           <Tag color={C.celadonD}>Realization Moments</Tag>
-          <div style={{fontSize:12,color:C.ash,fontFamily:'DM Sans,sans-serif'}}>
+          <div style={{fontSize:14,color:C.ash,fontFamily:'DM Sans,sans-serif'}}>
             {new Date(data.timestamp).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})}
           </div>
         </div>
@@ -756,25 +832,25 @@ function Journey({data,onEdit,onExport}) {
                   {i<secs.length-1 && <div style={{width:1,height:5,background:C.line,marginTop:2}}/>}
                 </div>
                 <div style={{flex:1}}>
-                  <div style={{fontSize:13,color:C.charcoal}}>{s.t}</div>
+                  <div style={{fontSize:15,color:C.charcoal}}>{s.t}</div>
                   {s.sub && <div style={{fontSize:11,color:C.ash,fontFamily:'DM Sans,sans-serif'}}>{s.sub}</div>}
                 </div>
-                <span style={{fontSize:13,color:C.ash,transform:open?'rotate(180deg)':'',transition:'transform 0.2s'}}>▾</span>
+                <span style={{fontSize:15,color:C.ash,transform:open?'rotate(180deg)':'',transition:'transform 0.2s'}}>▾</span>
               </button>
 
               {open && (
                 <div style={{padding:'2px 20px 12px 47px',animation:'fs 0.3s ease'}}>
-                  {s.body && <p style={{fontSize:13,lineHeight:1.75,color:C.charcoal,margin:0,fontFamily:'DM Sans,sans-serif'}}>{s.body}</p>}
+                  {s.body && <p style={{fontSize:15,lineHeight:1.75,color:C.charcoal,margin:0,fontFamily:'DM Sans,sans-serif'}}>{s.body}</p>}
                   {s.cards?.map(([l,t],j)=>(
                     <div key={j} style={{marginBottom:j<s.cards.length-1?10:0}}>
                       <Tag color={C.celadonD}>{l}</Tag>
-                      <p style={{fontSize:13,lineHeight:1.75,color:C.charcoal,margin:'4px 0 0',fontFamily:'DM Sans,sans-serif'}}>{t}</p>
+                      <p style={{fontSize:15,lineHeight:1.75,color:C.charcoal,margin:'4px 0 0',fontFamily:'DM Sans,sans-serif'}}>{t}</p>
                     </div>
                   ))}
                   {s.stmts?.map((st,j)=>(
                     <div key={j} style={{display:'flex',gap:7,alignItems:'flex-start',marginBottom:4}}>
                       <span style={{color:C.celadon,fontSize:8,marginTop:6}}>●</span>
-                      <p style={{fontSize:13,lineHeight:1.7,color:C.charcoal,margin:0,fontFamily:'DM Sans,sans-serif'}}>{st}</p>
+                      <p style={{fontSize:15,lineHeight:1.7,color:C.charcoal,margin:0,fontFamily:'DM Sans,sans-serif'}}>{st}</p>
                     </div>
                   ))}
                 </div>
@@ -850,7 +926,7 @@ function Hist({items,onBack,onView,onDel}){
   const periodLabel=filter==='month'?now.toLocaleDateString('en-US',{month:'long',year:'numeric'}):filter==='year'?String(now.getFullYear()):'All time'
   const generateSummary=async()=>{if(!filtered.length)return;setSummaryLoading(true);setSummaryError('');setSummaryText('');try{const text=await ask(pSummary(periodLabel,filtered));setSummaryText(text);await saveSummary({period:filter,periodLabel,summaryText:text})}catch(e){setSummaryError(e.message||'Could not generate synthesis.')}setSummaryLoading(false)}
   const FBtn=({val,label})=><button onClick={()=>{setFilter(val);setSummaryText('');setSummaryError('')}} style={{padding:'5px 14px',borderRadius:14,border:`1.5px solid ${filter===val?C.celadon:C.line}`,background:filter===val?C.celadonP+'33':'transparent',color:filter===val?C.celadonD:C.ash,fontSize:11,fontFamily:'DM Sans,sans-serif',cursor:'pointer',transition:'all 0.15s'}}>{label}</button>
-  if(!items.length)return(<div style={{textAlign:'center',padding:'48px 16px'}}><Pot phase="clay" size={48}/><p style={{color:C.ash,fontSize:13,margin:'12px 0 16px',fontFamily:'DM Sans,sans-serif'}}>No reflections yet.</p><Btn v="secondary" onClick={onBack}>Back</Btn></div>)
+  if(!items.length)return(<div style={{textAlign:'center',padding:'48px 16px'}}><Pot phase="clay" size={48}/><p style={{color:C.ash,fontSize:15,margin:'12px 0 16px',fontFamily:'DM Sans,sans-serif'}}>No reflections yet.</p><Btn v="secondary" onClick={onBack}>Back</Btn></div>)
   return(
     <div>
       <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:16}}><h2 style={{fontSize:17,fontWeight:400,margin:0}}>Past reflections</h2><Btn v="secondary" onClick={onBack} style={{fontSize:11,padding:'5px 11px'}}>Back</Btn></div>
@@ -869,11 +945,11 @@ function Hist({items,onBack,onView,onDel}){
         {summaryError&&(<div style={{background:C.terraP+'44',borderRadius:14,padding:'12px 14px',border:`1px solid ${C.terra}44`,marginBottom:8}}><p style={{fontSize:12,color:C.terra,fontFamily:'DM Sans,sans-serif'}}>{summaryError}</p></div>)}
         {summaryText&&(<FadeIn><SummaryCard text={summaryText} period={periodLabel} onExport={()=>dlFile(`REALIZATION MOMENTS — SYNTHESIS\n${periodLabel}\n\n${summaryText}\n\nA provisional reading. Yours to contest or keep.`,`synthesis-${filter}-${new Date().toISOString().slice(0,10)}.txt`)}/></FadeIn>)}
       </div>)}
-      {filtered.length===0?(<p style={{fontSize:13,color:C.ash,textAlign:'center',padding:'24px 0',fontFamily:'DM Sans,sans-serif'}}>No reflections in this period.</p>):(
+      {filtered.length===0?(<p style={{fontSize:15,color:C.ash,textAlign:'center',padding:'24px 0',fontFamily:'DM Sans,sans-serif'}}>No reflections in this period.</p>):(
         <div style={{display:'flex',flexDirection:'column',gap:7}}>
           {filtered.map((r,i)=>(<FadeIn key={r.id} delay={i*30}><div style={{background:C.cream,borderRadius:14,padding:'12px 14px',boxShadow:C.glow,border:`1px solid ${C.line}`,display:'flex',alignItems:'center',gap:10}}>
             <Pot phase="blooming" size={34} {...derivePotVisual(r,i)}/>
-            <div style={{flex:1,minWidth:0}}><p style={{fontSize:13,margin:'0 0 2px',color:C.charcoal}}>{r.entryCard}</p><p style={{fontSize:11,color:C.ash,margin:0,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',fontFamily:'DM Sans,sans-serif'}}>{new Date(r.timestamp).toLocaleDateString('en-US',{month:'short',day:'numeric'})} · {r.userStory?.substring(0,50)}…</p></div>
+            <div style={{flex:1,minWidth:0}}><p style={{fontSize:15,margin:'0 0 2px',color:C.charcoal}}>{r.entryCard}</p><p style={{fontSize:11,color:C.ash,margin:0,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',fontFamily:'DM Sans,sans-serif'}}>{new Date(r.timestamp).toLocaleDateString('en-US',{month:'short',day:'numeric'})} · {r.userStory?.substring(0,50)}…</p></div>
             <Btn v="soft" onClick={()=>onView(r)} style={{fontSize:10,padding:'4px 10px'}}>View</Btn>
             <button onClick={()=>onDel(r.id)} style={{background:'transparent',border:'none',cursor:'pointer',color:C.ash,fontSize:16,lineHeight:1}}>×</button>
           </div></FadeIn>))}
@@ -885,21 +961,22 @@ function Hist({items,onBack,onView,onDel}){
 
 /* ─── MAIN APP ─── */
 export default function Home(){
-  const[stage,setStage]=useState('landing');const[selC,setSC]=useState(null);const[story,setStory]=useState('');const[s1,setS1]=useState('');const[focal,setFocal]=useState('');const[rC,setRC]=useState([]);const[cR,setCR]=useState({});const[oC,setOC]=useState(null);const[rvS,setRvS]=useState([]);const[rvM,setRvM]=useState({});const[oT,setOT]=useState(null);const[oTx,setOTx]=useState('');const[ld,setLd]=useState(false);const[err,setErr]=useState('');const[past,setPast]=useState([]);const[vw,setVw]=useState(null);const[svd,setSvd]=useState(null);const[nm,setNm]=useState(false);const[dR,setDR]=useState('');const[dT,setDT]=useState('')
+  const[stage,setStage]=useState('landing');const[lang,setLang]=useState('en');const[selC,setSC]=useState(null);const[story,setStory]=useState('');const[s1,setS1]=useState('');const[focal,setFocal]=useState('');const[rC,setRC]=useState([]);const[cR,setCR]=useState({});const[oC,setOC]=useState(null);const[rvS,setRvS]=useState([]);const[rvM,setRvM]=useState({});const[stmtDetail,setStmtDetail]=useState({});const[oT,setOT]=useState(null);const[oTx,setOTx]=useState('');const[ld,setLd]=useState(false);const[err,setErr]=useState('');const[past,setPast]=useState([]);const[vw,setVw]=useState(null);const[svd,setSvd]=useState(null);const[nm,setNm]=useState(false);const[dR,setDR]=useState('');const[dT,setDT]=useState('')
   const sr=useRef(null)
   useEffect(()=>{sr.current?.scrollTo({top:0,behavior:'smooth'})},[stage])
   useEffect(()=>{loadReflections().then(setPast)},[])
-  const reset=useCallback(()=>{setSC(null);setStory('');setS1('');setFocal('');setRC([]);setCR({});setOC(null);setRvS([]);setRvM({});setOT(null);setOTx('');setSvd(null);setVw(null);setNm(false);setDR('');setDT('');setErr('')},[])
-  const sd=useCallback(()=>({timestamp:Date.now(),entryCard:selC?.label,userStory:story,stage1Response:s1,focalPointText:focal,cardResponses:cR,confirmedStatements:rvS.filter((_,i)=>rvM[i]==='fits'||rvM[i]==='notquite').map(s=>s?.statement||s),outputType:oT,outputText:oTx}),[selC,story,s1,focal,cR,rvS,rvM,oT,oTx])
+  const reset=useCallback(()=>{setSC(null);setStory('');setS1('');setFocal('');setRC([]);setCR({});setOC(null);setRvS([]);setRvM({});setStmtDetail({});setOT(null);setOTx('');setSvd(null);setVw(null);setNm(false);setDR('');setDT('');setErr('')},[])
+  const sd=useCallback(()=>({timestamp:Date.now(),entryCard:selC?.label,userStory:story,stage1Response:s1,focalPointText:focal,cardResponses:cR,confirmedStatements:rvS.filter((_,i)=>rvM[i]==='fits'||rvM[i]==='notquite').map(s=>s?.statement||s),outputType:oT,outputText:oTx,stmtDetails:stmtDetail}),[selC,story,s1,focal,cR,rvS,rvM,stmtDetail,oT,oTx])
   const W={minHeight:'100vh',background:C.kiln,fontFamily:'DM Serif Display,Georgia,serif',color:C.charcoal,display:'flex',justifyContent:'center',overflowY:'auto'}
   const I={width:'100%',maxWidth:560,padding:'32px 18px 64px'}
 
   if(stage==='landing')return(<><Head><title>Realization Moments</title><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet"/></Head>
     <div style={W} ref={sr}><div style={I}>
-      <FadeIn><div style={{textAlign:'center',marginBottom:32}}><Pot phase="clay" size={64}/><h1 style={{fontSize:21,fontWeight:400,margin:'14px 0 8px',letterSpacing:'-0.01em'}}>Realization Moments</h1><p style={{color:C.ash,fontSize:13,lineHeight:1.6,maxWidth:320,margin:'0 auto',fontFamily:'DM Sans,sans-serif'}}>A space to stay with an experience<br/>long enough to see it differently.</p></div></FadeIn>
-      <FadeIn delay={80}><div style={{background:C.cream,borderRadius:18,padding:'16px',boxShadow:C.glow,marginBottom:12,border:`1px solid ${C.line}`}}><p style={{fontSize:13,lineHeight:1.7,marginBottom:12,fontFamily:'DM Sans,sans-serif'}}>Explore an experience at your own pace. Leave with something you can keep and revise.</p><Sep/><div style={{display:'flex',flexWrap:'wrap',gap:6,marginBottom:6}}><Tag color={C.stone}>Not therapy</Tag><Tag color={C.stone}>Not crisis support</Tag><Tag color={C.stone}>No tracking</Tag></div><p style={{fontSize:11,color:C.ash,fontFamily:'DM Sans,sans-serif',margin:'6px 0 0'}}>Avoid identifying details. All outputs are drafts.</p></div></FadeIn>
+      <FadeIn><div style={{textAlign:'center',marginBottom:32}}><Pot phase="clay" size={64}/><h1 style={{fontSize:21,fontWeight:400,margin:'14px 0 8px',letterSpacing:'-0.01em'}}>Realization Moments</h1><p style={{color:C.ash,fontSize:15,lineHeight:1.6,maxWidth:320,margin:'0 auto',fontFamily:'DM Sans,sans-serif'}}>A space to stay with an experience<br/>long enough to see it differently.</p></div></FadeIn>
+      <FadeIn delay={80}><div style={{background:C.cream,borderRadius:18,padding:'16px',boxShadow:C.glow,marginBottom:12,border:`1px solid ${C.line}`}}><p style={{fontSize:15,lineHeight:1.7,marginBottom:12,fontFamily:'DM Sans,sans-serif'}}>Explore an experience at your own pace. Leave with something you can keep and revise.</p><Sep/><div style={{display:'flex',flexWrap:'wrap',gap:6,marginBottom:6}}><Tag color={C.stone}>Not therapy</Tag><Tag color={C.stone}>Not crisis support</Tag><Tag color={C.stone}>No tracking</Tag></div><p style={{fontSize:11,color:C.ash,fontFamily:'DM Sans,sans-serif',margin:'6px 0 0'}}>Avoid identifying details. All outputs are drafts.</p></div></FadeIn>
       <FadeIn delay={140}><div style={{background:C.terraP+'66',borderRadius:12,padding:'9px 14px',fontSize:11,lineHeight:1.6,marginBottom:22,fontFamily:'DM Sans,sans-serif'}}>In crisis: <strong>988</strong> (call/text) · <strong>741741</strong> (text HOME) · <a href="https://findahelpline.com" target="_blank" rel="noreferrer" style={{color:C.celadonD}}>findahelpline.com</a></div></FadeIn>
-      <FadeIn delay={200}><div style={{display:'flex',flexDirection:'column',alignItems:'center',gap:8}}><Btn onClick={()=>{reset();setStage('consent')}} style={{padding:'11px 44px',fontSize:14,borderRadius:24}}>Begin</Btn>{past.length>0&&<Btn v="secondary" onClick={()=>setStage('history')} style={{fontSize:12}}>Past reflections <span style={{background:C.celadon+'22',padding:'1px 7px',borderRadius:10,fontSize:11,marginLeft:4,color:C.celadonD}}>{past.length}</span></Btn>}</div></FadeIn>
+      <FadeIn delay={160}><div style={{textAlign:'center',marginBottom:16}}><p style={{fontSize:14,color:C.ash,fontFamily:'DM Sans,sans-serif',marginBottom:10}}>Choose your language / 选择语言</p><div style={{display:'flex',gap:8,justifyContent:'center'}}>{['en','zh'].map(l=><button key={l} onClick={()=>setLang(l)} style={{padding:'8px 22px',borderRadius:20,border:`1.5px solid ${lang===l?C.celadon:C.line}`,background:lang===l?C.celadonP+'33':'transparent',color:lang===l?C.celadonD:C.ash,fontSize:14,fontFamily:'DM Sans,sans-serif',cursor:'pointer',transition:'all 0.2s'}}>{l==='en'?'English':'中文'}</button>)}</div></div></FadeIn>
+      <FadeIn delay={200}><div style={{display:'flex',flexDirection:'column',alignItems:'center',gap:8}}><Btn onClick={()=>{reset();setStage('consent')}} style={{padding:'11px 44px',fontSize:14,borderRadius:24}}>{TRANS[lang].begin}</Btn>{past.length>0&&<Btn v="secondary" onClick={()=>setStage('history')} style={{fontSize:12}}>{TRANS[lang].pastReflections} <span style={{background:C.celadon+'22',padding:'1px 7px',borderRadius:10,fontSize:11,marginLeft:4,color:C.celadonD}}>{past.length}</span></Btn>}</div></FadeIn>
     </div></div></>)
 
   if(stage==='history'){
@@ -912,26 +989,26 @@ export default function Home(){
       <FadeIn><p style={{fontSize:11,letterSpacing:'0.10em',textTransform:'uppercase',color:C.ash,marginBottom:20,fontFamily:'DM Sans,sans-serif',textAlign:'center'}}>Before you begin</p></FadeIn>
       <FadeIn delay={40}>
         <div style={{background:C.cream,borderRadius:18,padding:'18px 20px',boxShadow:C.glow,border:`1px solid ${C.line}`,marginBottom:12}}>
-          <p style={{fontSize:13,fontFamily:'DM Serif Display,Georgia,serif',marginBottom:8,color:C.charcoal}}>What this tool is</p>
-          <p style={{fontSize:12,lineHeight:1.75,color:C.stone,fontFamily:'DM Sans,sans-serif',margin:0}}>A structured space to reflect on a realization moment — something that shifted how you understand your experience. The AI helps you stay with your story, notice what matters, and leave with something that still belongs to you.</p>
+          <p style={{fontSize:15,fontFamily:'DM Serif Display,Georgia,serif',marginBottom:8,color:C.charcoal}}>What this tool is</p>
+          <p style={{fontSize:14,lineHeight:1.75,color:C.stone,fontFamily:'DM Sans,sans-serif',margin:0}}>A structured space to reflect on a realization moment — something that shifted how you understand your experience. The AI helps you stay with your story, notice what matters, and leave with something that still belongs to you.</p>
         </div>
       </FadeIn>
       <FadeIn delay={80}>
         <div style={{background:C.cream,borderRadius:18,padding:'18px 20px',boxShadow:C.glow,border:`1px solid ${C.line}`,marginBottom:12}}>
-          <p style={{fontSize:13,fontFamily:'DM Serif Display,Georgia,serif',marginBottom:8,color:C.charcoal}}>What this tool is not</p>
-          <p style={{fontSize:12,lineHeight:1.75,color:C.stone,fontFamily:'DM Sans,sans-serif',margin:0}}>This is not therapy, counseling, crisis support, or clinical care. It cannot diagnose anything or make decisions about your wellbeing. It is not a replacement for human connection or professional help. If you are in distress, please reach out to someone who can actually be with you.</p>
+          <p style={{fontSize:15,fontFamily:'DM Serif Display,Georgia,serif',marginBottom:8,color:C.charcoal}}>What this tool is not</p>
+          <p style={{fontSize:14,lineHeight:1.75,color:C.stone,fontFamily:'DM Sans,sans-serif',margin:0}}>This is not therapy, counseling, crisis support, or clinical care. It cannot diagnose anything or make decisions about your wellbeing. It is not a replacement for human connection or professional help. If you are in distress, please reach out to someone who can actually be with you.</p>
         </div>
       </FadeIn>
       <FadeIn delay={120}>
         <div style={{background:C.cream,borderRadius:18,padding:'18px 20px',boxShadow:C.glow,border:`1px solid ${C.line}`,marginBottom:12}}>
-          <p style={{fontSize:13,fontFamily:'DM Serif Display,Georgia,serif',marginBottom:8,color:C.charcoal}}>Privacy</p>
-          <p style={{fontSize:12,lineHeight:1.75,color:C.stone,fontFamily:'DM Sans,sans-serif',margin:0}}>Please avoid entering your full name, specific schools, workplaces, locations, or immigration details. Your story doesn't need those to be meaningful here — and diaspora stories can be uniquely identifiable even without names. What you write is processed by AI (OpenAI) and stored locally on your device only if you choose to save it. Outputs are AI-generated and may be incomplete or wrong.</p>
+          <p style={{fontSize:15,fontFamily:'DM Serif Display,Georgia,serif',marginBottom:8,color:C.charcoal}}>Privacy</p>
+          <p style={{fontSize:14,lineHeight:1.75,color:C.stone,fontFamily:'DM Sans,sans-serif',margin:0}}>Please avoid entering your full name, specific schools, workplaces, locations, or immigration details. Your story doesn't need those to be meaningful here — and diaspora stories can be uniquely identifiable even without names. What you write is processed by AI (OpenAI) and stored locally on your device only if you choose to save it. Outputs are AI-generated and may be incomplete or wrong.</p>
         </div>
       </FadeIn>
       <FadeIn delay={160}>
         <div style={{background:C.cream,borderRadius:18,padding:'18px 20px',boxShadow:C.glow,border:`1px solid ${C.line}`,marginBottom:20}}>
-          <p style={{fontSize:13,fontFamily:'DM Serif Display,Georgia,serif',marginBottom:8,color:C.charcoal}}>Safety</p>
-          <p style={{fontSize:12,lineHeight:1.75,color:C.stone,fontFamily:'DM Sans,sans-serif',margin:0}}>If your writing suggests you are in danger, crisis, or severe distress, the tool will pause and direct you to human support. It will not attempt to hold crisis material within the reflection flow.</p>
+          <p style={{fontSize:15,fontFamily:'DM Serif Display,Georgia,serif',marginBottom:8,color:C.charcoal}}>Safety</p>
+          <p style={{fontSize:14,lineHeight:1.75,color:C.stone,fontFamily:'DM Sans,sans-serif',margin:0}}>If your writing suggests you are in danger, crisis, or severe distress, the tool will pause and direct you to human support. It will not attempt to hold crisis material within the reflection flow.</p>
         </div>
       </FadeIn>
       <FadeIn delay={200}><div style={{textAlign:'center',display:'flex',flexDirection:'column',gap:8}}>
@@ -943,24 +1020,31 @@ export default function Home(){
   if(stage==='entry')return(
     <div style={W} ref={sr}><div style={I}>
       <FadeIn><div style={{textAlign:'center',marginBottom:18}}><Pot phase="clay" size={48}/></div></FadeIn>
-      <FadeIn delay={40}><p style={{fontSize:13,color:C.ash,marginBottom:16,textAlign:'center',fontFamily:'DM Sans,sans-serif'}}>What feels like the easiest place to start?</p></FadeIn>
-      <div style={{display:'flex',flexDirection:'column',gap:6,marginBottom:20}}>{CARDS.map((c,i)=><FadeIn key={i} delay={60+i*35}><button onClick={()=>setSC(selC?.label===c.label?null:c)} style={{width:'100%',textAlign:'left',padding:'12px 14px',borderRadius:14,border:`1.5px solid ${selC?.label===c.label?C.celadon:C.line}`,background:selC?.label===c.label?C.celadonP+'22':C.cream,cursor:'pointer',fontSize:14,fontFamily:'DM Serif Display,Georgia,serif',color:C.charcoal,transition:'all 0.2s',boxShadow:C.glow}}>{c.label}</button></FadeIn>)}</div>
-      {selC&&<FadeIn key={selC.label}><p style={{fontSize:12,color:C.ash,lineHeight:1.6,marginBottom:8,fontStyle:'italic',fontFamily:'DM Sans,sans-serif'}}>{selC.nudge}</p><TA value={story} onChange={setStory} placeholder="Write a few lines…" minH={130}/><ErrMsg err={err}/><div style={{textAlign:'right',marginTop:10}}><Btn onClick={async()=>{setLd(true);setErr('');setStage('stage1');try{const raw=await ask(pS1(selC.label,story));if(raw.startsWith('[NEEDS_MORE]')){setNm(true);setDR(raw.replace('[NEEDS_MORE]','').trim());setS1('')}else{setNm(false);setS1(raw.replace('[READY]','').trim())}}catch(e){setErr(e.message);setS1('Thank you for sharing that. Can you say a bit more about a specific moment?')}setLd(false)}} disabled={!story.trim()}>Continue</Btn></div></FadeIn>}
+      <FadeIn delay={40}><p style={{fontSize:15,color:C.ash,marginBottom:16,textAlign:'center',fontFamily:'DM Sans,sans-serif'}}>{TRANS[lang].pickStart}</p></FadeIn>
+      <div style={{display:'flex',flexDirection:'column',gap:6,marginBottom:20}}>{TRANS[lang].cards.map((c,i)=><FadeIn key={i} delay={60+i*35}><button onClick={()=>setSC(selC?.label===c.label?null:c)} style={{width:'100%',textAlign:'left',padding:'12px 14px',borderRadius:14,border:`1.5px solid ${selC?.label===c.label?C.celadon:C.line}`,background:selC?.label===c.label?C.celadonP+'22':C.cream,cursor:'pointer',fontSize:14,fontFamily:'DM Serif Display,Georgia,serif',color:C.charcoal,transition:'all 0.2s',boxShadow:C.glow}}>{c.label}</button></FadeIn>)}</div>
+      {selC&&<FadeIn key={selC.label}><p style={{fontSize:14,color:C.ash,lineHeight:1.6,marginBottom:8,fontStyle:'italic',fontFamily:'DM Sans,sans-serif'}}>{selC.nudge}</p><TA value={story} onChange={setStory} placeholder={TRANS[lang].writeHere} minH={130}/><ErrMsg err={err}/><div style={{textAlign:'right',marginTop:10}}><Btn onClick={async()=>{setLd(true);setErr('');setStage('stage1');try{const raw=await ask(pS1(selC.label,story,lang));if(raw.startsWith('[NEEDS_MORE]')){setNm(true);setDR(raw.replace('[NEEDS_MORE]','').trim());setS1('')}else{setNm(false);setS1(raw.replace('[READY]','').trim())}}catch(e){setErr(e.message);setS1('Thank you for sharing that. Can you say a bit more about a specific moment?')}setLd(false)}} disabled={!story.trim()}>{TRANS[lang].continue}</Btn></div></FadeIn>}
     </div></div>)
 
   if(stage==='stage1')return(
     <div style={W} ref={sr}><div style={I}>
-      <FadeIn><div style={{textAlign:'center',marginBottom:16}}><Pot phase="shaped" size={48}/></div></FadeIn>
-      <FadeIn><Progress stage={stage}/></FadeIn>
-      {ld?<Dots/>:nm?(<><FadeIn delay={50}><div style={{background:C.cream,borderRadius:16,padding:16,boxShadow:C.glow,marginBottom:16,borderLeft:`3px solid ${C.terra}`,border:`1px solid ${C.line}`}}><p style={{fontSize:14,lineHeight:1.8,fontFamily:'DM Sans,sans-serif'}}>{dR}</p></div></FadeIn><FadeIn delay={120}><TA value={dT} onChange={setDT} placeholder="Add a bit more…" minH={80}/><ErrMsg err={err}/><div style={{textAlign:'right',marginTop:10}}><Btn onClick={async()=>{setLd(true);setErr('');const c=story+'\n\n'+dT;setStory(c);try{const raw=await ask(pDeep(selC.label,story,dR,dT));setS1(raw.replace('[READY]','').trim())}catch(e){setErr(e.message);setS1("Thank you. What feels most alive in what you've described?")}setNm(false);setLd(false)}} disabled={!dT.trim()}>Continue</Btn></div></FadeIn></>):(<><FadeIn delay={50}><Tag>Listening</Tag><div style={{background:C.cream,borderRadius:16,padding:16,boxShadow:C.glow,marginTop:8,marginBottom:16,borderLeft:`3px solid ${C.celadon}`,border:`1px solid ${C.line}`}}><p style={{fontSize:14,lineHeight:1.8,fontFamily:'DM Sans,sans-serif'}}>{s1}</p></div></FadeIn><FadeIn delay={120}><TA value={focal} onChange={setFocal} placeholder="Respond here…" minH={80}/><ErrMsg err={err}/><div style={{textAlign:'right',marginTop:10}}><Btn onClick={async()=>{setLd(true);setErr('');setStage('stage3');try{setRC(JSON.parse((await ask(pS3(selC.label,story,s1,focal))).replace(/```json|```/g,'').trim()))}catch{setRC([{label:'Another side',question:"Have there been moments where this didn't fit?"},{label:'The bigger picture',question:"Do any larger pressures come to mind?"},{label:'A moment that did not fit',question:"Was there a moment where something felt different?"},{label:'What matters most',question:"What does this say about what you care about?"}])}setLd(false)}} disabled={!focal.trim()}>Continue</Btn></div></FadeIn></>)}
+      <div style={{position:'sticky',top:0,zIndex:20,background:C.kiln,paddingTop:6,paddingBottom:4,marginBottom:4}}>
+        <div style={{textAlign:'center',marginBottom:4}}><Pot phase="shaped" size={48}/></div>
+        <Progress stage={stage} phases={TRANS[lang].phases}/>
+      </div>
+      {ld?<Dots/>:nm?(<><FadeIn delay={50}><div style={{background:C.cream,borderRadius:16,padding:16,boxShadow:C.glow,marginBottom:16,borderLeft:`3px solid ${C.terra}`,border:`1px solid ${C.line}`}}><p style={{fontSize:16,lineHeight:1.8,fontFamily:'DM Sans,sans-serif'}}>{dR}</p></div></FadeIn><FadeIn delay={120}><TA value={dT} onChange={setDT} placeholder={TRANS[lang].addMore} minH={80}/><ErrMsg err={err}/><div style={{textAlign:'right',marginTop:10}}><Btn onClick={async()=>{setLd(true);setErr('');const c=story+'\n\n'+dT;setStory(c);try{const raw=await ask(pDeep(selC.label,story,dR,dT,lang));setS1(raw.replace('[READY]','').trim())}catch(e){setErr(e.message);setS1("Thank you. What feels most alive in what you've described?")}setNm(false);setLd(false)}} disabled={!dT.trim()}>{TRANS[lang].continue}</Btn></div></FadeIn></>):(<><FadeIn delay={50}><Tag>{TRANS[lang].listening}</Tag><div style={{background:C.cream,borderRadius:16,padding:16,boxShadow:C.glow,marginTop:8,marginBottom:16,borderLeft:`3px solid ${C.celadon}`,border:`1px solid ${C.line}`}}><p style={{fontSize:16,lineHeight:1.8,fontFamily:'DM Sans,sans-serif'}}>{s1}</p></div></FadeIn><FadeIn delay={120}><TA value={focal} onChange={setFocal} placeholder={TRANS[lang].respondHere} minH={80}/><ErrMsg err={err}/><div style={{textAlign:'right',marginTop:10}}><Btn onClick={async()=>{setLd(true);setErr('');setStage('stage3');try{setRC(JSON.parse((await ask(pS3(selC.label,story,s1,focal,lang))).replace(/```json|```/g,'').trim()))}catch{setRC([{label:'Another side',question:"Have there been moments where this didn't fit?"},{label:'The bigger picture',question:"Do any larger pressures come to mind?"},{label:'A moment that did not fit',question:"Was there a moment where something felt different?"},{label:'What matters most',question:"What does this say about what you care about?"}])}setLd(false)}} disabled={!focal.trim()}>{TRANS[lang].continue}</Btn></div></FadeIn></>)}
     </div></div>)
 
-  if(stage==='stage3'){const ans=Object.values(cR).filter(v=>v?.trim()).length;const _pv3=derivePotVisual({entryCard:selC?.label,userStory:story},0);return(<div style={W} ref={sr}><div style={I}><FadeIn><div style={{textAlign:'center',marginBottom:16}}><Pot phase="bisque" size={48} {..._pv3}/></div></FadeIn><FadeIn><Progress stage={stage}/></FadeIn>{ld?<Dots/>:<><FadeIn><Tag>Exploring</Tag><p style={{fontSize:13,lineHeight:1.55,marginTop:6,marginBottom:16,color:C.stone,fontFamily:'DM Sans,sans-serif'}}>Take what resonates. Skip what doesn't.</p></FadeIn><div style={{display:'flex',flexDirection:'column',gap:8,marginBottom:20}}>{rC.map((c,i)=>{const op=oC===i,has=cR[c.label]?.trim();return(<FadeIn key={i} delay={40+i*35}><div style={{background:C.cream,borderRadius:16,border:`1.5px solid ${has?C.celadon:C.line}`,boxShadow:op?C.lift:C.glow,overflow:'hidden',transition:'all 0.2s'}}><button onClick={()=>setOC(op?null:i)} style={{width:'100%',textAlign:'left',padding:'12px 14px',background:'transparent',border:'none',cursor:'pointer',fontFamily:'DM Serif Display,Georgia,serif',display:'flex',alignItems:'center',gap:9}}><span style={{width:7,height:7,borderRadius:'50%',background:has?C.celadon:C.line,flexShrink:0,transition:'background 0.2s'}}/><span style={{fontSize:13,color:C.charcoal}}>{c.label}</span><span style={{marginLeft:'auto',fontSize:12,color:C.ash,transform:op?'rotate(180deg)':'',transition:'transform 0.2s'}}>▾</span></button>{op&&<div style={{padding:'0 14px 14px'}}><p style={{fontSize:12,color:C.ash,lineHeight:1.6,marginBottom:8,fontStyle:'italic',fontFamily:'DM Sans,sans-serif'}}>{c.question}</p><TA value={cR[c.label]||''} onChange={v=>setCR({...cR,[c.label]:v})} placeholder="Write as much or as little as you'd like…" minH={65}/></div>}</div></FadeIn>)})}</div><FadeIn delay={200}><ErrMsg err={err}/><div style={{textAlign:'right'}}><Btn onClick={async()=>{setLd(true);setErr('');setStage('stage4');try{setRvS(JSON.parse((await ask(pS4(selC.label,story,s1,focal,cR))).replace(/```json|```/g,'').trim()))}catch{setRvS([{thread:'A tension worth staying with',statement:'It seems like there is an important tension in what you shared.',opening:'What feels most unresolved about it?'},{thread:'Something may be shifting',statement:'Something may be shifting in how you understand this.',opening:'If that shift is real, what might it change?'},{thread:'What matters underneath',statement:'There may be something here about what you care about most.',opening:'What would honoring that actually look like?'},{thread:'Who you may be becoming',statement:'It could be that this moment is part of a longer change.',opening:'What feels different about how you see yourself now?'}])}setLd(false)}} disabled={ans===0}>Continue</Btn>{ans===0&&<p style={{fontSize:11,color:C.ash,marginTop:4,fontFamily:'DM Sans,sans-serif'}}>Respond to at least one</p>}</div></FadeIn></>}</div></div>)}
+  if(stage==='stage3'){const ans=Object.values(cR).filter(v=>v?.trim()).length;const _pv3=derivePotVisual({entryCard:selC?.label,userStory:story},0);return(<div style={W} ref={sr}><div style={I}><div style={{position:'sticky',top:0,zIndex:20,background:C.kiln,paddingTop:6,paddingBottom:4,marginBottom:4}}><div style={{textAlign:'center',marginBottom:4}}><Pot phase="bisque" size={48} {..._pv3}/></div><Progress stage={stage} phases={TRANS[lang].phases}/></div>{ld?<Dots/>:<><FadeIn><Tag>{TRANS[lang].exploring}</Tag><p style={{fontSize:15,lineHeight:1.55,marginTop:6,marginBottom:16,color:C.stone,fontFamily:'DM Sans,sans-serif'}}>{TRANS[lang].takeWhat}</p></FadeIn><div style={{display:'flex',flexDirection:'column',gap:8,marginBottom:20}}>{rC.map((c,i)=>{const op=oC===i,has=cR[c.label]?.trim();return(<FadeIn key={i} delay={40+i*35}><div style={{background:C.cream,borderRadius:16,border:`1.5px solid ${has?C.celadon:C.line}`,boxShadow:op?C.lift:C.glow,overflow:'hidden',transition:'all 0.2s'}}><button onClick={()=>setOC(op?null:i)} style={{width:'100%',textAlign:'left',padding:'12px 14px',background:'transparent',border:'none',cursor:'pointer',fontFamily:'DM Serif Display,Georgia,serif',display:'flex',alignItems:'center',gap:9}}><span style={{width:7,height:7,borderRadius:'50%',background:has?C.celadon:C.line,flexShrink:0,transition:'background 0.2s'}}/><span style={{fontSize:15,color:C.charcoal}}>{c.label}</span><span style={{marginLeft:'auto',fontSize:12,color:C.ash,transform:op?'rotate(180deg)':'',transition:'transform 0.2s'}}>▾</span></button>{op&&<div style={{padding:'0 14px 14px'}}><p style={{fontSize:14,color:C.ash,lineHeight:1.6,marginBottom:8,fontStyle:'italic',fontFamily:'DM Sans,sans-serif'}}>{c.question}</p><TA value={cR[c.label]||''} onChange={v=>setCR({...cR,[c.label]:v})} placeholder="Write as much or as little as you'd like…" minH={65}/></div>}</div></FadeIn>)})}</div><FadeIn delay={200}><ErrMsg err={err}/><div style={{textAlign:'right'}}><Btn onClick={async()=>{setLd(true);setErr('');setStage('stage4');try{setRvS(JSON.parse((await ask(pS4(selC.label,story,s1,focal,cR,lang))).replace(/```json|```/g,'').trim()))}catch{setRvS([{thread:'A tension worth staying with',statement:'It seems like there is an important tension in what you shared.',opening:'What feels most unresolved about it?'},{thread:'Something may be shifting',statement:'Something may be shifting in how you understand this.',opening:'If that shift is real, what might it change?'},{thread:'What matters underneath',statement:'There may be something here about what you care about most.',opening:'What would honoring that actually look like?'},{thread:'Who you may be becoming',statement:'It could be that this moment is part of a longer change.',opening:'What feels different about how you see yourself now?'}])}setLd(false)}} disabled={ans===0}>{TRANS[lang].continue}</Btn>{ans===0&&<p style={{fontSize:11,color:C.ash,marginTop:4,fontFamily:'DM Sans,sans-serif'}}>Respond to at least one</p>}</div></FadeIn></>}</div></div>)}
 
-  if(stage==='stage4'){const done=rvS.length>0&&rvS.every((_,i)=>rvM[i]);const _pv4=derivePotVisual({entryCard:selC?.label,userStory:story},0);return(<div style={W} ref={sr}><div style={I}><FadeIn><div style={{textAlign:'center',marginBottom:16}}><Pot phase="glazed" size={48} {..._pv4}/></div></FadeIn><FadeIn><Progress stage={stage}/></FadeIn>{ld?<Dots/>:<><FadeIn><Tag color={C.ochre}>What's emerging</Tag><p style={{fontSize:13,lineHeight:1.55,marginTop:6,marginBottom:16,color:C.stone,fontFamily:'DM Sans,sans-serif'}}>Four possible threads. Mark what fits — or comes close.</p></FadeIn><div style={{display:'flex',flexDirection:'column',gap:10,marginBottom:20}}>{rvS.map((item,i)=>{const st=item?.statement||item,thread=item?.thread,opening=item?.opening;return(<FadeIn key={i} delay={40+i*35}><div style={{background:C.cream,borderRadius:16,padding:14,boxShadow:C.glow,border:`1.5px solid ${rvM[i]==='fits'?C.celadon:rvM[i]==='no'?C.terra:rvM[i]==='notquite'?C.ochre:C.line}`,transition:'border-color 0.2s'}}>{thread&&<p style={{fontSize:10,letterSpacing:'0.08em',textTransform:'uppercase',color:C.ash,marginBottom:5,fontFamily:'DM Sans,sans-serif'}}>{thread}</p>}<p style={{fontSize:13,lineHeight:1.7,marginBottom:6,fontFamily:'DM Sans,sans-serif'}}>{st}</p>{opening&&<p style={{fontSize:12,color:C.stone,lineHeight:1.6,marginBottom:8,fontStyle:'italic',fontFamily:'DM Sans,sans-serif',borderTop:`1px solid ${C.line}`,paddingTop:6}}>{opening}</p>}<div style={{display:'flex',gap:5}}>{[{k:'fits',l:'✓ Fits',c:C.celadon},{k:'notquite',l:'~ Close',c:C.ochre},{k:'no',l:'✗ Remove',c:C.terra}].map(o=><button key={o.k} onClick={()=>setRvM({...rvM,[i]:o.k})} style={{padding:'3px 10px',borderRadius:14,border:`1.5px solid ${rvM[i]===o.k?o.c:C.line}`,background:rvM[i]===o.k?o.c+'18':'transparent',color:rvM[i]===o.k?C.charcoal:C.ash,fontSize:11,fontFamily:'DM Sans,sans-serif',cursor:'pointer',transition:'all 0.15s'}}>{o.l}</button>)}</div></div></FadeIn>)})}</div><FadeIn delay={180}><div style={{textAlign:'right'}}><Btn onClick={()=>setStage('stage5')} disabled={!done}>Continue</Btn></div></FadeIn></>}</div></div>)}
+  if(stage==='stage4'){const done=rvS.length>0&&rvS.every((_,i)=>rvM[i]);const _pv4=derivePotVisual({entryCard:selC?.label,userStory:story},0);return(<div style={W} ref={sr}><div style={I}><div style={{position:'sticky',top:0,zIndex:20,background:C.kiln,paddingTop:6,paddingBottom:4,marginBottom:4}}><div style={{textAlign:'center',marginBottom:4}}><Pot phase="glazed" size={48} {..._pv4}/></div><Progress stage={stage} phases={TRANS[lang].phases}/></div>{ld?<Dots/>:<><FadeIn><Tag color={C.ochre}>{TRANS[lang].emerging}</Tag><p style={{fontSize:15,lineHeight:1.55,marginTop:6,marginBottom:16,color:C.stone,fontFamily:'DM Sans,sans-serif'}}>{TRANS[lang].fourThreads}</p></FadeIn><div style={{display:'flex',flexDirection:'column',gap:10,marginBottom:20}}>{rvS.map((item,i)=>{const st=item?.statement||item,thread=item?.thread,opening=item?.opening;return(<FadeIn key={i} delay={40+i*35}><div style={{background:C.cream,borderRadius:16,padding:14,boxShadow:C.glow,border:`1.5px solid ${rvM[i]==='fits'?C.celadon:rvM[i]==='no'?C.terra:rvM[i]==='notquite'?C.ochre:C.line}`,transition:'border-color 0.2s'}}>{thread&&<p style={{fontSize:12,letterSpacing:'0.08em',textTransform:'uppercase',color:C.ash,marginBottom:5,fontFamily:'DM Sans,sans-serif'}}>{thread}</p>}<p style={{fontSize:15,lineHeight:1.7,marginBottom:6,fontFamily:'DM Sans,sans-serif'}}>{st}</p>{opening&&<p style={{fontSize:14,color:C.stone,lineHeight:1.6,marginBottom:8,fontStyle:'italic',fontFamily:'DM Sans,sans-serif',borderTop:`1px solid ${C.line}`,paddingTop:6}}>{opening}</p>}<div style={{display:'flex',gap:5}}>{[{k:'fits',l:TRANS[lang].fits,c:C.celadon},{k:'notquite',l:TRANS[lang].close,c:C.ochre},{k:'no',l:TRANS[lang].remove,c:C.terra}].map(o=><button key={o.k} onClick={()=>setRvM({...rvM,[i]:o.k})} style={{padding:'3px 10px',borderRadius:14,border:`1.5px solid ${rvM[i]===o.k?o.c:C.line}`,background:rvM[i]===o.k?o.c+'18':'transparent',color:rvM[i]===o.k?C.charcoal:C.ash,fontSize:11,fontFamily:'DM Sans,sans-serif',cursor:'pointer',transition:'all 0.15s'}}>{o.l}</button>)}</div>{(rvM[i]==='fits'||rvM[i]==='notquite') && (<div style={{marginTop:8,borderTop:`1px solid ${C.line}`,paddingTop:8}}><p style={{fontSize:13,color:C.ash,fontFamily:'DM Sans,sans-serif',marginBottom:4}}>{TRANS[lang].optionalDetail}</p><textarea value={stmtDetail[i]||''} onChange={e=>setStmtDetail({...stmtDetail,[i]:e.target.value})} placeholder={TRANS[lang].optionalDetailPlaceholder} style={{width:'100%',minHeight:60,padding:10,borderRadius:10,border:`1.5px solid ${C.line}`,background:C.white,color:C.charcoal,fontSize:14,lineHeight:1.6,fontFamily:'DM Sans,sans-serif',resize:'none',outline:'none',boxSizing:'border-box'}} onFocus={e=>e.target.style.borderColor=C.celadon} onBlur={e=>e.target.style.borderColor=C.line}/></div>)}</div></FadeIn>)})}</div><FadeIn delay={180}><div style={{textAlign:'right'}}><Btn onClick={()=>setStage('stage5')} disabled={!done}>{TRANS[lang].continue}</Btn></div></FadeIn></>}</div></div>)}
 
   if(stage==='stage5'){
-    const conf=rvS.filter((_,i)=>rvM[i]==='fits'||rvM[i]==='notquite').map(s=>s?.statement||s)
+    const conf=rvS.map((s,i)=>{
+      if(rvM[i]!=='fits'&&rvM[i]!=='notquite') return null
+      const base=s?.statement||s
+      const detail=stmtDetail[i]
+      return detail?.trim()?`${base}\n(More context: ${detail})`:base
+    }).filter(Boolean)
     const _pv5=derivePotVisual({entryCard:selC?.label,userStory:story,confirmedStatements:conf},0)
     // Auto-recommend based on which thread category got 'fits':
     // idx 0 = newly seen → see | idx 1 = unresolved → keep | idx 2/3 = matters/becoming → carry
@@ -974,13 +1058,20 @@ export default function Home(){
       {key:'keep',label:'What I want to keep with me',desc:'A short line, question, or reminder to return to later.',example:'"The question I want to keep near me is…"',color:C.terra,
         icon:<svg width="22" height="22" viewBox="0 0 22 22" fill="none"><rect x="5" y="4" width="12" height="14" rx="2" stroke={C.terra} strokeWidth="1.4"/><path d="M8 8h6M8 11h6M8 14h3" stroke={C.terra} strokeWidth="1.2" strokeLinecap="round" opacity="0.5"/><path d="M14 4v4l-3-1.5L8 8V4" fill={C.terra} opacity="0.35"/></svg>},
     ]
-    const go=async(key)=>{setOT(key);setLd(true);setErr('');setStage('artifact');try{setOTx(await ask(pS5(key,conf,story,focal)))}catch(e){setErr(e.message);setOTx("Your reflection is here. Take what fits, revise what doesn't.")}setLd(false)}
+    const go=async(key)=>{setOT(key);setLd(true);setErr('');setStage('artifact');try{setOTx(await ask(pS5(key,conf,story,focal,lang)))}catch(e){setErr(e.message);setOTx("Your reflection is here. Take what fits, revise what doesn't.")}setLd(false)}
     const primary=S5_CARDS.find(c=>c.key===autoRec)
     const others=S5_CARDS.filter(c=>c.key!==autoRec)
+    const S5_LABELS={
+      see:TRANS[lang].seeLabel,
+      carry:TRANS[lang].carryLabel,
+      keep:TRANS[lang].keepLabel
+    }
     return(<div style={W} ref={sr}><div style={I}>
-      <FadeIn><div style={{textAlign:'center',marginBottom:16}}><Pot phase="glazed" size={48} {..._pv5}/></div></FadeIn>
-      <FadeIn><Progress stage={stage}/></FadeIn>
-      <FadeIn><Tag color={C.terra}>One more step</Tag><p style={{fontSize:13,lineHeight:1.55,marginTop:6,marginBottom:4,color:C.stone,fontFamily:'DM Sans,sans-serif'}}>Suggested for this reflection:</p></FadeIn>
+      <div style={{position:'sticky',top:0,zIndex:20,background:C.kiln,paddingTop:6,paddingBottom:4,marginBottom:4}}>
+        <div style={{textAlign:'center',marginBottom:4}}><Pot phase="glazed" size={48} {..._pv5}/></div>
+        <Progress stage={stage} phases={TRANS[lang].phases}/>
+      </div>
+      <FadeIn><Tag color={C.terra}>{TRANS[lang].oneMoreStep}</Tag><p style={{fontSize:15,lineHeight:1.55,marginTop:6,marginBottom:4,color:C.stone,fontFamily:'DM Sans,sans-serif'}}>{TRANS[lang].suggestedFor}</p></FadeIn>
       <ErrMsg err={err}/>
       <FadeIn delay={60}>
         <button onClick={()=>go(primary.key)} style={{width:'100%',textAlign:'left',padding:0,borderRadius:18,border:`2px solid ${primary.color}`,background:C.cream,cursor:'pointer',boxShadow:C.lift,fontFamily:'DM Sans,sans-serif',transition:'all 0.2s',overflow:'hidden',marginBottom:16}}>
@@ -991,7 +1082,7 @@ export default function Home(){
           </div>
         </button>
       </FadeIn>
-      <FadeIn delay={120}><p style={{fontSize:11,color:C.ash,textAlign:'center',marginBottom:10,fontFamily:'DM Sans,sans-serif',letterSpacing:'0.04em'}}>or choose</p>
+      <FadeIn delay={120}><p style={{fontSize:11,color:C.ash,textAlign:'center',marginBottom:10,fontFamily:'DM Sans,sans-serif',letterSpacing:'0.04em'}}>{TRANS[lang].orChoose}</p>
         <div style={{display:'flex',gap:8}}>{others.map(o=>(
           <button key={o.key} onClick={()=>go(o.key)} style={{flex:1,textAlign:'left',padding:0,borderRadius:14,border:`1.5px solid ${C.line}`,background:C.cream,cursor:'pointer',boxShadow:C.glow,fontFamily:'DM Sans,sans-serif',transition:'all 0.2s',overflow:'hidden'}} onMouseEnter={e=>e.currentTarget.style.borderColor=o.color} onMouseLeave={e=>e.currentTarget.style.borderColor=C.line}>
             <div style={{height:2,background:o.color,opacity:0.5}}/>
@@ -1006,8 +1097,8 @@ export default function Home(){
     </div></div>)
   }
 
-  if(stage==='artifact'){const d=sd();return(<div style={W} ref={sr}><div style={I}>{ld?<Dots/>:<FadeIn><Journey data={d} onEdit={t=>setOTx(t)} onExport={()=>dlFile(buildExportText(d),`reflection-${new Date().toISOString().slice(0,10)}.txt`)}/><div style={{display:'flex',justifyContent:'center',gap:8,marginTop:20}}><Btn onClick={async()=>{const d2=sd();const id=await saveReflection(d2);if(id)setSvd(id);setPast(await loadReflections());setStage('closing')}}>{svd?'Saved ✓':'Save & finish'}</Btn><Btn v="secondary" onClick={()=>setStage('closing')}>Finish</Btn></div></FadeIn>}</div></div>)}
+  if(stage==='artifact'){const d=sd();return(<div style={W} ref={sr}><div style={I}>{ld?<Dots/>:<FadeIn><Journey data={d} onEdit={t=>setOTx(t)} onExport={()=>dlFile(buildExportText(d),`reflection-${new Date().toISOString().slice(0,10)}.txt`)}/><div style={{display:'flex',justifyContent:'center',gap:8,marginTop:20}}><Btn onClick={async()=>{const d2=sd();const id=await saveReflection(d2);if(id)setSvd(id);setPast(await loadReflections());setStage('closing')}}>{svd?TRANS[lang].saved:TRANS[lang].saveFinish}</Btn><Btn v="secondary" onClick={()=>setStage('closing')}>{TRANS[lang].finish}</Btn></div></FadeIn>}</div></div>)}
 
-  if(stage==='closing'){const _pvc=derivePotVisual({entryCard:selC?.label,userStory:story,confirmedStatements:rvS.filter((_,i)=>rvM[i]==='fits'||rvM[i]==='notquite').map(s=>s?.statement||s),outputType:oT},0);return(<div style={W} ref={sr}><div style={{...I,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',minHeight:'55vh'}}><FadeIn><div style={{textAlign:'center',maxWidth:320}}><Pot phase="blooming" size={64} {..._pvc} showFace/><p style={{fontSize:16,lineHeight:1.75,margin:'16px 0 6px'}}>This is yours.</p><p style={{fontSize:13,lineHeight:1.55,color:C.stone,marginBottom:4,fontFamily:'DM Sans,sans-serif'}}>To keep, to change, to come back to.</p><Sep/><p style={{fontSize:13,color:C.ash,marginBottom:22,fontFamily:'DM Sans,sans-serif'}}>Thank you for this time.</p><div style={{display:'flex',gap:8,justifyContent:'center',flexWrap:'wrap'}}><Btn v="secondary" onClick={()=>{reset();setStage('landing')}}>Home</Btn>{(svd||past.length>0)&&<Btn v="soft" onClick={()=>{setStage('history');setVw(null)}}>Past reflections</Btn>}</div></div></FadeIn></div></div>)}
+  if(stage==='closing'){const _pvc=derivePotVisual({entryCard:selC?.label,userStory:story,confirmedStatements:rvS.filter((_,i)=>rvM[i]==='fits'||rvM[i]==='notquite').map(s=>s?.statement||s),outputType:oT},0);return(<div style={W} ref={sr}><div style={{...I,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',minHeight:'55vh'}}><FadeIn><div style={{textAlign:'center',maxWidth:320}}><Pot phase="blooming" size={64} {..._pvc} showFace/><p style={{fontSize:16,lineHeight:1.75,margin:'16px 0 6px'}}>{TRANS[lang].thisIsYours}</p><p style={{fontSize:15,lineHeight:1.55,color:C.stone,marginBottom:4,fontFamily:'DM Sans,sans-serif'}}>{TRANS[lang].toKeep}</p><Sep/><p style={{fontSize:15,color:C.ash,marginBottom:22,fontFamily:'DM Sans,sans-serif'}}>{TRANS[lang].thankyou}</p><div style={{display:'flex',gap:8,justifyContent:'center',flexWrap:'wrap'}}><Btn v="secondary" onClick={()=>{reset();setStage('landing')}}>{TRANS[lang].home}</Btn>{(svd||past.length>0)&&<Btn v="soft" onClick={()=>{setStage('history');setVw(null)}}>{TRANS[lang].pastReflections}</Btn>}</div></div></FadeIn><FadeIn delay={80}><div style={{marginTop:20,background:C.slip,borderRadius:14,padding:'12px 16px',border:`1px dashed ${C.celadonP}`,maxWidth:300,margin:'20px auto 0'}}><p style={{fontSize:14,color:C.stone,fontFamily:'DM Sans,sans-serif',lineHeight:1.65,margin:0,textAlign:'center'}}>{TRANS[lang].synthesisReminder}</p></div></FadeIn></div></div>)}
   return null
 }
