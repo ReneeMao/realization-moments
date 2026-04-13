@@ -6,6 +6,51 @@ import {
 } from '../lib/db'
 
 /* ─── PALETTE ─── */
+const ACCENTS = {
+  sage: {
+    glaze: '#A7B89E',
+    glazeSoft: '#D7E1D2',
+    leaf: '#90A77E',
+    bloom: '#D7E1D2',
+    center: '#9AAE8A',
+  },
+  honey: {
+    glaze: '#D9B56D',
+    glazeSoft: '#F2E1B8',
+    leaf: '#94A66F',
+    bloom: '#F1D48E',
+    center: '#D6A34C',
+  },
+  terracotta: {
+    glaze: '#CF9078',
+    glazeSoft: '#E8C6BA',
+    leaf: '#8FA07B',
+    bloom: '#E8C6BA',
+    center: '#C97D62',
+  },
+  bluegrey: {
+    glaze: '#9EADBA',
+    glazeSoft: '#D7E0E7',
+    leaf: '#92A39D',
+    bloom: '#DCE4EA',
+    center: '#8A9CAA',
+  },
+  olive: {
+    glaze: '#9FA37B',
+    glazeSoft: '#D8DABD',
+    leaf: '#7F8E62',
+    bloom: '#D8DABD',
+    center: '#8B9162',
+  },
+  lavender: {
+    glaze: '#B3A6B9',
+    glazeSoft: '#E1D7E5',
+    leaf: '#99A18C',
+    bloom: '#E7DDF0',
+    center: '#AA93B2',
+  },
+}
+
 const C = {
   kiln:'#F5F0E8', slip:'#EDE6D9', bisque:'#E3D9CB',
   charcoal:'#3A3530', ash:'#8A8278', stone:'#6B645B',
@@ -70,6 +115,7 @@ const pSummary = (period, items) => {
     if (r.outputText)          p.push(`Artifact: ${r.outputText}`)
     return p.join('\n')
   }).join('\n\n---\n\n')
+
   return `${SYS}\n\nSTAGE: PERIOD SYNTHESIS\nYou have ${items.length} reflection${items.length>1?'s':''} from ${period}.\n\nGenerate a synthesis that:\n- Notices recurring themes, tensions, or questions\n- Observes what seems to be shifting or evolving\n- Highlights what appears to matter consistently\n- Uses tentative language: "it seems like...", "what may be emerging..."\n- Is 4-6 warm, provisional sentences\n\nPlain text only, no markdown.\n\nReflections:\n${entries}`
 }
 
@@ -109,133 +155,351 @@ function buildExportText(d) {
   L.push('This is yours. Partial, revisable, not a record of truth.')
   return L.join('\n')
 }
+
 function dlFile(text, filename) {
-  const b=new Blob([text],{type:'text/plain;charset=utf-8'}), u=URL.createObjectURL(b), a=document.createElement('a')
-  a.href=u; a.download=filename; a.click(); URL.revokeObjectURL(u)
+  const b = new Blob([text], { type:'text/plain;charset=utf-8' })
+  const u = URL.createObjectURL(b)
+  const a = document.createElement('a')
+  a.href = u
+  a.download = filename
+  a.click()
+  URL.revokeObjectURL(u)
 }
 
-/* ─── CARD GLAZE PALETTE ─── */
-// Each entry card gets a distinct ceramic glaze color.
-// g = main glaze, l = light (rim wash / petal alt), d = dark (drip / stem)
-const CARD_GLAZE = {
-  'A moment I keep thinking about':             {g:'#C8906A',l:'#EDDBB8',d:'#9A6440'},
-  "A pattern I've been noticing":               {g:'#7CAF8C',l:'#B8D4BC',d:'#568A6A'},
-  'Something that feels different lately':      {g:'#C4889C',l:'#E2C0CA',d:'#A06478'},
-  "Something someone said that stayed with me": {g:'#7898BA',l:'#B8CADC',d:'#507898'},
-  'Two parts of me want different things':      {g:'#9C88BA',l:'#C8BCDA',d:'#746898'},
+/* ─── POT VISUAL SYSTEM ─── */
+function hashString(str = '') {
+  let h = 0
+  for (let i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) >>> 0
+  return h
 }
-const cardGlaze = label => CARD_GLAZE[label] || {g:C.celadon,l:C.celadonP,d:C.celadonD}
 
-/* ─── POT SVG — soft illustrated ceramic ─── */
-// viewBox is always "0 0 48 58" (slightly taller than wide).
-// width/height props scale the whole illustration.
-// cardLabel drives the glaze color; phase controls what's shown.
-function Pot({ phase='clay', size=60, cardLabel }) {
-  const ph = Math.round(size * 58 / 48)
-  const {g:G, l:Gl, d:Gd} = cardGlaze(cardLabel)
+function clamp(n, min, max) {
+  return Math.max(min, Math.min(max, n))
+}
 
-  // Organic pot body (smooth bezier curves — not geometric)
-  const BODY  = 'M16 17C11 26 9 37 11 49Q24 57 37 49C39 37 37 26 32 17Z'
-  // Glaze zone: covers upper ~70 % of body, organic bottom edge
-  const GLAZE = 'M16 17C11 26 10 35 12 43Q18 49 24 50Q30 49 36 43C38 35 37 26 32 17Z'
+function derivePotVisual(reflection = {}, idx = 0) {
+  const story = reflection.userStory || ''
+  const confirmed = reflection.confirmedStatements || []
+  const outputType = reflection.outputType || ''
+  const entry = reflection.entryCard || ''
 
-  if (phase === 'clay') return (
-    <svg width={size} height={ph} viewBox="0 0 48 58" fill="none">
-      <path d={BODY} fill={C.slip} stroke={C.ash} strokeWidth="0.9" strokeDasharray="2.5 2" opacity="0.55"/>
-      <ellipse cx="24" cy="17" rx="8" ry="2.7" fill={C.slip} stroke={C.ash} strokeWidth="0.9" strokeDasharray="2.5 2" opacity="0.55"/>
-    </svg>
-  )
+  const seed = hashString(`${entry}|${story}|${confirmed.join('|')}|${outputType}|${idx}`)
+  const len = story.length
+  const depth = clamp(len / 700, 0, 1)
+  const certainty = clamp(confirmed.length / 4, 0, 1)
 
-  // Shared base: warm clay body + all surface details
-  const base = <>
-    <path d={BODY} fill={C.terraP} stroke={C.terra} strokeWidth="0.85"/>
-    <ellipse cx="24" cy="17" rx="8" ry="2.7" fill={C.terraP} stroke={C.terra} strokeWidth="0.85"/>
-    {/* inner rim shadow */}
-    <ellipse cx="24" cy="17" rx="6.8" ry="1.9" fill="rgba(58,53,48,0.09)"/>
-    {/* right body shadow — gives roundness */}
-    <path d="M34 21C36 30 37 39 35 48Q32 50 29 51C34 45 37 35 35 23Z" fill="rgba(58,53,48,0.055)"/>
-    {/* specular highlight top-left */}
-    <ellipse cx="18.5" cy="30" rx="4" ry="6.5" fill="white" opacity="0.17" transform="rotate(-20 18.5 30)"/>
-    {/* cast shadow under base */}
-    <ellipse cx="24" cy="54" rx="12" ry="2.2" fill="rgba(58,53,48,0.07)"/>
-  </>
+  const openness = clamp(0.35 + depth * 0.4 + ((seed % 7) / 30), 0.25, 0.95)
+  const groundedness = clamp(0.4 + certainty * 0.35 + (((seed >> 3) % 7) / 40), 0.25, 0.95)
+  const vitality = clamp(0.3 + depth * 0.25 + certainty * 0.25 + (((seed >> 6) % 7) / 35), 0.2, 0.95)
+  const complexity = clamp(0.25 + ((story.match(/\bbut\b|\bthough\b|\bhowever\b|\band\b/gi)?.length || 0) / 8), 0.1, 0.95)
 
-  if (phase === 'shaped') return (
-    <svg width={size} height={ph} viewBox="0 0 48 58" fill="none">
-      {base}
-      {/* throwing rings */}
-      <path d="M13 31Q24 33 35 31" stroke={C.terra} strokeWidth="0.55" opacity="0.3"/>
-      <path d="M12 40Q24 42 36 40" stroke={C.terra} strokeWidth="0.45" opacity="0.2"/>
-    </svg>
-  )
+  const accents = ['sage', 'honey', 'terracotta', 'bluegrey', 'olive', 'lavender']
+  const bodies = ['round', 'oval', 'tall']
+  const glazes = ['wash', 'pooled', 'drift', 'satin']
+  const plants = ['sprout', 'pair', 'bud', 'flower', 'branch']
 
-  if (phase === 'bisque') return (
-    <svg width={size} height={ph} viewBox="0 0 48 58" fill="none">
-      {base}
-      {/* kiln smoke wisps */}
-      <path d="M20 16Q21 11 19 8Q20.5 5 21.5 8Q22 4 23 8" stroke={C.ochre} strokeWidth="0.7" fill="none" opacity="0.28" strokeLinecap="round"/>
-      <path d="M27 16Q28 10 26 7Q27.5 3 29 7" stroke={C.ochre} strokeWidth="0.6" fill="none" opacity="0.2" strokeLinecap="round"/>
-    </svg>
-  )
+  let accent = accents[seed % accents.length]
+  if (/care|gentle|soft|healing|rest/i.test(story)) accent = 'sage'
+  else if (/hope|warm|alive|gratitude|light/i.test(story)) accent = 'honey'
+  else if (/grief|honest|tender|hurt|courage/i.test(story)) accent = 'terracotta'
+  else if (/truth|clarity|space|reflect/i.test(story)) accent = 'bluegrey'
+  else if (/protect|root|endure|steady/i.test(story)) accent = 'olive'
+  else if (/uncertain|ambivalent|becoming|in between/i.test(story)) accent = 'lavender'
 
-  // Glazed layer: colored wash + drips + highlight
-  const glazed = <>
-    {base}
-    {/* main glaze wash */}
-    <path d={GLAZE} fill={G} opacity="0.7"/>
-    {/* lighter wash at rim — glaze is thicker / paler there */}
-    <path d="M16 17C11 26 11 32 13 36Q18 38 24 38Q30 38 35 36C37 32 37 26 32 17Z" fill={Gl} opacity="0.28"/>
-    {/* glaze drip 1 — right side */}
-    <path d="M33 43Q33.5 47 32 50" stroke={Gd} strokeWidth="2.2" strokeLinecap="round" opacity="0.48"/>
-    {/* glaze drip 2 — center-left, smaller */}
-    <path d="M22 46Q22.2 49 21.5 51" stroke={Gd} strokeWidth="1.4" strokeLinecap="round" opacity="0.3"/>
-    {/* reflection on glaze surface */}
-    <ellipse cx="18.5" cy="27" rx="3.5" ry="5.5" fill="white" opacity="0.2" transform="rotate(-20 18.5 27)"/>
-  </>
+  let bodyType = bodies[seed % bodies.length]
+  if (groundedness > 0.7) bodyType = 'round'
+  else if (openness > 0.7 && groundedness < 0.5) bodyType = 'tall'
+  else if (complexity > 0.55) bodyType = 'oval'
 
-  if (phase === 'glazed') return (
-    <svg width={size} height={ph} viewBox="0 0 48 58" fill="none" style={{filter:`drop-shadow(0 3px 10px ${G}44)`}}>
-      {glazed}
-    </svg>
-  )
+  let plantType = plants[(seed >> 2) % plants.length]
+  if (vitality < 0.38) plantType = 'sprout'
+  else if (vitality < 0.52) plantType = 'pair'
+  else if (vitality < 0.68) plantType = 'bud'
+  else if (vitality < 0.82) plantType = 'flower'
+  else plantType = 'branch'
 
-  // blooming: glazed + stem + leaves + flower
+  let glazeStyle = glazes[(seed >> 4) % glazes.length]
+  if (certainty > 0.7) glazeStyle = 'satin'
+  else if (complexity > 0.6) glazeStyle = 'drift'
+  else if (openness > 0.65) glazeStyle = 'pooled'
+
+  return {
+    accent,
+    bodyType,
+    glazeStyle,
+    plantType,
+    openness,
+    groundedness,
+    vitality,
+    complexity,
+  }
+}
+
+function defaultPotForPhase(phase) {
+  const base = {
+    clay:    { bodyType: 'round', glazeStyle: 'wash', accent: 'terracotta', plantType: 'sprout', showFace: false },
+    shaped:  { bodyType: 'oval', glazeStyle: 'wash', accent: 'terracotta', plantType: 'pair', showFace: false },
+    bisque:  { bodyType: 'oval', glazeStyle: 'pooled', accent: 'honey', plantType: 'bud', showFace: false },
+    glazed:  { bodyType: 'round', glazeStyle: 'satin', accent: 'sage', plantType: 'bud', showFace: false },
+    blooming:{ bodyType: 'round', glazeStyle: 'satin', accent: 'honey', plantType: 'flower', showFace: true },
+  }
+  return base[phase] || base.clay
+}
+
+function Pot({
+  phase = 'clay',
+  size = 60,
+  bodyType = 'round',
+  glazeStyle = 'wash',
+  accent = 'sage',
+  plantType = 'bud',
+  openness = 0.5,
+  groundedness = 0.6,
+  vitality = 0.5,
+  complexity = 0.3,
+  showFace = false,
+}) {
+  const w = size
+  const h = size
+  const A = ACCENTS[accent] || ACCENTS.sage
+
+  const rimW =
+    bodyType === 'tall' ? w * (0.19 + openness * 0.04)
+    : bodyType === 'oval' ? w * (0.23 + openness * 0.03)
+    : w * (0.24 + openness * 0.03)
+
+  const neckY = h * 0.36
+  const bellyY = h * 0.6
+  const bottomY = h * 0.84
+
+  const bodyPath =
+    bodyType === 'tall'
+      ? `M${w*0.31} ${neckY}
+         C${w*0.27} ${h*0.42} ${w*0.24} ${h*0.52} ${w*0.26} ${bellyY}
+         C${w*0.28} ${h*0.75} ${w*0.36} ${bottomY} ${w*0.5} ${bottomY}
+         C${w*0.64} ${bottomY} ${w*0.72} ${h*0.75} ${w*0.74} ${bellyY}
+         C${w*0.76} ${h*0.52} ${w*0.73} ${h*0.42} ${w*0.69} ${neckY}`
+      : bodyType === 'oval'
+      ? `M${w*0.28} ${neckY}
+         C${w*0.22} ${h*0.41} ${w*0.2} ${h*0.53} ${w*0.23} ${bellyY}
+         C${w*0.26} ${h*0.77} ${w*0.36} ${bottomY} ${w*0.5} ${bottomY}
+         C${w*0.64} ${bottomY} ${w*0.74} ${h*0.77} ${w*0.77} ${bellyY}
+         C${w*0.8} ${h*0.53} ${w*0.78} ${h*0.41} ${w*0.72} ${neckY}`
+      : `M${w*0.26} ${neckY}
+         C${w*0.2} ${h*0.4} ${w*0.18} ${h*0.53} ${w*0.22} ${bellyY}
+         C${w*0.26} ${h*0.79} ${w*0.37} ${bottomY} ${w*0.5} ${bottomY}
+         C${w*0.63} ${bottomY} ${w*0.74} ${h*0.79} ${w*0.78} ${bellyY}
+         C${w*0.82} ${h*0.53} ${w*0.8} ${h*0.4} ${w*0.74} ${neckY}`
+
+  const baseFill = phase === 'clay' ? C.bisque : '#F3EBDD'
+  const rimFill = phase === 'clay' ? '#E7DDCE' : '#EFE5D5'
+
+  const glazeOpacity =
+    phase === 'clay' ? 0
+    : phase === 'shaped' ? 0.08
+    : phase === 'bisque' ? 0.12
+    : phase === 'glazed' ? 0.65
+    : 0.72
+
+  const bloomVisible = phase === 'blooming'
+  const plantVisible = phase === 'glazed' || phase === 'blooming'
+
   return (
-    <svg width={size} height={ph} viewBox="0 0 48 58" fill="none" style={{filter:`drop-shadow(0 4px 12px ${G}55)`}}>
-      {glazed}
-      {/* stem */}
-      <path d="M24 17V7" stroke={Gd} strokeWidth="1.25" strokeLinecap="round"/>
-      {/* left leaf */}
-      <path d="M24 13C22 11 17 10 16 12C18 11 22 12.5 24 14Z" fill={G} opacity="0.82"/>
-      {/* right leaf */}
-      <path d="M24 10C26 8 31 8 32 10C30 9 26 10.5 24 11.5Z" fill={Gl} opacity="0.9"/>
-      {/* 5-petal flower */}
-      {[0,72,144,216,288].map((a,i)=>(
-        <ellipse key={i} cx="24" cy="5.5" rx="2.4" ry="3.8"
-          fill={i%2===0?G:Gl} opacity="0.82"
-          transform={`rotate(${a} 24 5.5)`}/>
-      ))}
-      {/* flower centre */}
-      <circle cx="24" cy="5.5" r="2.1" fill={C.ochre} opacity="0.92"/>
-      <circle cx="24" cy="5.5" r="0.9" fill={C.white} opacity="0.7"/>
+    <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} fill="none" style={{ overflow: 'visible' }}>
+      <defs>
+        <linearGradient id={`potBase-${size}-${accent}`} x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%" stopColor="#F8F2E7" />
+          <stop offset="100%" stopColor={baseFill} />
+        </linearGradient>
+
+        <linearGradient id={`glaze-${size}-${accent}`} x1="0" x2="1" y1="0" y2="1">
+          <stop offset="0%" stopColor={A.glazeSoft} />
+          <stop offset="65%" stopColor={A.glaze} />
+          <stop offset="100%" stopColor={A.glazeSoft} />
+        </linearGradient>
+
+        <radialGradient id={`shine-${size}-${accent}`} cx="35%" cy="25%" r="60%">
+          <stop offset="0%" stopColor="#FFFDF8" stopOpacity="0.75" />
+          <stop offset="100%" stopColor="#FFFDF8" stopOpacity="0" />
+        </radialGradient>
+      </defs>
+
+      <ellipse cx={w*0.5} cy={h*0.88} rx={w*0.24} ry={h*0.05} fill="#D7CCBA" opacity="0.22" />
+
+      <path d={bodyPath} fill={`url(#potBase-${size}-${accent})`} stroke="#D8CEBF" strokeWidth="1.1" />
+
+      <ellipse cx={w*0.5} cy={neckY} rx={rimW} ry={h*0.06} fill={rimFill} stroke="#D8CEBF" strokeWidth="1.1" />
+      <ellipse cx={w*0.5} cy={neckY+1} rx={rimW*0.72} ry={h*0.035} fill="#CFC2AE" opacity="0.42" />
+
+      {glazeOpacity > 0 && (
+        <>
+          {glazeStyle === 'wash' && (
+            <path
+              d={`M${w*0.31} ${neckY}
+                  C${w*0.3} ${h*0.43} ${w*0.31} ${h*0.46} ${w*0.34} ${h*0.5}
+                  C${w*0.39} ${h*0.58} ${w*0.61} ${h*0.58} ${w*0.67} ${h*0.5}
+                  C${w*0.7} ${h*0.46} ${w*0.7} ${h*0.43} ${w*0.69} ${neckY}
+                  Z`}
+              fill={`url(#glaze-${size}-${accent})`}
+              opacity={glazeOpacity}
+            />
+          )}
+
+          {glazeStyle === 'pooled' && (
+            <>
+              <path
+                d={`M${w*0.3} ${neckY}
+                    C${w*0.3} ${h*0.41} ${w*0.28} ${h*0.5} ${w*0.32} ${h*0.56}
+                    C${w*0.35} ${h*0.6} ${w*0.38} ${h*0.58} ${w*0.38} ${h*0.53}
+                    C${w*0.38} ${h*0.47} ${w*0.35} ${h*0.43} ${w*0.34} ${neckY}
+                    Z`}
+                fill={A.glaze}
+                opacity={glazeOpacity}
+              />
+              <path
+                d={`M${w*0.58} ${neckY}
+                    C${w*0.59} ${h*0.43} ${w*0.63} ${h*0.48} ${w*0.63} ${h*0.55}
+                    C${w*0.63} ${h*0.6} ${w*0.6} ${h*0.62} ${w*0.58} ${h*0.58}
+                    C${w*0.56} ${h*0.53} ${w*0.57} ${h*0.47} ${w*0.58} ${neckY}
+                    Z`}
+                fill={A.glaze}
+                opacity={glazeOpacity * 0.92}
+              />
+              <path
+                d={`M${w*0.31} ${neckY}
+                    C${w*0.38} ${h*0.43} ${w*0.62} ${h*0.43} ${w*0.69} ${neckY}
+                    L${w*0.69} ${h*0.42}
+                    C${w*0.61} ${h*0.4} ${w*0.39} ${h*0.4} ${w*0.31} ${h*0.42}
+                    Z`}
+                fill={A.glazeSoft}
+                opacity={glazeOpacity}
+              />
+            </>
+          )}
+
+          {glazeStyle === 'drift' && (
+            <path
+              d={`M${w*0.29} ${neckY}
+                  C${w*0.34} ${h*0.44} ${w*0.42} ${h*0.47} ${w*0.48} ${h*0.5}
+                  C${w*0.54} ${h*0.53} ${w*0.63} ${h*0.51} ${w*0.69} ${h*0.46}
+                  L${w*0.69} ${neckY}
+                  Z`}
+              fill={`url(#glaze-${size}-${accent})`}
+              opacity={glazeOpacity}
+            />
+          )}
+
+          {glazeStyle === 'satin' && (
+            <path
+              d={`M${w*0.29} ${neckY}
+                  C${w*0.27} ${h*0.43} ${w*0.28} ${h*0.49} ${w*0.33} ${h*0.55}
+                  C${w*0.39} ${h*0.62} ${w*0.61} ${h*0.62} ${w*0.67} ${h*0.55}
+                  C${w*0.72} ${h*0.49} ${w*0.73} ${h*0.43} ${w*0.71} ${neckY}
+                  Z`}
+              fill={`url(#glaze-${size}-${accent})`}
+              opacity={glazeOpacity}
+            />
+          )}
+
+          <ellipse cx={w*0.42} cy={h*0.48} rx={w*0.16} ry={h*0.18} fill={`url(#shine-${size}-${accent})`} opacity="0.65" />
+        </>
+      )}
+
+      {(showFace || bloomVisible) && (
+        <>
+          <circle cx={w*0.39} cy={h*0.63} r={w*0.025} fill="#6E6A4E" />
+          <circle cx={w*0.61} cy={h*0.63} r={w*0.025} fill="#6E6A4E" />
+          <path d={`M${w*0.43} ${h*0.695} C${w*0.46} ${h*0.73} ${w*0.54} ${h*0.73} ${w*0.57} ${h*0.695}`} stroke="#6E6A4E" strokeWidth="1.5" strokeLinecap="round" />
+        </>
+      )}
+
+      {plantVisible && (
+        <>
+          {plantType === 'sprout' && (
+            <>
+              <path d={`M${w*0.5} ${neckY-0.01*h} C${w*0.49} ${h*0.28} ${w*0.5} ${h*0.2} ${w*0.5} ${h*0.13}`} stroke={A.leaf} strokeWidth="1.6" strokeLinecap="round" />
+              <ellipse cx={w*0.47} cy={h*0.21} rx={w*0.045} ry={h*0.025} fill={A.leaf} transform={`rotate(-30 ${w*0.47} ${h*0.21})`} />
+              <ellipse cx={w*0.53} cy={h*0.2} rx={w*0.045} ry={h*0.025} fill={A.glazeSoft} transform={`rotate(28 ${w*0.53} ${h*0.2})`} />
+            </>
+          )}
+
+          {plantType === 'pair' && (
+            <>
+              <path d={`M${w*0.5} ${neckY} C${w*0.5} ${h*0.28} ${w*0.5} ${h*0.21} ${w*0.5} ${h*0.14}`} stroke={A.leaf} strokeWidth="1.8" strokeLinecap="round" />
+              <ellipse cx={w*0.43} cy={h*0.22} rx={w*0.07} ry={h*0.035} fill={A.leaf} transform={`rotate(-28 ${w*0.43} ${h*0.22})`} />
+              <ellipse cx={w*0.57} cy={h*0.22} rx={w*0.07} ry={h*0.035} fill={A.glazeSoft} transform={`rotate(28 ${w*0.57} ${h*0.22})`} />
+            </>
+          )}
+
+          {plantType === 'bud' && (
+            <>
+              <path d={`M${w*0.5} ${neckY} C${w*0.495} ${h*0.27} ${w*0.5} ${h*0.18} ${w*0.5} ${h*0.1}`} stroke={A.leaf} strokeWidth="1.9" strokeLinecap="round" />
+              <ellipse cx={w*0.44} cy={h*0.24} rx={w*0.065} ry={h*0.03} fill={A.leaf} transform={`rotate(-28 ${w*0.44} ${h*0.24})`} />
+              <ellipse cx={w*0.56} cy={h*0.22} rx={w*0.065} ry={h*0.03} fill={A.glazeSoft} transform={`rotate(24 ${w*0.56} ${h*0.22})`} />
+              <ellipse cx={w*0.5} cy={h*0.095} rx={w*0.04} ry={h*0.05} fill={A.bloom} />
+            </>
+          )}
+
+          {plantType === 'flower' && (
+            <>
+              <path d={`M${w*0.5} ${neckY} C${w*0.495} ${h*0.27} ${w*0.5} ${h*0.17} ${w*0.5} ${h*0.08}`} stroke={A.leaf} strokeWidth="1.9" strokeLinecap="round" />
+              <ellipse cx={w*0.43} cy={h*0.24} rx={w*0.07} ry={h*0.032} fill={A.leaf} transform={`rotate(-30 ${w*0.43} ${h*0.24})`} />
+              <ellipse cx={w*0.57} cy={h*0.22} rx={w*0.07} ry={h*0.032} fill={A.glazeSoft} transform={`rotate(25 ${w*0.57} ${h*0.22})`} />
+              {[0,72,144,216,288].map((ang, i) => (
+                <ellipse
+                  key={i}
+                  cx={w*0.5}
+                  cy={h*0.08}
+                  rx={w*0.026}
+                  ry={h*0.05}
+                  fill={A.bloom}
+                  transform={`rotate(${ang} ${w*0.5} ${h*0.08})`}
+                  opacity="0.9"
+                />
+              ))}
+              <circle cx={w*0.5} cy={h*0.08} r={w*0.028} fill={A.center} />
+            </>
+          )}
+
+          {plantType === 'branch' && (
+            <>
+              <path d={`M${w*0.5} ${neckY} C${w*0.5} ${h*0.28} ${w*0.49} ${h*0.18} ${w*0.5} ${h*0.1}`} stroke={A.leaf} strokeWidth="1.9" strokeLinecap="round" />
+              <path d={`M${w*0.5} ${h*0.16} C${w*0.46} ${h*0.15} ${w*0.42} ${h*0.12} ${w*0.39} ${h*0.09}`} stroke={A.leaf} strokeWidth="1.3" strokeLinecap="round" />
+              <path d={`M${w*0.5} ${h*0.14} C${w*0.54} ${h*0.13} ${w*0.58} ${h*0.1} ${w*0.61} ${h*0.07}`} stroke={A.leaf} strokeWidth="1.3" strokeLinecap="round" />
+              <ellipse cx={w*0.43} cy={h*0.22} rx={w*0.065} ry={h*0.03} fill={A.leaf} transform={`rotate(-24 ${w*0.43} ${h*0.22})`} />
+              <ellipse cx={w*0.57} cy={h*0.22} rx={w*0.065} ry={h*0.03} fill={A.glazeSoft} transform={`rotate(22 ${w*0.57} ${h*0.22})`} />
+              <ellipse cx={w*0.39} cy={h*0.09} rx={w*0.03} ry={h*0.04} fill={A.bloom} />
+              <ellipse cx={w*0.61} cy={h*0.07} rx={w*0.03} ry={h*0.04} fill={A.bloom} />
+            </>
+          )}
+        </>
+      )}
     </svg>
   )
 }
 
 /* ─── PROGRESS ─── */
-const PHASES=['Clay','Shaped','Fired','Glazed','Blooming']
-const stageIdx=s=>({landing:0,entry:0,stage1:1,stage3:2,stage4:3,stage5:4,artifact:4,closing:4}[s]??0)
-function Progress({stage}){
-  const idx=stageIdx(stage)
+const PHASES = ['Clay','Shaped','Fired','Glazed','Blooming']
+const stageIdx = s => ({landing:0,entry:0,stage1:1,stage3:2,stage4:3,stage5:4,artifact:4,closing:4}[s] ?? 0)
+
+function Progress({stage}) {
+  const idx = stageIdx(stage)
   return(
     <div style={{display:'flex',alignItems:'center',marginBottom:24,padding:'0 4px'}}>
       {PHASES.map((label,i)=>(
         <div key={i} style={{display:'flex',alignItems:'center',flex:i<4?1:'none'}}>
           <div style={{display:'flex',flexDirection:'column',alignItems:'center',gap:2}}>
-            <div style={{width:8,height:8,borderRadius:'50%',background:i<=idx?C.celadon:C.line,transition:'background 0.4s',boxShadow:i===idx?`0 0 6px ${C.celadon}66`:'none'}}/>
+            <div
+              style={{
+                width:8,height:8,borderRadius:'50%',
+                background:i<=idx?C.celadon:C.line,
+                transition:'background 0.4s',
+                boxShadow:i===idx?`0 0 6px ${C.celadon}66`:'none'
+              }}
+            />
             <span style={{fontSize:9,color:i<=idx?C.celadonD:C.ash,fontFamily:'DM Sans,sans-serif',whiteSpace:'nowrap'}}>{label}</span>
           </div>
-          {i<4&&<div style={{flex:1,height:1,background:i<idx?C.celadon:C.line,margin:'0 4px',marginBottom:14,transition:'background 0.4s'}}/>}
+          {i<4 && <div style={{flex:1,height:1,background:i<idx?C.celadon:C.line,margin:'0 4px',marginBottom:14,transition:'background 0.4s'}}/>}
         </div>
       ))}
     </div>
@@ -243,16 +507,83 @@ function Progress({stage}){
 }
 
 /* ─── SHARED UI ─── */
-function FadeIn({children,delay=0,style={}}){const[v,setV]=useState(false);useEffect(()=>{const t=setTimeout(()=>setV(true),delay);return()=>clearTimeout(t)},[delay]);return <div style={{opacity:v?1:0,transform:v?'translateY(0)':'translateY(8px)',transition:'opacity 0.5s,transform 0.5s',...style}}>{children}</div>}
-function Dots(){return(<div style={{display:'flex',gap:6,alignItems:'center',padding:'28px 0'}}>{[0,1,2].map(i=><div key={i} style={{width:7,height:7,borderRadius:'50%',background:C.celadon,animation:`dp 1.2s ease ${i*.2}s infinite`}}/>)}<style>{`@keyframes dp{0%,100%{opacity:.3;transform:scale(.8)}50%{opacity:1;transform:scale(1)}}`}</style></div>)}
-function Btn({children,onClick,v='primary',disabled,style={}}){const base={padding:'10px 22px',borderRadius:20,border:'none',fontSize:13,fontFamily:'DM Serif Display,Georgia,serif',cursor:disabled?'not-allowed':'pointer',transition:'all 0.2s',opacity:disabled?.4:1,...style};const vs={primary:{background:C.celadon,color:C.white,fontWeight:500},secondary:{background:'transparent',color:C.charcoal,border:`1.5px solid ${C.line}`},soft:{background:C.slip,color:C.charcoal}};return <button style={{...base,...vs[v]}} onClick={onClick} disabled={disabled}>{children}</button>}
-function TA({value,onChange,placeholder,minH=120}){const ref=useRef(null);useEffect(()=>{if(ref.current){ref.current.style.height='auto';ref.current.style.height=Math.max(minH,ref.current.scrollHeight)+'px'}},[value,minH]);return <textarea ref={ref} value={value} onChange={e=>onChange(e.target.value)} placeholder={placeholder} style={{width:'100%',minHeight:minH,padding:16,borderRadius:14,border:`1.5px solid ${C.line}`,background:C.white,color:C.charcoal,fontSize:15,lineHeight:1.7,fontFamily:'DM Sans,sans-serif',resize:'none',outline:'none',boxSizing:'border-box',transition:'border-color 0.2s'}} onFocus={e=>e.target.style.borderColor=C.celadon} onBlur={e=>e.target.style.borderColor=C.line}/>}
-function Tag({children,color=C.celadon}){return <span style={{display:'inline-block',padding:'2px 10px',borderRadius:12,background:color+'18',color,fontSize:10,fontWeight:600,textTransform:'uppercase',letterSpacing:'0.08em',fontFamily:'DM Sans,sans-serif',marginBottom:4}}>{children}</span>}
-function Sep(){return <div style={{width:32,height:1,background:`linear-gradient(to right,${C.celadon},transparent)`,margin:'16px 0'}}/>}
-function ErrMsg({err}){return err?<div style={{background:C.terraP+'66',borderRadius:12,padding:'10px 14px',marginBottom:12,fontSize:12,fontFamily:'DM Sans,sans-serif',color:C.terra,border:`1px solid ${C.terra}44`}}>{err}</div>:null}
+function FadeIn({children,delay=0,style={}}) {
+  const [v,setV] = useState(false)
+  useEffect(()=>{ const t=setTimeout(()=>setV(true),delay); return()=>clearTimeout(t) },[delay])
+  return <div style={{opacity:v?1:0,transform:v?'translateY(0)':'translateY(8px)',transition:'opacity 0.5s,transform 0.5s',...style}}>{children}</div>
+}
+
+function Dots() {
+  return(
+    <div style={{display:'flex',gap:6,alignItems:'center',padding:'28px 0'}}>
+      {[0,1,2].map(i=>(
+        <div key={i} style={{width:7,height:7,borderRadius:'50%',background:C.celadon,animation:`dp 1.2s ease ${i*.2}s infinite`}}/>
+      ))}
+      <style>{`@keyframes dp{0%,100%{opacity:.3;transform:scale(.8)}50%{opacity:1;transform:scale(1)}}`}</style>
+    </div>
+  )
+}
+
+function Btn({children,onClick,v='primary',disabled,style={}}) {
+  const base = {
+    padding:'10px 22px',
+    borderRadius:20,
+    border:'none',
+    fontSize:13,
+    fontFamily:'DM Serif Display,Georgia,serif',
+    cursor:disabled?'not-allowed':'pointer',
+    transition:'all 0.2s',
+    opacity:disabled?0.4:1,
+    ...style
+  }
+  const vs = {
+    primary:{background:C.celadon,color:C.white,fontWeight:500},
+    secondary:{background:'transparent',color:C.charcoal,border:`1.5px solid ${C.line}`},
+    soft:{background:C.slip,color:C.charcoal}
+  }
+  return <button style={{...base,...vs[v]}} onClick={onClick} disabled={disabled}>{children}</button>
+}
+
+function TA({value,onChange,placeholder,minH=120}) {
+  const ref = useRef(null)
+  useEffect(()=>{
+    if(ref.current){
+      ref.current.style.height='auto'
+      ref.current.style.height=Math.max(minH,ref.current.scrollHeight)+'px'
+    }
+  },[value,minH])
+
+  return (
+    <textarea
+      ref={ref}
+      value={value}
+      onChange={e=>onChange(e.target.value)}
+      placeholder={placeholder}
+      style={{
+        width:'100%',minHeight:minH,padding:16,borderRadius:14,border:`1.5px solid ${C.line}`,
+        background:C.white,color:C.charcoal,fontSize:15,lineHeight:1.7,fontFamily:'DM Sans,sans-serif',
+        resize:'none',outline:'none',boxSizing:'border-box',transition:'border-color 0.2s'
+      }}
+      onFocus={e=>e.target.style.borderColor=C.celadon}
+      onBlur={e=>e.target.style.borderColor=C.line}
+    />
+  )
+}
+
+function Tag({children,color=C.celadon}) {
+  return <span style={{display:'inline-block',padding:'2px 10px',borderRadius:12,background:color+'18',color,fontSize:10,fontWeight:600,textTransform:'uppercase',letterSpacing:'0.08em',fontFamily:'DM Sans,sans-serif',marginBottom:4}}>{children}</span>
+}
+
+function Sep() {
+  return <div style={{width:32,height:1,background:`linear-gradient(to right,${C.celadon},transparent)`,margin:'16px 0'}}/>
+}
+
+function ErrMsg({err}) {
+  return err ? <div style={{background:C.terraP+'66',borderRadius:12,padding:'10px 14px',marginBottom:12,fontSize:12,fontFamily:'DM Sans,sans-serif',color:C.terra,border:`1px solid ${C.terra}44`}}>{err}</div> : null
+}
 
 /* ─── ENTRY CARDS ─── */
-const CARDS=[
+const CARDS = [
   {label:'A moment I keep thinking about',nudge:"What happened? Where were you? You don't need to explain why it matters yet."},
   {label:"A pattern I've been noticing",nudge:"When does it show up? What does it look like? You don't need to have it figured out."},
   {label:'Something that feels different lately',nudge:"What feels different about you, or how you see things? Even something subtle counts."},
@@ -261,59 +592,139 @@ const CARDS=[
 ]
 
 /* ─── JOURNEY ARTIFACT ─── */
-function Journey({data,onEdit,onExport}){
-  const[exp,setExp]=useState(null);const[editing,setEditing]=useState(false);const[draft,setDraft]=useState(data.outputText||'')
-  useEffect(()=>{setDraft(data.outputText||'')},[data.outputText])
-  const secs=[{k:'story',icon:'✦',t:'Where I started',sub:data.entryCard,body:data.userStory},{k:'heard',icon:'◇',t:'What I heard back',body:data.stage1Response},{k:'deeper',icon:'↳',t:'Going deeper',body:data.focalPointText}]
-  const ce=data.cardResponses?Object.entries(data.cardResponses).filter(([,v])=>v?.trim()):[]
-  if(ce.length)secs.push({k:'cards',icon:'❋',t:'Reflections',cards:ce})
-  if(data.confirmedStatements?.length)secs.push({k:'conf',icon:'◈',t:'What stayed true',stmts:data.confirmedStatements})
-  const outLabel={see:'What I\'m seeing now',carry:'What matters going forward',keep:'What I want to keep with me',meaning:'What I may be understanding now',direction:'What feels important enough to guide me',retelling:'The story I may be telling differently now',future:'A note from the self I may be becoming',question:'A question I want to keep living with',remember:'What I want to remember when I forget',reflective:'Looking back',firstperson:'In my words',values:'What matters now'}[data.outputType]||'Your artifact'
+function Journey({data,onEdit,onExport}) {
+  const pv = derivePotVisual(data, 0)
+  const [exp,setExp] = useState(null)
+  const [editing,setEditing] = useState(false)
+  const [draft,setDraft] = useState(data.outputText || '')
+
+  useEffect(()=>{ setDraft(data.outputText || '') },[data.outputText])
+
+  const secs = [
+    {k:'story',icon:'✦',t:'Where I started',sub:data.entryCard,body:data.userStory},
+    {k:'heard',icon:'◇',t:'What I heard back',body:data.stage1Response},
+    {k:'deeper',icon:'↳',t:'Going deeper',body:data.focalPointText}
+  ]
+
+  const ce = data.cardResponses ? Object.entries(data.cardResponses).filter(([,v])=>v?.trim()) : []
+  if(ce.length) secs.push({k:'cards',icon:'❋',t:'Reflections',cards:ce})
+  if(data.confirmedStatements?.length) secs.push({k:'conf',icon:'◈',t:'What stayed true',stmts:data.confirmedStatements})
+
+  const outLabel = {
+    see:'What I\'m seeing now',
+    carry:'What matters going forward',
+    keep:'What I want to keep with me',
+  }[data.outputType] || 'Your artifact'
+
   return(
     <div style={{background:C.cream,borderRadius:22,boxShadow:C.lift,overflow:'hidden',border:`1px solid ${C.line}`}}>
       <div style={{background:`linear-gradient(135deg,${C.celadonP}66,${C.slip})`,padding:'20px 20px 16px',display:'flex',alignItems:'center',gap:12}}>
-        <Pot phase="blooming" size={44} cardLabel={data.entryCard}/>
-        <div><Tag color={C.celadonD}>Realization Moments</Tag><div style={{fontSize:12,color:C.ash,fontFamily:'DM Sans,sans-serif'}}>{new Date(data.timestamp).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})}</div></div>
+        <Pot phase="blooming" size={44} {...pv} showFace />
+        <div>
+          <Tag color={C.celadonD}>Realization Moments</Tag>
+          <div style={{fontSize:12,color:C.ash,fontFamily:'DM Sans,sans-serif'}}>
+            {new Date(data.timestamp).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})}
+          </div>
+        </div>
       </div>
+
       <div style={{padding:'4px 0'}}>
-        {secs.map((s,i)=>{const open=exp===s.k;return(<div key={s.k}>
-          <button onClick={()=>setExp(open?null:s.k)} style={{width:'100%',textAlign:'left',background:'transparent',border:'none',cursor:'pointer',padding:'11px 20px',fontFamily:'DM Serif Display,Georgia,serif',display:'flex',alignItems:'center',gap:11,transition:'background 0.15s'}} onMouseEnter={e=>e.currentTarget.style.background=C.slip+'88'} onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
-            <div style={{display:'flex',flexDirection:'column',alignItems:'center',width:16,flexShrink:0}}><span style={{fontSize:11,color:C.celadon}}>{s.icon}</span>{i<secs.length-1&&<div style={{width:1,height:5,background:C.line,marginTop:2}}/>}</div>
-            <div style={{flex:1}}><div style={{fontSize:13,color:C.charcoal}}>{s.t}</div>{s.sub&&<div style={{fontSize:11,color:C.ash,fontFamily:'DM Sans,sans-serif'}}>{s.sub}</div>}</div>
-            <span style={{fontSize:13,color:C.ash,transform:open?'rotate(180deg)':'',transition:'transform 0.2s'}}>▾</span>
-          </button>
-          {open&&<div style={{padding:'2px 20px 12px 47px',animation:'fs 0.3s ease'}}>
-            {s.body&&<p style={{fontSize:13,lineHeight:1.75,color:C.charcoal,margin:0,fontFamily:'DM Sans,sans-serif'}}>{s.body}</p>}
-            {s.cards?.map(([l,t],j)=><div key={j} style={{marginBottom:j<s.cards.length-1?10:0}}><Tag color={C.celadonD}>{l}</Tag><p style={{fontSize:13,lineHeight:1.75,color:C.charcoal,margin:'4px 0 0',fontFamily:'DM Sans,sans-serif'}}>{t}</p></div>)}
-            {s.stmts?.map((st,j)=><div key={j} style={{display:'flex',gap:7,alignItems:'flex-start',marginBottom:4}}><span style={{color:C.celadon,fontSize:8,marginTop:6}}>●</span><p style={{fontSize:13,lineHeight:1.7,color:C.charcoal,margin:0,fontFamily:'DM Sans,sans-serif'}}>{st}</p></div>)}
-          </div>}
-          {i<secs.length-1&&!open&&<div style={{marginLeft:28,width:1,height:3,background:C.line}}/>}
-        </div>)})}
+        {secs.map((s,i)=>{
+          const open = exp===s.k
+          return(
+            <div key={s.k}>
+              <button
+                onClick={()=>setExp(open?null:s.k)}
+                style={{width:'100%',textAlign:'left',background:'transparent',border:'none',cursor:'pointer',padding:'11px 20px',fontFamily:'DM Serif Display,Georgia,serif',display:'flex',alignItems:'center',gap:11,transition:'background 0.15s'}}
+                onMouseEnter={e=>e.currentTarget.style.background=C.slip+'88'}
+                onMouseLeave={e=>e.currentTarget.style.background='transparent'}
+              >
+                <div style={{display:'flex',flexDirection:'column',alignItems:'center',width:16,flexShrink:0}}>
+                  <span style={{fontSize:11,color:C.celadon}}>{s.icon}</span>
+                  {i<secs.length-1 && <div style={{width:1,height:5,background:C.line,marginTop:2}}/>}
+                </div>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:13,color:C.charcoal}}>{s.t}</div>
+                  {s.sub && <div style={{fontSize:11,color:C.ash,fontFamily:'DM Sans,sans-serif'}}>{s.sub}</div>}
+                </div>
+                <span style={{fontSize:13,color:C.ash,transform:open?'rotate(180deg)':'',transition:'transform 0.2s'}}>▾</span>
+              </button>
+
+              {open && (
+                <div style={{padding:'2px 20px 12px 47px',animation:'fs 0.3s ease'}}>
+                  {s.body && <p style={{fontSize:13,lineHeight:1.75,color:C.charcoal,margin:0,fontFamily:'DM Sans,sans-serif'}}>{s.body}</p>}
+                  {s.cards?.map(([l,t],j)=>(
+                    <div key={j} style={{marginBottom:j<s.cards.length-1?10:0}}>
+                      <Tag color={C.celadonD}>{l}</Tag>
+                      <p style={{fontSize:13,lineHeight:1.75,color:C.charcoal,margin:'4px 0 0',fontFamily:'DM Sans,sans-serif'}}>{t}</p>
+                    </div>
+                  ))}
+                  {s.stmts?.map((st,j)=>(
+                    <div key={j} style={{display:'flex',gap:7,alignItems:'flex-start',marginBottom:4}}>
+                      <span style={{color:C.celadon,fontSize:8,marginTop:6}}>●</span>
+                      <p style={{fontSize:13,lineHeight:1.7,color:C.charcoal,margin:0,fontFamily:'DM Sans,sans-serif'}}>{st}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {i<secs.length-1 && !open && <div style={{marginLeft:28,width:1,height:3,background:C.line}}/>}
+            </div>
+          )
+        })}
       </div>
+
       <div style={{borderTop:`1px solid ${C.line}`,padding:'18px 20px'}}>
-        <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:10}}><Tag color={C.terra}>{outLabel}</Tag></div>
-        {editing?(<div><TA value={draft} onChange={setDraft} minH={80}/><div style={{display:'flex',gap:6,marginTop:8}}><Btn v="soft" onClick={()=>{onEdit(draft);setEditing(false)}} style={{fontSize:11,padding:'5px 12px'}}>Save</Btn><Btn v="secondary" onClick={()=>{setDraft(data.outputText);setEditing(false)}} style={{fontSize:11,padding:'5px 12px'}}>Cancel</Btn></div></div>):(
-          <div style={{background:C.white,borderRadius:14,padding:16,borderLeft:`3px solid ${C.celadon}`}}><p style={{fontSize:14,lineHeight:1.8,color:C.charcoal,margin:0,whiteSpace:'pre-wrap',fontFamily:'DM Sans,sans-serif'}}>{data.outputText}</p></div>
+        <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:10}}>
+          <Tag color={C.terra}>{outLabel}</Tag>
+        </div>
+
+        {editing ? (
+          <div>
+            <TA value={draft} onChange={setDraft} minH={80}/>
+            <div style={{display:'flex',gap:6,marginTop:8}}>
+              <Btn v="soft" onClick={()=>{onEdit(draft);setEditing(false)}} style={{fontSize:11,padding:'5px 12px'}}>Save</Btn>
+              <Btn v="secondary" onClick={()=>{setDraft(data.outputText);setEditing(false)}} style={{fontSize:11,padding:'5px 12px'}}>Cancel</Btn>
+            </div>
+          </div>
+        ) : (
+          <div style={{background:C.white,borderRadius:14,padding:16,borderLeft:`3px solid ${C.celadon}`}}>
+            <p style={{fontSize:14,lineHeight:1.8,color:C.charcoal,margin:0,whiteSpace:'pre-wrap',fontFamily:'DM Sans,sans-serif'}}>{data.outputText}</p>
+          </div>
         )}
+
         <p style={{fontSize:11,color:C.ash,fontStyle:'italic',margin:'8px 0 10px',fontFamily:'DM Sans,sans-serif'}}>A draft. Yours to change.</p>
-        <div style={{display:'flex',gap:6}}>{!editing&&<Btn v="secondary" onClick={()=>setEditing(true)} style={{fontSize:11,padding:'5px 11px'}}>Edit</Btn>}<Btn v="secondary" onClick={()=>navigator.clipboard?.writeText(data.outputText)} style={{fontSize:11,padding:'5px 11px'}}>Copy</Btn><Btn v="secondary" onClick={onExport} style={{fontSize:11,padding:'5px 11px'}}>Export .txt</Btn></div>
+
+        <div style={{display:'flex',gap:6}}>
+          {!editing && <Btn v="secondary" onClick={()=>setEditing(true)} style={{fontSize:11,padding:'5px 11px'}}>Edit</Btn>}
+          <Btn v="secondary" onClick={()=>navigator.clipboard?.writeText(data.outputText)} style={{fontSize:11,padding:'5px 11px'}}>Copy</Btn>
+          <Btn v="secondary" onClick={onExport} style={{fontSize:11,padding:'5px 11px'}}>Export .txt</Btn>
+        </div>
       </div>
+
       <style>{`@keyframes fs{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:translateY(0)}}`}</style>
     </div>
   )
 }
 
 /* ─── SUMMARY CARD ─── */
-function SummaryCard({text,period,onExport}){
+function SummaryCard({text,period,onExport}) {
   return(
     <div style={{background:C.cream,borderRadius:18,boxShadow:C.lift,overflow:'hidden',border:`1px solid ${C.celadonP}`,marginBottom:20}}>
       <div style={{background:`linear-gradient(135deg,${C.celadonP}88,${C.ochreP}66)`,padding:'14px 18px',display:'flex',alignItems:'center',gap:10}}>
-        <Pot phase="blooming" size={40}/><div><Tag color={C.celadonD}>Synthesis</Tag><div style={{fontSize:11,color:C.stone,fontFamily:'DM Sans,sans-serif'}}>{period}</div></div>
+        <Pot phase="blooming" size={36} {...defaultPotForPhase('blooming')} />
+        <div>
+          <Tag color={C.celadonD}>Synthesis</Tag>
+          <div style={{fontSize:11,color:C.stone,fontFamily:'DM Sans,sans-serif'}}>{period}</div>
+        </div>
       </div>
       <div style={{padding:'16px 18px'}}>
         <p style={{fontSize:14,lineHeight:1.85,color:C.charcoal,margin:0,fontFamily:'DM Sans,sans-serif',fontStyle:'italic'}}>{text}</p>
         <p style={{fontSize:11,color:C.ash,margin:'12px 0 10px',fontFamily:'DM Sans,sans-serif'}}>A provisional reading. Yours to contest or keep.</p>
-        <div style={{display:'flex',gap:6}}><Btn v="secondary" onClick={()=>navigator.clipboard?.writeText(text)} style={{fontSize:11,padding:'5px 11px'}}>Copy</Btn><Btn v="secondary" onClick={onExport} style={{fontSize:11,padding:'5px 11px'}}>Export .txt</Btn></div>
+        <div style={{display:'flex',gap:6}}>
+          <Btn v="secondary" onClick={()=>navigator.clipboard?.writeText(text)} style={{fontSize:11,padding:'5px 11px'}}>Copy</Btn>
+          <Btn v="secondary" onClick={onExport} style={{fontSize:11,padding:'5px 11px'}}>Export .txt</Btn>
+        </div>
       </div>
     </div>
   )
@@ -333,11 +744,11 @@ function Hist({items,onBack,onView,onDel}){
       <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:16}}><h2 style={{fontSize:17,fontWeight:400,margin:0}}>Past reflections</h2><Btn v="secondary" onClick={onBack} style={{fontSize:11,padding:'5px 11px'}}>Back</Btn></div>
       <div style={{display:'flex',gap:6,marginBottom:16}}><FBtn val="all" label="All"/><FBtn val="month" label="This month"/><FBtn val="year" label="This year"/></div>
       {filtered.length>=2&&(<div style={{marginBottom:16}}>
-        {/* Pot shelf — visual gallery of this period's reflections */}
-        <FadeIn><div style={{display:'flex',alignItems:'flex-end',gap:4,marginBottom:12,paddingBottom:8,borderBottom:`1px solid ${C.line}`,overflowX:'auto'}}>
+        {/* Pot shelf — one illustrated pot per reflection, shows variety of glazes */}
+        <FadeIn><div style={{display:'flex',alignItems:'flex-end',gap:5,paddingBottom:10,marginBottom:10,borderBottom:`1px solid ${C.line}`,overflowX:'auto'}}>
           {filtered.map((r,i)=>(
-            <div key={r.id} title={r.entryCard} style={{flexShrink:0,opacity:0.92,transition:'transform 0.15s',cursor:'pointer'}} onClick={()=>onView(r)}>
-              <Pot phase="blooming" size={36} cardLabel={r.entryCard}/>
+            <div key={r.id} title={r.entryCard||'reflection'} style={{flexShrink:0,cursor:'pointer',opacity:0.9}} onClick={()=>onView(r)}>
+              <Pot phase="blooming" size={38} {...derivePotVisual(r,i)}/>
             </div>
           ))}
         </div></FadeIn>
@@ -349,7 +760,7 @@ function Hist({items,onBack,onView,onDel}){
       {filtered.length===0?(<p style={{fontSize:13,color:C.ash,textAlign:'center',padding:'24px 0',fontFamily:'DM Sans,sans-serif'}}>No reflections in this period.</p>):(
         <div style={{display:'flex',flexDirection:'column',gap:7}}>
           {filtered.map((r,i)=>(<FadeIn key={r.id} delay={i*30}><div style={{background:C.cream,borderRadius:14,padding:'12px 14px',boxShadow:C.glow,border:`1px solid ${C.line}`,display:'flex',alignItems:'center',gap:10}}>
-            <Pot phase="blooming" size={32} cardLabel={r.entryCard}/>
+            <Pot phase="blooming" size={34} {...derivePotVisual(r,i)}/>
             <div style={{flex:1,minWidth:0}}><p style={{fontSize:13,margin:'0 0 2px',color:C.charcoal}}>{r.entryCard}</p><p style={{fontSize:11,color:C.ash,margin:0,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',fontFamily:'DM Sans,sans-serif'}}>{new Date(r.timestamp).toLocaleDateString('en-US',{month:'short',day:'numeric'})} · {r.userStory?.substring(0,50)}…</p></div>
             <Btn v="soft" onClick={()=>onView(r)} style={{fontSize:10,padding:'4px 10px'}}>View</Btn>
             <button onClick={()=>onDel(r.id)} style={{background:'transparent',border:'none',cursor:'pointer',color:C.ash,fontSize:16,lineHeight:1}}>×</button>
@@ -399,12 +810,13 @@ export default function Home(){
       {ld?<Dots/>:nm?(<><FadeIn delay={50}><div style={{background:C.cream,borderRadius:16,padding:16,boxShadow:C.glow,marginBottom:16,borderLeft:`3px solid ${C.terra}`,border:`1px solid ${C.line}`}}><p style={{fontSize:14,lineHeight:1.8,fontFamily:'DM Sans,sans-serif'}}>{dR}</p></div></FadeIn><FadeIn delay={120}><TA value={dT} onChange={setDT} placeholder="Add a bit more…" minH={80}/><ErrMsg err={err}/><div style={{textAlign:'right',marginTop:10}}><Btn onClick={async()=>{setLd(true);setErr('');const c=story+'\n\n'+dT;setStory(c);try{const raw=await ask(pDeep(selC.label,story,dR,dT));setS1(raw.replace('[READY]','').trim())}catch(e){setErr(e.message);setS1("Thank you. What feels most alive in what you've described?")}setNm(false);setLd(false)}} disabled={!dT.trim()}>Continue</Btn></div></FadeIn></>):(<><FadeIn delay={50}><Tag>Listening</Tag><div style={{background:C.cream,borderRadius:16,padding:16,boxShadow:C.glow,marginTop:8,marginBottom:16,borderLeft:`3px solid ${C.celadon}`,border:`1px solid ${C.line}`}}><p style={{fontSize:14,lineHeight:1.8,fontFamily:'DM Sans,sans-serif'}}>{s1}</p></div></FadeIn><FadeIn delay={120}><TA value={focal} onChange={setFocal} placeholder="Respond here…" minH={80}/><ErrMsg err={err}/><div style={{textAlign:'right',marginTop:10}}><Btn onClick={async()=>{setLd(true);setErr('');setStage('stage3');try{setRC(JSON.parse((await ask(pS3(selC.label,story,s1,focal))).replace(/```json|```/g,'').trim()))}catch{setRC([{label:'Another side',question:"Have there been moments where this didn't fit?"},{label:'The bigger picture',question:"Do any larger pressures come to mind?"},{label:'A moment that did not fit',question:"Was there a moment where something felt different?"},{label:'What matters most',question:"What does this say about what you care about?"}])}setLd(false)}} disabled={!focal.trim()}>Continue</Btn></div></FadeIn></>)}
     </div></div>)
 
-  if(stage==='stage3'){const ans=Object.values(cR).filter(v=>v?.trim()).length;return(<div style={W} ref={sr}><div style={I}><FadeIn><div style={{textAlign:'center',marginBottom:16}}><Pot phase="bisque" size={48} cardLabel={selC?.label}/></div></FadeIn><FadeIn><Progress stage={stage}/></FadeIn>{ld?<Dots/>:<><FadeIn><Tag>Exploring</Tag><p style={{fontSize:13,lineHeight:1.55,marginTop:6,marginBottom:16,color:C.stone,fontFamily:'DM Sans,sans-serif'}}>Take what resonates. Skip what doesn't.</p></FadeIn><div style={{display:'flex',flexDirection:'column',gap:8,marginBottom:20}}>{rC.map((c,i)=>{const op=oC===i,has=cR[c.label]?.trim();return(<FadeIn key={i} delay={40+i*35}><div style={{background:C.cream,borderRadius:16,border:`1.5px solid ${has?C.celadon:C.line}`,boxShadow:op?C.lift:C.glow,overflow:'hidden',transition:'all 0.2s'}}><button onClick={()=>setOC(op?null:i)} style={{width:'100%',textAlign:'left',padding:'12px 14px',background:'transparent',border:'none',cursor:'pointer',fontFamily:'DM Serif Display,Georgia,serif',display:'flex',alignItems:'center',gap:9}}><span style={{width:7,height:7,borderRadius:'50%',background:has?C.celadon:C.line,flexShrink:0,transition:'background 0.2s'}}/><span style={{fontSize:13,color:C.charcoal}}>{c.label}</span><span style={{marginLeft:'auto',fontSize:12,color:C.ash,transform:op?'rotate(180deg)':'',transition:'transform 0.2s'}}>▾</span></button>{op&&<div style={{padding:'0 14px 14px'}}><p style={{fontSize:12,color:C.ash,lineHeight:1.6,marginBottom:8,fontStyle:'italic',fontFamily:'DM Sans,sans-serif'}}>{c.question}</p><TA value={cR[c.label]||''} onChange={v=>setCR({...cR,[c.label]:v})} placeholder="Write as much or as little as you'd like…" minH={65}/></div>}</div></FadeIn>)})}</div><FadeIn delay={200}><ErrMsg err={err}/><div style={{textAlign:'right'}}><Btn onClick={async()=>{setLd(true);setErr('');setStage('stage4');try{setRvS(JSON.parse((await ask(pS4(selC.label,story,s1,focal,cR))).replace(/```json|```/g,'').trim()))}catch{setRvS([{thread:'A tension worth staying with',statement:'It seems like there is an important tension in what you shared.',opening:'What feels most unresolved about it?'},{thread:'Something may be shifting',statement:'Something may be shifting in how you understand this.',opening:'If that shift is real, what might it change?'},{thread:'What matters underneath',statement:'There may be something here about what you care about most.',opening:'What would honoring that actually look like?'},{thread:'Who you may be becoming',statement:'It could be that this moment is part of a longer change.',opening:'What feels different about how you see yourself now?'}])}setLd(false)}} disabled={ans===0}>Continue</Btn>{ans===0&&<p style={{fontSize:11,color:C.ash,marginTop:4,fontFamily:'DM Sans,sans-serif'}}>Respond to at least one</p>}</div></FadeIn></>}</div></div>)}
+  if(stage==='stage3'){const ans=Object.values(cR).filter(v=>v?.trim()).length;const _pv3=derivePotVisual({entryCard:selC?.label,userStory:story},0);return(<div style={W} ref={sr}><div style={I}><FadeIn><div style={{textAlign:'center',marginBottom:16}}><Pot phase="bisque" size={48} {..._pv3}/></div></FadeIn><FadeIn><Progress stage={stage}/></FadeIn>{ld?<Dots/>:<><FadeIn><Tag>Exploring</Tag><p style={{fontSize:13,lineHeight:1.55,marginTop:6,marginBottom:16,color:C.stone,fontFamily:'DM Sans,sans-serif'}}>Take what resonates. Skip what doesn't.</p></FadeIn><div style={{display:'flex',flexDirection:'column',gap:8,marginBottom:20}}>{rC.map((c,i)=>{const op=oC===i,has=cR[c.label]?.trim();return(<FadeIn key={i} delay={40+i*35}><div style={{background:C.cream,borderRadius:16,border:`1.5px solid ${has?C.celadon:C.line}`,boxShadow:op?C.lift:C.glow,overflow:'hidden',transition:'all 0.2s'}}><button onClick={()=>setOC(op?null:i)} style={{width:'100%',textAlign:'left',padding:'12px 14px',background:'transparent',border:'none',cursor:'pointer',fontFamily:'DM Serif Display,Georgia,serif',display:'flex',alignItems:'center',gap:9}}><span style={{width:7,height:7,borderRadius:'50%',background:has?C.celadon:C.line,flexShrink:0,transition:'background 0.2s'}}/><span style={{fontSize:13,color:C.charcoal}}>{c.label}</span><span style={{marginLeft:'auto',fontSize:12,color:C.ash,transform:op?'rotate(180deg)':'',transition:'transform 0.2s'}}>▾</span></button>{op&&<div style={{padding:'0 14px 14px'}}><p style={{fontSize:12,color:C.ash,lineHeight:1.6,marginBottom:8,fontStyle:'italic',fontFamily:'DM Sans,sans-serif'}}>{c.question}</p><TA value={cR[c.label]||''} onChange={v=>setCR({...cR,[c.label]:v})} placeholder="Write as much or as little as you'd like…" minH={65}/></div>}</div></FadeIn>)})}</div><FadeIn delay={200}><ErrMsg err={err}/><div style={{textAlign:'right'}}><Btn onClick={async()=>{setLd(true);setErr('');setStage('stage4');try{setRvS(JSON.parse((await ask(pS4(selC.label,story,s1,focal,cR))).replace(/```json|```/g,'').trim()))}catch{setRvS([{thread:'A tension worth staying with',statement:'It seems like there is an important tension in what you shared.',opening:'What feels most unresolved about it?'},{thread:'Something may be shifting',statement:'Something may be shifting in how you understand this.',opening:'If that shift is real, what might it change?'},{thread:'What matters underneath',statement:'There may be something here about what you care about most.',opening:'What would honoring that actually look like?'},{thread:'Who you may be becoming',statement:'It could be that this moment is part of a longer change.',opening:'What feels different about how you see yourself now?'}])}setLd(false)}} disabled={ans===0}>Continue</Btn>{ans===0&&<p style={{fontSize:11,color:C.ash,marginTop:4,fontFamily:'DM Sans,sans-serif'}}>Respond to at least one</p>}</div></FadeIn></>}</div></div>)}
 
-  if(stage==='stage4'){const done=rvS.length>0&&rvS.every((_,i)=>rvM[i]);return(<div style={W} ref={sr}><div style={I}><FadeIn><div style={{textAlign:'center',marginBottom:16}}><Pot phase="glazed" size={48} cardLabel={selC?.label}/></div></FadeIn><FadeIn><Progress stage={stage}/></FadeIn>{ld?<Dots/>:<><FadeIn><Tag color={C.ochre}>What's emerging</Tag><p style={{fontSize:13,lineHeight:1.55,marginTop:6,marginBottom:16,color:C.stone,fontFamily:'DM Sans,sans-serif'}}>Four possible threads. Mark what fits — or comes close.</p></FadeIn><div style={{display:'flex',flexDirection:'column',gap:10,marginBottom:20}}>{rvS.map((item,i)=>{const st=item?.statement||item,thread=item?.thread,opening=item?.opening;return(<FadeIn key={i} delay={40+i*35}><div style={{background:C.cream,borderRadius:16,padding:14,boxShadow:C.glow,border:`1.5px solid ${rvM[i]==='fits'?C.celadon:rvM[i]==='no'?C.terra:rvM[i]==='notquite'?C.ochre:C.line}`,transition:'border-color 0.2s'}}>{thread&&<p style={{fontSize:10,letterSpacing:'0.08em',textTransform:'uppercase',color:C.ash,marginBottom:5,fontFamily:'DM Sans,sans-serif'}}>{thread}</p>}<p style={{fontSize:13,lineHeight:1.7,marginBottom:6,fontFamily:'DM Sans,sans-serif'}}>{st}</p>{opening&&<p style={{fontSize:12,color:C.stone,lineHeight:1.6,marginBottom:8,fontStyle:'italic',fontFamily:'DM Sans,sans-serif',borderTop:`1px solid ${C.line}`,paddingTop:6}}>{opening}</p>}<div style={{display:'flex',gap:5}}>{[{k:'fits',l:'✓ Fits',c:C.celadon},{k:'notquite',l:'~ Close',c:C.ochre},{k:'no',l:'✗ Remove',c:C.terra}].map(o=><button key={o.k} onClick={()=>setRvM({...rvM,[i]:o.k})} style={{padding:'3px 10px',borderRadius:14,border:`1.5px solid ${rvM[i]===o.k?o.c:C.line}`,background:rvM[i]===o.k?o.c+'18':'transparent',color:rvM[i]===o.k?C.charcoal:C.ash,fontSize:11,fontFamily:'DM Sans,sans-serif',cursor:'pointer',transition:'all 0.15s'}}>{o.l}</button>)}</div></div></FadeIn>)})}</div><FadeIn delay={180}><div style={{textAlign:'right'}}><Btn onClick={()=>setStage('stage5')} disabled={!done}>Continue</Btn></div></FadeIn></>}</div></div>)}
+  if(stage==='stage4'){const done=rvS.length>0&&rvS.every((_,i)=>rvM[i]);const _pv4=derivePotVisual({entryCard:selC?.label,userStory:story},0);return(<div style={W} ref={sr}><div style={I}><FadeIn><div style={{textAlign:'center',marginBottom:16}}><Pot phase="glazed" size={48} {..._pv4}/></div></FadeIn><FadeIn><Progress stage={stage}/></FadeIn>{ld?<Dots/>:<><FadeIn><Tag color={C.ochre}>What's emerging</Tag><p style={{fontSize:13,lineHeight:1.55,marginTop:6,marginBottom:16,color:C.stone,fontFamily:'DM Sans,sans-serif'}}>Four possible threads. Mark what fits — or comes close.</p></FadeIn><div style={{display:'flex',flexDirection:'column',gap:10,marginBottom:20}}>{rvS.map((item,i)=>{const st=item?.statement||item,thread=item?.thread,opening=item?.opening;return(<FadeIn key={i} delay={40+i*35}><div style={{background:C.cream,borderRadius:16,padding:14,boxShadow:C.glow,border:`1.5px solid ${rvM[i]==='fits'?C.celadon:rvM[i]==='no'?C.terra:rvM[i]==='notquite'?C.ochre:C.line}`,transition:'border-color 0.2s'}}>{thread&&<p style={{fontSize:10,letterSpacing:'0.08em',textTransform:'uppercase',color:C.ash,marginBottom:5,fontFamily:'DM Sans,sans-serif'}}>{thread}</p>}<p style={{fontSize:13,lineHeight:1.7,marginBottom:6,fontFamily:'DM Sans,sans-serif'}}>{st}</p>{opening&&<p style={{fontSize:12,color:C.stone,lineHeight:1.6,marginBottom:8,fontStyle:'italic',fontFamily:'DM Sans,sans-serif',borderTop:`1px solid ${C.line}`,paddingTop:6}}>{opening}</p>}<div style={{display:'flex',gap:5}}>{[{k:'fits',l:'✓ Fits',c:C.celadon},{k:'notquite',l:'~ Close',c:C.ochre},{k:'no',l:'✗ Remove',c:C.terra}].map(o=><button key={o.k} onClick={()=>setRvM({...rvM,[i]:o.k})} style={{padding:'3px 10px',borderRadius:14,border:`1.5px solid ${rvM[i]===o.k?o.c:C.line}`,background:rvM[i]===o.k?o.c+'18':'transparent',color:rvM[i]===o.k?C.charcoal:C.ash,fontSize:11,fontFamily:'DM Sans,sans-serif',cursor:'pointer',transition:'all 0.15s'}}>{o.l}</button>)}</div></div></FadeIn>)})}</div><FadeIn delay={180}><div style={{textAlign:'right'}}><Btn onClick={()=>setStage('stage5')} disabled={!done}>Continue</Btn></div></FadeIn></>}</div></div>)}
 
   if(stage==='stage5'){
     const conf=rvS.filter((_,i)=>rvM[i]==='fits'||rvM[i]==='notquite').map(s=>s?.statement||s)
+    const _pv5=derivePotVisual({entryCard:selC?.label,userStory:story,confirmedStatements:conf},0)
     // Auto-recommend based on which thread category got 'fits':
     // idx 0 = newly seen → see | idx 1 = unresolved → keep | idx 2/3 = matters/becoming → carry
     const fitsIdx=rvS.findIndex((_,i)=>rvM[i]==='fits')
@@ -421,7 +833,7 @@ export default function Home(){
     const primary=S5_CARDS.find(c=>c.key===autoRec)
     const others=S5_CARDS.filter(c=>c.key!==autoRec)
     return(<div style={W} ref={sr}><div style={I}>
-      <FadeIn><div style={{textAlign:'center',marginBottom:16}}><Pot phase="glazed" size={48} cardLabel={selC?.label}/></div></FadeIn>
+      <FadeIn><div style={{textAlign:'center',marginBottom:16}}><Pot phase="glazed" size={48} {..._pv5}/></div></FadeIn>
       <FadeIn><Progress stage={stage}/></FadeIn>
       <FadeIn><Tag color={C.terra}>One more step</Tag><p style={{fontSize:13,lineHeight:1.55,marginTop:6,marginBottom:4,color:C.stone,fontFamily:'DM Sans,sans-serif'}}>Suggested for this reflection:</p></FadeIn>
       <ErrMsg err={err}/>
@@ -451,6 +863,6 @@ export default function Home(){
 
   if(stage==='artifact'){const d=sd();return(<div style={W} ref={sr}><div style={I}>{ld?<Dots/>:<FadeIn><Journey data={d} onEdit={t=>setOTx(t)} onExport={()=>dlFile(buildExportText(d),`reflection-${new Date().toISOString().slice(0,10)}.txt`)}/><div style={{display:'flex',justifyContent:'center',gap:8,marginTop:20}}><Btn onClick={async()=>{const d2=sd();const id=await saveReflection(d2);if(id)setSvd(id);setPast(await loadReflections());setStage('closing')}}>{svd?'Saved ✓':'Save & finish'}</Btn><Btn v="secondary" onClick={()=>setStage('closing')}>Finish</Btn></div></FadeIn>}</div></div>)}
 
-  if(stage==='closing')return(<div style={W} ref={sr}><div style={{...I,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',minHeight:'55vh'}}><FadeIn><div style={{textAlign:'center',maxWidth:320}}><Pot phase="blooming" size={64} cardLabel={selC?.label}/><p style={{fontSize:16,lineHeight:1.75,margin:'16px 0 6px'}}>This is yours.</p><p style={{fontSize:13,lineHeight:1.55,color:C.stone,marginBottom:4,fontFamily:'DM Sans,sans-serif'}}>To keep, to change, to come back to.</p><Sep/><p style={{fontSize:13,color:C.ash,marginBottom:22,fontFamily:'DM Sans,sans-serif'}}>Thank you for this time.</p><div style={{display:'flex',gap:8,justifyContent:'center',flexWrap:'wrap'}}><Btn v="secondary" onClick={()=>{reset();setStage('landing')}}>Home</Btn>{(svd||past.length>0)&&<Btn v="soft" onClick={()=>{setStage('history');setVw(null)}}>Past reflections</Btn>}</div></div></FadeIn></div></div>)
+  if(stage==='closing'){const _pvc=derivePotVisual({entryCard:selC?.label,userStory:story,confirmedStatements:rvS.filter((_,i)=>rvM[i]==='fits'||rvM[i]==='notquite').map(s=>s?.statement||s),outputType:oT},0);return(<div style={W} ref={sr}><div style={{...I,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',minHeight:'55vh'}}><FadeIn><div style={{textAlign:'center',maxWidth:320}}><Pot phase="blooming" size={64} {..._pvc} showFace/><p style={{fontSize:16,lineHeight:1.75,margin:'16px 0 6px'}}>This is yours.</p><p style={{fontSize:13,lineHeight:1.55,color:C.stone,marginBottom:4,fontFamily:'DM Sans,sans-serif'}}>To keep, to change, to come back to.</p><Sep/><p style={{fontSize:13,color:C.ash,marginBottom:22,fontFamily:'DM Sans,sans-serif'}}>Thank you for this time.</p><div style={{display:'flex',gap:8,justifyContent:'center',flexWrap:'wrap'}}><Btn v="secondary" onClick={()=>{reset();setStage('landing')}}>Home</Btn>{(svd||past.length>0)&&<Btn v="soft" onClick={()=>{setStage('history');setVw(null)}}>Past reflections</Btn>}</div></div></FadeIn></div></div>)}
   return null
 }
