@@ -237,11 +237,11 @@ function derivePotVisual(reflection = {}, idx = 0) {
 
 function defaultPotForPhase(phase) {
   const base = {
-    clay:    { bodyType: 'round', glazeStyle: 'wash', accent: 'terracotta', plantType: 'sprout', showFace: false },
-    shaped:  { bodyType: 'oval', glazeStyle: 'wash', accent: 'terracotta', plantType: 'pair', showFace: false },
-    bisque:  { bodyType: 'oval', glazeStyle: 'pooled', accent: 'honey', plantType: 'bud', showFace: false },
-    glazed:  { bodyType: 'round', glazeStyle: 'satin', accent: 'sage', plantType: 'bud', showFace: false },
-    blooming:{ bodyType: 'round', glazeStyle: 'satin', accent: 'honey', plantType: 'flower', showFace: true },
+    clay:    { bodyType: 'round', glazeStyle: 'wash', accent: 'terracotta', plantType: 'sprout',},
+    shaped:  { bodyType: 'oval', glazeStyle: 'wash', accent: 'terracotta', plantType: 'pair',},
+    bisque:  { bodyType: 'oval', glazeStyle: 'pooled', accent: 'honey', plantType: 'bud',},
+    glazed:  { bodyType: 'round', glazeStyle: 'satin', accent: 'sage', plantType: 'bud',},
+    blooming:{ bodyType: 'round', glazeStyle: 'satin', accent: 'honey', plantType: 'flower',},
   }
   return base[phase] || base.clay
 }
@@ -257,7 +257,6 @@ function Pot({
   groundedness = 0.6,
   vitality = 0.5,
   complexity = 0.3,
-  showFace = false,
 }) {
   const w = size
   const h = size
@@ -301,8 +300,7 @@ function Pot({
     : phase === 'glazed' ? 0.65
     : 0.72
 
-  const bloomVisible = phase === 'blooming'
-  const plantVisible = phase === 'glazed' || phase === 'blooming'
+  const plantVisible = phase === 'blooming'
 
   return (
     <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} fill="none" style={{ overflow: 'visible' }}>
@@ -333,85 +331,56 @@ function Pot({
 
       {glazeOpacity > 0 && (
         <>
+          {/* Full-body glaze wash — covers the entire exterior like real ceramic glaze */}
+          <path d={bodyPath} fill={`url(#glaze-${size}-${accent})`} opacity={glazeOpacity}/>
+
+          {/* Style-specific surface details on top of the base glaze */}
           {glazeStyle === 'wash' && (
+            /* Even wash — slightly lighter band near rim */
             <path
-              d={`M${w*0.31} ${neckY}
-                  C${w*0.3} ${h*0.43} ${w*0.31} ${h*0.46} ${w*0.34} ${h*0.5}
-                  C${w*0.39} ${h*0.58} ${w*0.61} ${h*0.58} ${w*0.67} ${h*0.5}
-                  C${w*0.7} ${h*0.46} ${w*0.7} ${h*0.43} ${w*0.69} ${neckY}
-                  Z`}
-              fill={`url(#glaze-${size}-${accent})`}
-              opacity={glazeOpacity}
+              d={`M${w*0.31} ${neckY} C${w*0.3} ${h*0.41} ${w*0.3} ${h*0.44} ${w*0.33} ${h*0.47} C${w*0.39} ${h*0.52} ${w*0.61} ${h*0.52} ${w*0.67} ${h*0.47} C${w*0.7} ${h*0.44} ${w*0.7} ${h*0.41} ${w*0.69} ${neckY} Z`}
+              fill={A.glazeSoft}
+              opacity={glazeOpacity * 0.35}
             />
           )}
 
           {glazeStyle === 'pooled' && (
+            /* Glaze pools thicker at bottom — darker lower band + drip streaks */
             <>
               <path
-                d={`M${w*0.3} ${neckY}
-                    C${w*0.3} ${h*0.41} ${w*0.28} ${h*0.5} ${w*0.32} ${h*0.56}
-                    C${w*0.35} ${h*0.6} ${w*0.38} ${h*0.58} ${w*0.38} ${h*0.53}
-                    C${w*0.38} ${h*0.47} ${w*0.35} ${h*0.43} ${w*0.34} ${neckY}
-                    Z`}
+                d={`M${w*0.22} ${bellyY} C${w*0.24} ${h*0.73} ${w*0.35} ${bottomY} ${w*0.5} ${bottomY} C${w*0.65} ${bottomY} ${w*0.76} ${h*0.73} ${w*0.78} ${bellyY} C${w*0.72} ${h*0.66} ${w*0.28} ${h*0.66} ${w*0.22} ${bellyY} Z`}
                 fill={A.glaze}
-                opacity={glazeOpacity}
+                opacity={glazeOpacity * 0.45}
               />
-              <path
-                d={`M${w*0.58} ${neckY}
-                    C${w*0.59} ${h*0.43} ${w*0.63} ${h*0.48} ${w*0.63} ${h*0.55}
-                    C${w*0.63} ${h*0.6} ${w*0.6} ${h*0.62} ${w*0.58} ${h*0.58}
-                    C${w*0.56} ${h*0.53} ${w*0.57} ${h*0.47} ${w*0.58} ${neckY}
-                    Z`}
-                fill={A.glaze}
-                opacity={glazeOpacity * 0.92}
-              />
-              <path
-                d={`M${w*0.31} ${neckY}
-                    C${w*0.38} ${h*0.43} ${w*0.62} ${h*0.43} ${w*0.69} ${neckY}
-                    L${w*0.69} ${h*0.42}
-                    C${w*0.61} ${h*0.4} ${w*0.39} ${h*0.4} ${w*0.31} ${h*0.42}
-                    Z`}
-                fill={A.glazeSoft}
-                opacity={glazeOpacity}
-              />
+              <path d={`M${w*0.38} ${h*0.55} Q${w*0.37} ${h*0.65} ${w*0.36} ${h*0.72}`} stroke={A.glaze} strokeWidth="2" strokeLinecap="round" opacity="0.5"/>
+              <path d={`M${w*0.62} ${h*0.52} Q${w*0.63} ${h*0.62} ${w*0.64} ${h*0.7}`} stroke={A.glaze} strokeWidth="1.5" strokeLinecap="round" opacity="0.4"/>
             </>
           )}
 
           {glazeStyle === 'drift' && (
+            /* Glaze drifts across the body diagonally */
             <path
-              d={`M${w*0.29} ${neckY}
-                  C${w*0.34} ${h*0.44} ${w*0.42} ${h*0.47} ${w*0.48} ${h*0.5}
-                  C${w*0.54} ${h*0.53} ${w*0.63} ${h*0.51} ${w*0.69} ${h*0.46}
-                  L${w*0.69} ${neckY}
-                  Z`}
-              fill={`url(#glaze-${size}-${accent})`}
-              opacity={glazeOpacity}
+              d={`M${w*0.26} ${neckY} C${w*0.28} ${h*0.45} ${w*0.38} ${h*0.52} ${w*0.52} ${h*0.56} C${w*0.65} ${h*0.6} ${w*0.74} ${h*0.56} ${w*0.74} ${neckY} Z`}
+              fill={A.glazeSoft}
+              opacity={glazeOpacity * 0.4}
             />
           )}
 
           {glazeStyle === 'satin' && (
-            <path
-              d={`M${w*0.29} ${neckY}
-                  C${w*0.27} ${h*0.43} ${w*0.28} ${h*0.49} ${w*0.33} ${h*0.55}
-                  C${w*0.39} ${h*0.62} ${w*0.61} ${h*0.62} ${w*0.67} ${h*0.55}
-                  C${w*0.72} ${h*0.49} ${w*0.73} ${h*0.43} ${w*0.71} ${neckY}
-                  Z`}
-              fill={`url(#glaze-${size}-${accent})`}
-              opacity={glazeOpacity}
+            /* Smooth satin — soft sheen band centered on the belly */
+            <ellipse
+              cx={w*0.5} cy={bellyY}
+              rx={w*0.22} ry={h*0.14}
+              fill={A.glazeSoft}
+              opacity={glazeOpacity * 0.3}
             />
           )}
 
+          {/* Specular shine — present on all glaze styles */}
           <ellipse cx={w*0.42} cy={h*0.48} rx={w*0.16} ry={h*0.18} fill={`url(#shine-${size}-${accent})`} opacity="0.65" />
         </>
       )}
 
-      {(showFace || bloomVisible) && (
-        <>
-          <circle cx={w*0.39} cy={h*0.63} r={w*0.025} fill="#6E6A4E" />
-          <circle cx={w*0.61} cy={h*0.63} r={w*0.025} fill="#6E6A4E" />
-          <path d={`M${w*0.43} ${h*0.695} C${w*0.46} ${h*0.73} ${w*0.54} ${h*0.73} ${w*0.57} ${h*0.695}`} stroke="#6E6A4E" strokeWidth="1.5" strokeLinecap="round" />
-        </>
-      )}
 
       {plantVisible && (
         <>
@@ -619,7 +588,7 @@ function Journey({data,onEdit,onExport}) {
   return(
     <div style={{background:C.cream,borderRadius:22,boxShadow:C.lift,overflow:'hidden',border:`1px solid ${C.line}`}}>
       <div style={{background:`linear-gradient(135deg,${C.celadonP}66,${C.slip})`,padding:'20px 20px 16px',display:'flex',alignItems:'center',gap:12}}>
-        <Pot phase="blooming" size={44} {...pv} showFace />
+        <Pot phase="blooming" size={44} {...pv} />
         <div>
           <Tag color={C.celadonD}>Realization Moments</Tag>
           <div style={{fontSize:12,color:C.ash,fontFamily:'DM Sans,sans-serif'}}>
