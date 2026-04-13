@@ -53,14 +53,11 @@ const pS4 = (card, story, s1, focal, cr) => {
 
 const pS5 = (type, conf, story, focal) => {
   const inst = {
-    meaning:   'MEANING NOTE: 4-6 sentences. What may be newly understood here? What may have changed in how the person sees this experience? Use tentative language throughout ("it seems like", "one possibility", "could it be").',
-    direction: 'DIRECTION NOTE: 4-6 sentences. What matters enough here that it could shape a next step, even a small one? Do not prescribe. Invite. Keep it open.',
-    retelling: 'RETELLING NOTE: 4-6 sentences. What story may now be getting thicker, fuller, or more accurate than the old one? Write in the person\'s own voice, using their language.',
-    future:    'FUTURE-SELF NOTE: Write 4-6 sentences from the voice of a slightly wiser future self who has stayed with this realization. Warm, not fully resolved — the growth is real but still in motion.',
-    question:  'LIVING QUESTION: Write 3-5 sentences that end with one strong open question worth carrying forward. The question should hold the tension, not resolve it. It should be worth living with.',
-    remember:  'REMEMBERING NOTE: Write 3-5 sentences the person could return to on a hard day, reminding them what they do not want to lose from this moment. Portable and personal.',
+    see:   'SEEING NOTE: 4-6 sentences. What may be newly visible or becoming clearer in how the person sees this experience? What has this shown them about themselves or their situation? Tentative throughout — "it seems like", "one possibility", "maybe what this is really showing". Use their own words. Do not conclude for them.',
+    carry: 'CARRYING NOTE: 4-6 sentences. What matters enough here that the person might not want to lose it? What could shape what comes next — even in a small way? Do not prescribe a direction. Stay close to what they said. Leave it open.',
+    keep:  'KEEPING NOTE: 3-4 sentences that end with one open question or one short reminder the person could return to on a harder day. The question should hold the tension without resolving it. The reminder should be portable and personal — something they could come back to.',
   }
-  return `${SYS}\n\nSTAGE: OUTPUT\nConfirmed: ${conf.map((s,i)=>`${i+1}. ${s}`).join('\n')}\nStory: "${story}"\nFocal: "${focal}"\n\n${inst[type]}\nBuild ONLY from confirmed statements. Their language. No polished therapeutic language.\nONLY output text, plain, no markdown.`
+  return `${SYS}\n\nSTAGE: CLOSING NOTE\nConfirmed: ${conf.map((s,i)=>`${i+1}. ${s}`).join('\n')}\nStory: "${story}"\nFocal: "${focal}"\n\n${inst[type]}\nBuild ONLY from their confirmed statements and their own language. No polished therapeutic phrasing.\nONLY plain text, no markdown.`
 }
 
 const pSummary = (period, items) => {
@@ -175,7 +172,7 @@ function Journey({data,onEdit,onExport}){
   const ce=data.cardResponses?Object.entries(data.cardResponses).filter(([,v])=>v?.trim()):[]
   if(ce.length)secs.push({k:'cards',icon:'❋',t:'Reflections',cards:ce})
   if(data.confirmedStatements?.length)secs.push({k:'conf',icon:'◈',t:'What stayed true',stmts:data.confirmedStatements})
-  const outLabel={meaning:'What I may be understanding now',direction:'What feels important enough to guide me',retelling:'The story I may be telling differently now',future:'A note from the self I may be becoming',question:'A question I want to keep living with',remember:'What I want to remember when I forget',reflective:'Looking back',firstperson:'In my words',values:'What matters now'}[data.outputType]||'Your artifact'
+  const outLabel={see:'What I\'m seeing now',carry:'What matters going forward',keep:'What I want to keep with me',meaning:'What I may be understanding now',direction:'What feels important enough to guide me',retelling:'The story I may be telling differently now',future:'A note from the self I may be becoming',question:'A question I want to keep living with',remember:'What I want to remember when I forget',reflective:'Looking back',firstperson:'In my words',values:'What matters now'}[data.outputType]||'Your artifact'
   return(
     <div style={{background:C.cream,borderRadius:22,boxShadow:C.lift,overflow:'hidden',border:`1px solid ${C.line}`}}>
       <div style={{background:`linear-gradient(135deg,${C.celadonP}66,${C.slip})`,padding:'20px 20px 16px',display:'flex',alignItems:'center',gap:12}}>
@@ -302,7 +299,51 @@ export default function Home(){
 
   if(stage==='stage4'){const done=rvS.length>0&&rvS.every((_,i)=>rvM[i]);return(<div style={W} ref={sr}><div style={I}><FadeIn><div style={{textAlign:'center',marginBottom:16}}><Pot phase="glazed" size={48}/></div></FadeIn><FadeIn><Progress stage={stage}/></FadeIn>{ld?<Dots/>:<><FadeIn><Tag color={C.ochre}>What's emerging</Tag><p style={{fontSize:13,lineHeight:1.55,marginTop:6,marginBottom:16,color:C.stone,fontFamily:'DM Sans,sans-serif'}}>Four possible threads. Mark what fits — or comes close.</p></FadeIn><div style={{display:'flex',flexDirection:'column',gap:10,marginBottom:20}}>{rvS.map((item,i)=>{const st=item?.statement||item,thread=item?.thread,opening=item?.opening;return(<FadeIn key={i} delay={40+i*35}><div style={{background:C.cream,borderRadius:16,padding:14,boxShadow:C.glow,border:`1.5px solid ${rvM[i]==='fits'?C.celadon:rvM[i]==='no'?C.terra:rvM[i]==='notquite'?C.ochre:C.line}`,transition:'border-color 0.2s'}}>{thread&&<p style={{fontSize:10,letterSpacing:'0.08em',textTransform:'uppercase',color:C.ash,marginBottom:5,fontFamily:'DM Sans,sans-serif'}}>{thread}</p>}<p style={{fontSize:13,lineHeight:1.7,marginBottom:6,fontFamily:'DM Sans,sans-serif'}}>{st}</p>{opening&&<p style={{fontSize:12,color:C.stone,lineHeight:1.6,marginBottom:8,fontStyle:'italic',fontFamily:'DM Sans,sans-serif',borderTop:`1px solid ${C.line}`,paddingTop:6}}>{opening}</p>}<div style={{display:'flex',gap:5}}>{[{k:'fits',l:'✓ Fits',c:C.celadon},{k:'notquite',l:'~ Close',c:C.ochre},{k:'no',l:'✗ Remove',c:C.terra}].map(o=><button key={o.k} onClick={()=>setRvM({...rvM,[i]:o.k})} style={{padding:'3px 10px',borderRadius:14,border:`1.5px solid ${rvM[i]===o.k?o.c:C.line}`,background:rvM[i]===o.k?o.c+'18':'transparent',color:rvM[i]===o.k?C.charcoal:C.ash,fontSize:11,fontFamily:'DM Sans,sans-serif',cursor:'pointer',transition:'all 0.15s'}}>{o.l}</button>)}</div></div></FadeIn>)})}</div><FadeIn delay={180}><div style={{textAlign:'right'}}><Btn onClick={()=>setStage('stage5')} disabled={!done}>Continue</Btn></div></FadeIn></>}</div></div>)}
 
-  if(stage==='stage5'){const conf=rvS.filter((_,i)=>rvM[i]==='fits'||rvM[i]==='notquite').map(s=>s?.statement||s);return(<div style={W} ref={sr}><div style={I}><FadeIn><div style={{textAlign:'center',marginBottom:16}}><Pot phase="glazed" size={48}/></div></FadeIn><FadeIn><Progress stage={stage}/></FadeIn><FadeIn><Tag color={C.terra}>Shape what emerged</Tag><p style={{fontSize:13,lineHeight:1.55,marginTop:6,marginBottom:18,color:C.stone,fontFamily:'DM Sans,sans-serif'}}>What kind of meaning-work feels right for now?</p></FadeIn><ErrMsg err={err}/><div style={{display:'flex',flexDirection:'column',gap:9}}>{[{key:'meaning',label:'What I may be understanding now',icon:'◎',preview:'A meaning note — what may have changed in how I see this',color:C.celadon},{key:'direction',label:'What feels important enough to guide me',icon:'◈',preview:'A direction note — what matters enough to shape a next step',color:C.ochre},{key:'retelling',label:'The story I may be telling differently now',icon:'◇',preview:'A retelling — the fuller, more accurate version of this',color:C.celadonD},{key:'future',label:'A note from the self I may be becoming',icon:'✦',preview:'A future-self note — written from slightly further along',color:C.terra},{key:'question',label:'A question I want to keep living with',icon:'~',preview:'A living question — worth carrying without resolving yet',color:C.ash},{key:'remember',label:'What I want to remember when I forget',icon:'◉',preview:'A remembering note — to return to on a harder day',color:C.ochreP}].map((o,i)=>(<FadeIn key={o.key} delay={60+i*40}><button onClick={async()=>{setOT(o.key);setLd(true);setErr('');setStage('artifact');try{setOTx(await ask(pS5(o.key,conf,story,focal)))}catch(e){setErr(e.message);setOTx("Your reflection is here. Take what fits, revise what doesn't.")}setLd(false)}} style={{width:'100%',textAlign:'left',padding:0,borderRadius:16,border:`1.5px solid ${C.line}`,background:C.cream,cursor:'pointer',boxShadow:C.glow,fontFamily:'DM Sans,sans-serif',transition:'all 0.2s',overflow:'hidden'}} onMouseEnter={e=>e.currentTarget.style.borderColor=o.color} onMouseLeave={e=>e.currentTarget.style.borderColor=C.line}><div style={{height:3,background:`linear-gradient(to right,${o.color},${o.color}44)`}}/><div style={{padding:'12px 14px'}}><div style={{display:'flex',alignItems:'center',gap:7,marginBottom:4}}><span style={{fontSize:12,color:o.color}}>{o.icon}</span><span style={{fontSize:13,fontFamily:'DM Serif Display,Georgia,serif',color:C.charcoal}}>{o.label}</span></div><p style={{fontSize:11,color:C.ash,lineHeight:1.5,margin:0,fontStyle:'italic'}}>{o.preview}</p></div></button></FadeIn>))}</div></div></div>)}
+  if(stage==='stage5'){
+    const conf=rvS.filter((_,i)=>rvM[i]==='fits'||rvM[i]==='notquite').map(s=>s?.statement||s)
+    // Auto-recommend based on which thread category got 'fits':
+    // idx 0 = newly seen → see | idx 1 = unresolved → keep | idx 2/3 = matters/becoming → carry
+    const fitsIdx=rvS.findIndex((_,i)=>rvM[i]==='fits')
+    const autoRec=fitsIdx===1?'keep':fitsIdx>=2?'carry':'see'
+    const S5_CARDS=[
+      {key:'see',label:'What I\'m seeing now',desc:'A gentle note about what may be becoming clearer.',example:'"Maybe what this is really showing me is…"',color:C.celadon,
+        icon:<svg width="22" height="22" viewBox="0 0 22 22" fill="none"><ellipse cx="11" cy="11" rx="7" ry="4.5" stroke={C.celadon} strokeWidth="1.4"/><circle cx="11" cy="11" r="2" fill={C.celadon} opacity="0.7"/><path d="M11 4V2M11 20v-2M4 11H2M20 11h-2" stroke={C.celadon} strokeWidth="1.2" strokeLinecap="round" opacity="0.4"/></svg>},
+      {key:'carry',label:'What matters going forward',desc:'A note about what feels important enough to guide you.',example:'"What I don\'t want to lose from this is…"',color:C.ochre,
+        icon:<svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M11 18V8" stroke={C.ochre} strokeWidth="1.4" strokeLinecap="round"/><path d="M11 8C11 8 8 5.5 8 3.5C8 2.5 9 2 11 2C13 2 14 2.5 14 3.5C14 5.5 11 8 11 8Z" fill={C.ochre} opacity="0.6"/><path d="M7 18h8" stroke={C.ochre} strokeWidth="1.4" strokeLinecap="round" opacity="0.4"/></svg>},
+      {key:'keep',label:'What I want to keep with me',desc:'A short line, question, or reminder to return to later.',example:'"The question I want to keep near me is…"',color:C.terra,
+        icon:<svg width="22" height="22" viewBox="0 0 22 22" fill="none"><rect x="5" y="4" width="12" height="14" rx="2" stroke={C.terra} strokeWidth="1.4"/><path d="M8 8h6M8 11h6M8 14h3" stroke={C.terra} strokeWidth="1.2" strokeLinecap="round" opacity="0.5"/><path d="M14 4v4l-3-1.5L8 8V4" fill={C.terra} opacity="0.35"/></svg>},
+    ]
+    const go=async(key)=>{setOT(key);setLd(true);setErr('');setStage('artifact');try{setOTx(await ask(pS5(key,conf,story,focal)))}catch(e){setErr(e.message);setOTx("Your reflection is here. Take what fits, revise what doesn't.")}setLd(false)}
+    const primary=S5_CARDS.find(c=>c.key===autoRec)
+    const others=S5_CARDS.filter(c=>c.key!==autoRec)
+    return(<div style={W} ref={sr}><div style={I}>
+      <FadeIn><div style={{textAlign:'center',marginBottom:16}}><Pot phase="glazed" size={48}/></div></FadeIn>
+      <FadeIn><Progress stage={stage}/></FadeIn>
+      <FadeIn><Tag color={C.terra}>One more step</Tag><p style={{fontSize:13,lineHeight:1.55,marginTop:6,marginBottom:4,color:C.stone,fontFamily:'DM Sans,sans-serif'}}>Suggested for this reflection:</p></FadeIn>
+      <ErrMsg err={err}/>
+      <FadeIn delay={60}>
+        <button onClick={()=>go(primary.key)} style={{width:'100%',textAlign:'left',padding:0,borderRadius:18,border:`2px solid ${primary.color}`,background:C.cream,cursor:'pointer',boxShadow:C.lift,fontFamily:'DM Sans,sans-serif',transition:'all 0.2s',overflow:'hidden',marginBottom:16}}>
+          <div style={{height:4,background:`linear-gradient(to right,${primary.color},${primary.color}44)`}}/>
+          <div style={{padding:'18px 18px 16px'}}>
+            <div style={{display:'flex',alignItems:'flex-start',gap:12,marginBottom:10}}>{primary.icon}<div><p style={{fontSize:16,fontFamily:'DM Serif Display,Georgia,serif',color:C.charcoal,marginBottom:3}}>{primary.label}</p><p style={{fontSize:12,color:C.stone,lineHeight:1.55,margin:0,fontFamily:'DM Sans,sans-serif'}}>{primary.desc}</p></div></div>
+            <p style={{fontSize:12,color:C.ash,lineHeight:1.5,margin:'0 0 0 34px',fontStyle:'italic',borderLeft:`2px solid ${primary.color}33`,paddingLeft:10}}>{primary.example}</p>
+          </div>
+        </button>
+      </FadeIn>
+      <FadeIn delay={120}><p style={{fontSize:11,color:C.ash,textAlign:'center',marginBottom:10,fontFamily:'DM Sans,sans-serif',letterSpacing:'0.04em'}}>or choose</p>
+        <div style={{display:'flex',gap:8}}>{others.map(o=>(
+          <button key={o.key} onClick={()=>go(o.key)} style={{flex:1,textAlign:'left',padding:0,borderRadius:14,border:`1.5px solid ${C.line}`,background:C.cream,cursor:'pointer',boxShadow:C.glow,fontFamily:'DM Sans,sans-serif',transition:'all 0.2s',overflow:'hidden'}} onMouseEnter={e=>e.currentTarget.style.borderColor=o.color} onMouseLeave={e=>e.currentTarget.style.borderColor=C.line}>
+            <div style={{height:2,background:o.color,opacity:0.5}}/>
+            <div style={{padding:'12px 12px 10px'}}>
+              <div style={{marginBottom:6}}>{o.icon}</div>
+              <p style={{fontSize:12,fontFamily:'DM Serif Display,Georgia,serif',color:C.charcoal,marginBottom:3,lineHeight:1.3}}>{o.label}</p>
+              <p style={{fontSize:10,color:C.ash,lineHeight:1.5,margin:0,fontStyle:'italic'}}>{o.example}</p>
+            </div>
+          </button>
+        ))}</div>
+      </FadeIn>
+    </div></div>)
+  }
 
   if(stage==='artifact'){const d=sd();return(<div style={W} ref={sr}><div style={I}>{ld?<Dots/>:<FadeIn><Journey data={d} onEdit={t=>setOTx(t)} onExport={()=>dlFile(buildExportText(d),`reflection-${new Date().toISOString().slice(0,10)}.txt`)}/><div style={{display:'flex',justifyContent:'center',gap:8,marginTop:20}}><Btn onClick={async()=>{const d2=sd();const id=await saveReflection(d2);if(id)setSvd(id);setPast(await loadReflections());setStage('closing')}}>{svd?'Saved ✓':'Save & finish'}</Btn><Btn v="secondary" onClick={()=>setStage('closing')}>Finish</Btn></div></FadeIn>}</div></div>)}
 
