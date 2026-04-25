@@ -1340,12 +1340,36 @@ export default function Home(){
     // Stage 3 hybrid layout: default 'focus' shows one question at a time with
     // prev/next; the user can flip to 'all' to peek at the full list. The
     // continue button + advance logic is identical in both modes.
+    // Stage 4 thread generation. The model is asked to return EXACTLY 4 items
+    // as a JSON array, but it occasionally returns an empty array, an object
+    // wrapper like {items:[…]} or {threads:[…]}, or something that fails to
+    // parse — which used to render as an empty Glazed page (just the prompt
+    // and a disabled Continue button, no threads). This wrapper:
+    //   1. strips ``` fences,
+    //   2. tries to parse,
+    //   3. unwraps a single-array property if the result is an object,
+    //   4. validates that each item has the {thread,statement,opening} shape,
+    //   5. falls back to T3.errS4Fallback (4 hand-written threads) if any of
+    //      those checks fail or yield fewer than 1 item.
+    // Net effect: the user always sees something to mark, even if the model
+    // misbehaves.
     const advance=async()=>{
       setLd(true);setErr('');setStage('stage4')
+      const fallback = T3.errS4Fallback
       try{
-        setRvS(JSON.parse((await ask(pS4(selC.label,story,s1,focal,cR,lang),{json:true})).replace(/```json|```/g,'').trim()))
+        const raw = await ask(pS4(selC.label,story,s1,focal,cR,lang),{json:true})
+        const cleaned = String(raw||'').replace(/```json|```/g,'').trim()
+        let parsed
+        try { parsed = JSON.parse(cleaned) } catch { parsed = null }
+        // Unwrap {items:[…]} / {threads:[…]} / first array-valued property.
+        if (parsed && !Array.isArray(parsed) && typeof parsed === 'object') {
+          const arrKey = Object.keys(parsed).find(k => Array.isArray(parsed[k]))
+          if (arrKey) parsed = parsed[arrKey]
+        }
+        const ok = Array.isArray(parsed) && parsed.length > 0 && parsed.every(x => x && (x.statement || x.thread))
+        setRvS(ok ? parsed : fallback)
       }catch{
-        setRvS(T3.errS4Fallback)
+        setRvS(fallback)
       }
       setLd(false)
     }
@@ -1428,10 +1452,14 @@ export default function Home(){
   }
 
   if(stage==='stage4'){
+    // Defense-in-depth: if rvS is somehow not a usable array of threads when
+    // we land here (e.g. a stale render after a hot reload), fall back to the
+    // 4 hand-written threads so the page is never blank.
+    const threads = (Array.isArray(rvS) && rvS.length > 0) ? rvS : TRANS[lang].errS4Fallback
     // Stage 4 min-2 rule (was: every thread must be marked). At least 2 marks
     // required; the rest are optional. This honors Reflective Ambiguity (Kim
     // et al. RA) by not forcing the person to commit to all four threads.
-    const markedCount=rvS.length>0?Object.values(rvM).filter(v=>v==='fits'||v==='notquite'||v==='no').length:0
+    const markedCount=threads.length>0?Object.values(rvM).filter(v=>v==='fits'||v==='notquite'||v==='no').length:0
     const done=markedCount>=2
     const _pv4=derivePotVisual({entryCard:selC?.label,userStory:story,checkinEmotions:checkinEm},0)
     return(<div style={W} ref={sr}><div style={I}>
@@ -1446,7 +1474,7 @@ export default function Home(){
           <p style={{fontSize:12,color:C.ash,marginBottom:16,fontFamily:'DM Sans,sans-serif',fontStyle:'italic'}}>{TRANS[lang].stage4MinHint}</p>
         </FadeIn>
         <div style={{display:'flex',flexDirection:'column',gap:10,marginBottom:20}}>
-          {rvS.map((item,i)=>{
+          {threads.map((item,i)=>{
             const st=item?.statement||item,thread=item?.thread,opening=item?.opening
             return(<FadeIn key={i} delay={40+i*35}>
               <div style={{background:C.cream,borderRadius:16,padding:14,boxShadow:C.glow,border:`1.5px solid ${rvM[i]==='fits'?C.celadon:rvM[i]==='no'?C.terra:rvM[i]==='notquite'?C.ochre:C.line}`,transition:'border-color 0.2s'}}>
@@ -1479,7 +1507,10 @@ export default function Home(){
   }
 
   if(stage==='stage5'){
-    const conf=rvS.map((s,i)=>{
+    // Mirror the stage4 fallback so that if stage4 had to render hand-written
+    // threads, stage5's "confirmed statements" are pulled from the same list.
+    const threads5 = (Array.isArray(rvS) && rvS.length > 0) ? rvS : TRANS[lang].errS4Fallback
+    const conf=threads5.map((s,i)=>{
       if(rvM[i]!=='fits'&&rvM[i]!=='notquite') return null
       const base=s?.statement||s
       const detail=stmtDetail[i]
