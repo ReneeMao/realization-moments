@@ -1,5 +1,7 @@
 # Realization Moments
 
+> 🌐 [中文 → README.zh.md](README.zh.md)
+
 A structured, non-clinical reflection tool for young adults navigating bicultural,
 diaspora, or immigrant identity. Each session moves through five stages and
 leaves the person with a small artifact — a "pot" they can keep, revise, or set
