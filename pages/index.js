@@ -950,6 +950,13 @@ const TRANS = {
         {id:'Guilty',label:'Guilty'},{id:'Grieving',label:'Grieving'},
       ]},
     ],
+    whereIStarted:'Where I started',whatIHeardBack:'What I heard back',goingDeeper:'Going deeper',
+    sectionReflections:'Reflections',whatStayedTrue:'What stayed true',yourArtifact:'Your artifact',
+    draftYours:'A draft. Yours to change.',copy:'Copy',exportTxt:'Export .txt',
+    synthesis:'Synthesis',provisionalReading:'A provisional reading. Yours to contest or keep.',
+    allTime:T.allTime,filterAll:'All',filterMonth:'This month',filterYear:'This year',
+    s5Desc:{see:'A gentle note about what may be becoming clearer.',carry:'A note about what feels important enough to guide you.',keep:'A short line, question, or reminder to return to later.'},
+    s5Example:{see:'“Maybe what this is really showing me is…”',carry:'“What I don\'t want to lose from this is…”',keep:'“The question I want to keep near me is…”'},
   },
   zh: {
     begin:'开始', pastReflections:'历史记录', back:'← 返回',
@@ -1041,6 +1048,13 @@ const TRANS = {
         {id:'Bored',label:'倦怠'},{id:'Lonely',label:'孤单'},{id:'Disappointed',label:'失望'},
         {id:'Guilty',label:'内疚'},{id:'Grieving',label:'哀恸'},
       ]},
+    whereIStarted:'我从哪里出发',whatIHeardBack:'我听到的回应',goingDeeper:'深入探索',
+    sectionReflections:'回应记录',whatStayedTrue:'留下来的部分',yourArtifact:'你的收获',
+    draftYours:'这是草稿，由你决定。',copy:'复制',exportTxt:'导出 .txt',
+    synthesis:'综合回顾',provisionalReading:'暂定的解读，留下或挑战，由你决定。',
+    allTime:'全部时间',filterAll:'全部',filterMonth:'本月',filterYear:'本年',
+    s5Desc:{see:'关于正在变得更清晰的事物，一句温和的记录。',carry:'关于足够重要、值得引导你前行的事物，一句记录。',keep:'一行短句、一个问题、或稍后回来的提醒。'},
+    s5Example:{see:'"也许这件事真正告诉我的是……"',carry:'"我不想从这段经历中失去的是……"',keep:'"我想随身携带的那个问题是……"'},
     ],
   }
 }
@@ -1050,7 +1064,8 @@ const langNote = (lang) => lang === 'zh'
   : ''
 
 /* ─── JOURNEY ARTIFACT ─── */
-function Journey({data,onEdit,onExport}) {
+function Journey({data,onEdit,onExport,lang='en'}) {
+  const T = TRANS[lang]
   const pv = derivePotVisual(data, 0)
   const [exp,setExp] = useState(null)
   const [editing,setEditing] = useState(false)
@@ -1059,20 +1074,20 @@ function Journey({data,onEdit,onExport}) {
   useEffect(()=>{ setDraft(data.outputText || '') },[data.outputText])
 
   const secs = [
-    {k:'story',icon:'✦',t:'Where I started',sub:data.entryCard,body:data.userStory},
-    {k:'heard',icon:'◇',t:'What I heard back',body:data.stage1Response},
-    {k:'deeper',icon:'↳',t:'Going deeper',body:data.focalPointText}
+    {k:'story',icon:'✦',t:T.whereIStarted,sub:data.entryCard,body:data.userStory},
+    {k:'heard',icon:'◇',t:T.whatIHeardBack,body:data.stage1Response},
+    {k:'deeper',icon:'↳',t:T.goingDeeper,body:data.focalPointText}
   ]
 
   const ce = data.cardResponses ? Object.entries(data.cardResponses).filter(([,v])=>v?.trim()) : []
-  if(ce.length) secs.push({k:'cards',icon:'❋',t:'Reflections',cards:ce})
-  if(data.confirmedStatements?.length) secs.push({k:'conf',icon:'◈',t:'What stayed true',stmts:data.confirmedStatements})
+  if(ce.length) secs.push({k:'cards',icon:'❋',t:T.sectionReflections,cards:ce})
+  if(data.confirmedStatements?.length) secs.push({k:'conf',icon:'◈',t:T.whatStayedTrue,stmts:data.confirmedStatements})
 
   const outLabel = {
-    see:'What I\'m seeing now',
-    carry:'What matters going forward',
-    keep:'What I want to keep with me',
-  }[data.outputType] || 'Your artifact'
+    see:T.seeLabel,
+    carry:T.carryLabel,
+    keep:T.keepLabel,
+  }[data.outputType] || T.yourArtifact
 
   return(
     <div style={{background:C.cream,borderRadius:22,boxShadow:C.lift,overflow:'hidden',border:`1px solid ${C.line}`}}>
@@ -1081,7 +1096,7 @@ function Journey({data,onEdit,onExport}) {
         <div>
           <Tag color={C.celadonD}>Realization Moments</Tag>
           <div style={{fontSize:14,color:C.ash,fontFamily:'DM Sans,sans-serif'}}>
-            {new Date(data.timestamp).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})}
+            {new Date(data.timestamp).toLocaleDateString(lang==='zh'?'zh-CN':'en-US',{month:'long',day:'numeric',year:'numeric'})}
           </div>
         </div>
       </div>
@@ -1151,12 +1166,12 @@ function Journey({data,onEdit,onExport}) {
           </div>
         )}
 
-        <p style={{fontSize:11,color:C.ash,fontStyle:'italic',margin:'8px 0 10px',fontFamily:'DM Sans,sans-serif'}}>A draft. Yours to change.</p>
+        <p style={{fontSize:11,color:C.ash,fontStyle:'italic',margin:'8px 0 10px',fontFamily:'DM Sans,sans-serif'}}>{T.draftYours}</p>
 
         <div style={{display:'flex',gap:6}}>
           {!editing && <Btn v="secondary" onClick={()=>setEditing(true)} style={{fontSize:11,padding:'5px 11px'}}>Edit</Btn>}
-          <Btn v="secondary" onClick={()=>navigator.clipboard?.writeText(data.outputText)} style={{fontSize:11,padding:'5px 11px'}}>Copy</Btn>
-          <Btn v="secondary" onClick={onExport} style={{fontSize:11,padding:'5px 11px'}}>Export .txt</Btn>
+          <Btn v="secondary" onClick={()=>navigator.clipboard?.writeText(data.outputText)} style={{fontSize:11,padding:'5px 11px'}}>{T.copy}</Btn>
+          <Btn v="secondary" onClick={onExport} style={{fontSize:11,padding:'5px 11px'}}>{T.exportTxt}</Btn>
         </div>
       </div>
 
@@ -1166,22 +1181,23 @@ function Journey({data,onEdit,onExport}) {
 }
 
 /* ─── SUMMARY CARD ─── */
-function SummaryCard({text,period,onExport}) {
+function SummaryCard({text,period,onExport,lang='en'}) {
+  const T = TRANS[lang]
   return(
     <div style={{background:C.cream,borderRadius:18,boxShadow:C.lift,overflow:'hidden',border:`1px solid ${C.celadonP}`,marginBottom:20}}>
       <div style={{background:`linear-gradient(135deg,${C.celadonP}88,${C.ochreP}66)`,padding:'14px 18px',display:'flex',alignItems:'center',gap:10}}>
         <Pot phase="blooming" size={36} {...defaultPotForPhase('blooming')} />
         <div>
-          <Tag color={C.celadonD}>Synthesis</Tag>
+          <Tag color={C.celadonD}>{T.synthesis}</Tag>
           <div style={{fontSize:11,color:C.stone,fontFamily:'DM Sans,sans-serif'}}>{period}</div>
         </div>
       </div>
       <div style={{padding:'16px 18px'}}>
         <p style={{fontSize:14,lineHeight:1.85,color:C.charcoal,margin:0,fontFamily:'DM Sans,sans-serif',fontStyle:'italic'}}>{text}</p>
-        <p style={{fontSize:11,color:C.ash,margin:'12px 0 10px',fontFamily:'DM Sans,sans-serif'}}>A provisional reading. Yours to contest or keep.</p>
+        <p style={{fontSize:11,color:C.ash,margin:'12px 0 10px',fontFamily:'DM Sans,sans-serif'}}>{T.provisionalReading}</p>
         <div style={{display:'flex',gap:6}}>
-          <Btn v="secondary" onClick={()=>navigator.clipboard?.writeText(text)} style={{fontSize:11,padding:'5px 11px'}}>Copy</Btn>
-          <Btn v="secondary" onClick={onExport} style={{fontSize:11,padding:'5px 11px'}}>Export .txt</Btn>
+          <Btn v="secondary" onClick={()=>navigator.clipboard?.writeText(text)} style={{fontSize:11,padding:'5px 11px'}}>{T.copy}</Btn>
+          <Btn v="secondary" onClick={onExport} style={{fontSize:11,padding:'5px 11px'}}>{T.exportTxt}</Btn>
         </div>
       </div>
     </div>
@@ -1190,17 +1206,18 @@ function SummaryCard({text,period,onExport}) {
 
 /* ─── HISTORY VIEW ─── */
 function Hist({items,onBack,onView,onDel,lang='en'}){
+  const T=TRANS[lang]
   const[filter,setFilter]=useState('all');const[summaryText,setSummaryText]=useState('');const[summaryLoading,setSummaryLoading]=useState(false);const[summaryError,setSummaryError]=useState('')
   const now=new Date()
   const filtered=items.filter(r=>{if(filter==='all')return true;const d=new Date(r.timestamp);if(filter==='month')return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();if(filter==='year')return d.getFullYear()===now.getFullYear();return true})
-  const periodLabel=filter==='month'?now.toLocaleDateString('en-US',{month:'long',year:'numeric'}):filter==='year'?String(now.getFullYear()):'All time'
+  const periodLabel=filter==='month'?now.toLocaleDateString(lang==='zh'?'zh-CN':'en-US',{month:'long',year:'numeric'}):filter==='year'?String(now.getFullYear()):'All time'
   const generateSummary=async()=>{if(!filtered.length)return;setSummaryLoading(true);setSummaryError('');setSummaryText('');try{const text=await ask(pSummary(periodLabel,filtered,lang));setSummaryText(text);await saveSummary({period:filter,periodLabel,summaryText:text})}catch(e){setSummaryError(e.message||TRANS[lang].errGenericSummary)}setSummaryLoading(false)}
   const FBtn=({val,label})=><button onClick={()=>{setFilter(val);setSummaryText('');setSummaryError('')}} style={{padding:'5px 14px',borderRadius:14,border:`1.5px solid ${filter===val?C.celadon:C.line}`,background:filter===val?C.celadonP+'33':'transparent',color:filter===val?C.celadonD:C.ash,fontSize:11,fontFamily:'DM Sans,sans-serif',cursor:'pointer',transition:'all 0.15s'}}>{label}</button>
-  if(!items.length)return(<div style={{textAlign:'center',padding:'48px 16px'}}><Pot phase="clay" size={48}/><p style={{color:C.ash,fontSize:15,margin:'12px 0 16px',fontFamily:'DM Sans,sans-serif'}}>No reflections yet.</p><Btn v="secondary" onClick={onBack}>Back</Btn></div>)
+  if(!items.length)return(<div style={{textAlign:'center',padding:'48px 16px'}}><Pot phase="clay" size={48}/><p style={{color:C.ash,fontSize:15,margin:'12px 0 16px',fontFamily:'DM Sans,sans-serif'}}>{T.noReflections}</p><Btn v="secondary" onClick={onBack}>{T.back}</Btn></div>)
   return(
     <div>
-      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:16}}><h2 style={{fontSize:17,fontWeight:400,margin:0}}>Past reflections</h2><Btn v="secondary" onClick={onBack} style={{fontSize:11,padding:'5px 11px'}}>Back</Btn></div>
-      <div style={{display:'flex',gap:6,marginBottom:16}}><FBtn val="all" label="All"/><FBtn val="month" label="This month"/><FBtn val="year" label="This year"/></div>
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:16}}><h2 style={{fontSize:17,fontWeight:400,margin:0}}>{T.histTitle}</h2><Btn v="secondary" onClick={onBack} style={{fontSize:11,padding:'5px 11px'}}>{T.back}</Btn></div>
+      <div style={{display:'flex',gap:6,marginBottom:16}}><FBtn val="all" label={T.filterAll}/><FBtn val="month" label={T.filterMonth}/><FBtn val="year" label={T.filterYear}/></div>
       {filtered.length>=2&&(<div style={{marginBottom:16}}>
         {/* Pot shelf — one illustrated pot per reflection, shows variety of glazes */}
         <FadeIn><div style={{display:'flex',alignItems:'flex-end',gap:5,paddingBottom:10,marginBottom:10,borderBottom:`1px solid ${C.line}`,overflowX:'auto'}}>
@@ -1213,7 +1230,7 @@ function Hist({items,onBack,onView,onDel,lang='en'}){
         {!summaryText&&!summaryLoading&&(<FadeIn><div style={{background:C.slip,borderRadius:14,padding:'12px 14px',border:`1px dashed ${C.celadonP}`,display:'flex',alignItems:'center',justifyContent:'space-between',gap:10,flexWrap:'wrap'}}><div><p style={{fontSize:12,color:C.stone,fontFamily:'DM Sans,sans-serif',margin:'0 0 2px'}}>{filtered.length} reflection{filtered.length>1?'s':''} · {periodLabel}</p><p style={{fontSize:11,color:C.ash,fontFamily:'DM Sans,sans-serif',margin:0}}>Synthesize themes across this period</p></div><Btn onClick={generateSummary} style={{fontSize:11,padding:'7px 14px',whiteSpace:'nowrap'}}>Synthesize ✦</Btn></div></FadeIn>)}
         {summaryLoading&&(<div style={{background:C.slip,borderRadius:14,padding:'12px 14px'}}><p style={{fontSize:12,color:C.ash,fontFamily:'DM Sans,sans-serif',marginBottom:4}}>Reading across your reflections…</p><Dots/></div>)}
         {summaryError&&(<div style={{background:C.terraP+'44',borderRadius:14,padding:'12px 14px',border:`1px solid ${C.terra}44`,marginBottom:8}}><p style={{fontSize:12,color:C.terra,fontFamily:'DM Sans,sans-serif'}}>{summaryError}</p></div>)}
-        {summaryText&&(<FadeIn><SummaryCard text={summaryText} period={periodLabel} onExport={()=>dlFile(`REALIZATION MOMENTS — SYNTHESIS\n${periodLabel}\n\n${summaryText}\n\nA provisional reading. Yours to contest or keep.`,`synthesis-${filter}-${new Date().toISOString().slice(0,10)}.txt`)}/></FadeIn>)}
+        {summaryText&&(<FadeIn><SummaryCard lang={lang} text={summaryText} period={periodLabel} onExport={()=>dlFile(`REALIZATION MOMENTS — SYNTHESIS\n${periodLabel}\n\n${summaryText}\n\nA provisional reading. Yours to contest or keep.`,`synthesis-${filter}-${new Date().toISOString().slice(0,10)}.txt`)}/></FadeIn>)}
       </div>)}
       {filtered.length===0?(<p style={{fontSize:15,color:C.ash,textAlign:'center',padding:'24px 0',fontFamily:'DM Sans,sans-serif'}}>No reflections in this period.</p>):(
         <div style={{display:'flex',flexDirection:'column',gap:7}}>
@@ -1257,7 +1274,7 @@ export default function Home(){
     </div></div></>)
 
   if(stage==='history'){
-    if(vw)return(<div style={W} ref={sr}><div style={I}><FadeIn><Btn v="secondary" onClick={()=>setVw(null)} style={{fontSize:11,padding:'5px 11px',marginBottom:12}}>← Back</Btn><Journey data={vw} onEdit={async t=>{await updateReflectionOutput(vw.id,t);setVw({...vw,outputText:t});setPast(await loadReflections())}} onExport={()=>dlFile(buildExportText(vw),`reflection-${new Date(vw.timestamp).toISOString().slice(0,10)}.txt`)}/></FadeIn></div></div>)
+    if(vw)return(<div style={W} ref={sr}><div style={I}><FadeIn><Btn v="secondary" onClick={()=>setVw(null)} style={{fontSize:11,padding:'5px 11px',marginBottom:12}}>← Back</Btn><Journey data={vw} lang={lang} onEdit={async t=>{await updateReflectionOutput(vw.id,t);setVw({...vw,outputText:t});setPast(await loadReflections())}} onExport={()=>dlFile(buildExportText(vw),`reflection-${new Date(vw.timestamp).toISOString().slice(0,10)}.txt`)}/></FadeIn></div></div>)
     return(<div style={W} ref={sr}><div style={I}><Hist items={past} lang={lang} onBack={()=>setStage('landing')} onView={r=>setVw(r)} onDel={async id=>{await deleteReflection(id);setPast(await loadReflections())}}/></div></div>)
   }
 
@@ -1555,11 +1572,11 @@ export default function Home(){
     const fitsIdx=rvS.findIndex((_,i)=>rvM[i]==='fits')
     const autoRec=fitsIdx===1?'keep':fitsIdx>=2?'carry':'see'
     const S5_CARDS=[
-      {key:'see',label:'What I\'m seeing now',desc:'A gentle note about what may be becoming clearer.',example:'"Maybe what this is really showing me is…"',color:C.celadon,
+      {key:'see',label:T.seeLabel,desc:T.s5Desc.see,example:T.s5Example.see,_ex:'"Maybe what this is really showing me is…"',color:C.celadon,
         icon:<svg width="22" height="22" viewBox="0 0 22 22" fill="none"><ellipse cx="11" cy="11" rx="7" ry="4.5" stroke={C.celadon} strokeWidth="1.4"/><circle cx="11" cy="11" r="2" fill={C.celadon} opacity="0.7"/><path d="M11 4V2M11 20v-2M4 11H2M20 11h-2" stroke={C.celadon} strokeWidth="1.2" strokeLinecap="round" opacity="0.4"/></svg>},
-      {key:'carry',label:'What matters going forward',desc:'A note about what feels important enough to guide you.',example:'"What I don\'t want to lose from this is…"',color:C.ochre,
+      {key:'carry',label:T.carryLabel,desc:T.s5Desc.carry,example:T.s5Example.carry,_ex:'"What I don\'t want to lose from this is…"',color:C.ochre,
         icon:<svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M11 18V8" stroke={C.ochre} strokeWidth="1.4" strokeLinecap="round"/><path d="M11 8C11 8 8 5.5 8 3.5C8 2.5 9 2 11 2C13 2 14 2.5 14 3.5C14 5.5 11 8 11 8Z" fill={C.ochre} opacity="0.6"/><path d="M7 18h8" stroke={C.ochre} strokeWidth="1.4" strokeLinecap="round" opacity="0.4"/></svg>},
-      {key:'keep',label:'What I want to keep with me',desc:'A short line, question, or reminder to return to later.',example:'"The question I want to keep near me is…"',color:C.terra,
+      {key:'keep',label:T.keepLabel,desc:T.s5Desc.keep,example:T.s5Example.keep,_ex:'"The question I want to keep near me is…"',color:C.terra,
         icon:<svg width="22" height="22" viewBox="0 0 22 22" fill="none"><rect x="5" y="4" width="12" height="14" rx="2" stroke={C.terra} strokeWidth="1.4"/><path d="M8 8h6M8 11h6M8 14h3" stroke={C.terra} strokeWidth="1.2" strokeLinecap="round" opacity="0.5"/><path d="M14 4v4l-3-1.5L8 8V4" fill={C.terra} opacity="0.35"/></svg>},
     ]
     const go=async(key)=>{setOT(key);setLd(true);setErr('');setStage('artifact');try{setOTx(await ask(pS5(key,conf,story,focal,lang)))}catch(e){setErr(e.message);setOTx(TRANS[lang].errS5)}setLd(false)}
