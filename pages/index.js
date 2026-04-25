@@ -263,11 +263,13 @@ const pSummary = (period, items, lang) => {
 }
 
 /* ─── API CALL ─── */
-async function ask(prompt) {
+// opts.json — set true for prompts that return structured JSON (pS3, pS4).
+// Lower temperature on the server reduces malformed-JSON fallbacks.
+async function ask(prompt, opts = {}) {
   const r = await fetch('/api/reflect', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ prompt }),
+    body: JSON.stringify({ prompt, json: !!opts.json }),
   })
   if (!r.ok) {
     const e = await r.json().catch(() => ({}))
@@ -334,25 +336,83 @@ function derivePotVisual(reflection = {}, idx = 0) {
   const openness = clamp(0.35 + depth * 0.4 + ((seed % 7) / 30), 0.25, 0.95)
   const groundedness = clamp(0.4 + certainty * 0.35 + (((seed >> 3) % 7) / 40), 0.25, 0.95)
   const vitality = clamp(0.3 + depth * 0.25 + certainty * 0.25 + (((seed >> 6) % 7) / 35), 0.2, 0.95)
-  const complexity = clamp(0.25 + ((story.match(/\bbut\b|\bthough\b|\bhowever\b|\band\b/gi)?.length || 0) / 8), 0.1, 0.95)
+  // Complexity counts ambivalent / contrastive conjunctions. Expanded to include
+  // "yet", "still", "except", "although" — common in ambivalent diaspora writing.
+  const complexity = clamp(
+    0.25 +
+      ((story.match(/\bbut\b|\bthough\b|\bhowever\b|\band\b|\byet\b|\bstill\b|\bexcept\b|\balthough\b/gi)?.length || 0) / 8),
+    0.1, 0.95
+  )
 
   const accents = ['sage', 'honey', 'terracotta', 'bluegrey', 'olive', 'lavender']
   const bodies = ['round', 'oval', 'tall']
   const glazes = ['wash', 'pooled', 'drift', 'satin']
   const plants = ['sprout', 'pair', 'bud', 'flower', 'branch']
 
+  // ── Accent (glaze color) from Schwartz value categories ──────────────────
+  // Maps the four Schwartz value supercategories from Emotional Experiences.xlsx
+  // onto our six-accent palette. When a story names values (e.g. "I want
+  // freedom" → Openness-to-change → lavender), the accent reflects that.
+  // Ties go to the higher-scoring category; if nothing matches, we fall back
+  // to the original keyword-based emotional palette (terracotta/bluegrey are
+  // reserved for emotion-coded language: grief/hurt/courage, clarity/distance).
+  const VALUE_KEYWORDS = {
+    // Conservation: security, conformity, tradition — rootedness
+    olive:    /\b(security|peace|certainty|stability|family|tradition|trust|safety|loyal(?:ty)?|discipline|conform(?:ity)?|authentic(?:ity)?|health|home)\b/gi,
+    // Self-Enhancement: achievement, power — vitality reaching outward
+    honey:    /\b(growth|achievement|ambition|competence|excellence|wealth|success|control|power|influence|status|recognition|ambitious)\b/gi,
+    // Self-Transcendence: benevolence, universalism — care
+    sage:     /\b(love|compassion|kindness|care|caring|helpfulness|justice|equality|fairness|contribution|commitment|wisdom|inner harmony|acceptance|ethics|appreciation|gratitude|empathy|service|meaning(?:ful)?)\b/gi,
+    // Openness to change: self-direction, stimulation, hedonism — becoming
+    lavender: /\b(creativity|creative|curiosity|curious|challenge|adventure|independence|independent|freedom|free|exploration|discover(?:y|ing)?|novelty|pleasure|self[- ]direction|courage(?:ous)?|privacy|intelligence)\b/gi,
+  }
+  // Emotion-coded fallback palette — when no Schwartz value is named, these
+  // catch the older emotional-quality language.
+  const EMOTION_ACCENT_KEYWORDS = {
+    terracotta: /\b(grief|grieving|honest|tender|hurt|hurting|raw|reckon(?:ing)?)\b/gi,
+    bluegrey:   /\b(truth|clarity|clear|space|distance|perspective|step ?back|see(?:ing)? clearly)\b/gi,
+  }
   let accent = accents[seed % accents.length]
-  if (/care|gentle|soft|healing|rest/i.test(story)) accent = 'sage'
-  else if (/hope|warm|alive|gratitude|light/i.test(story)) accent = 'honey'
-  else if (/grief|honest|tender|hurt|courage/i.test(story)) accent = 'terracotta'
-  else if (/truth|clarity|space|reflect/i.test(story)) accent = 'bluegrey'
-  else if (/protect|root|endure|steady/i.test(story)) accent = 'olive'
-  else if (/uncertain|ambivalent|becoming|in between/i.test(story)) accent = 'lavender'
+  let accentScore = 0
+  for (const [name, re] of Object.entries(VALUE_KEYWORDS)) {
+    const score = (story.match(re) || []).length
+    if (score > accentScore) { accentScore = score; accent = name }
+  }
+  // Only consult the emotion-coded fallback when no Schwartz value scored.
+  if (accentScore === 0) {
+    for (const [name, re] of Object.entries(EMOTION_ACCENT_KEYWORDS)) {
+      const score = (story.match(re) || []).length
+      if (score > accentScore) { accentScore = score; accent = name }
+    }
+  }
 
-  let bodyType = bodies[seed % bodies.length]
-  if (groundedness > 0.7) bodyType = 'round'
-  else if (openness > 0.7 && groundedness < 0.5) bodyType = 'tall'
-  else if (complexity > 0.55) bodyType = 'oval'
+  // ── Body type from Ekman-style emotion categories ────────────────────────
+  // Five core emotion families from Emotional Experiences.xlsx. Each maps to
+  // one of the three pot bodies based on the felt posture of that emotion:
+  //   • happy / loving / settled  → round  (grounded, settled)
+  //   • surprised / fearful       → tall   (reaching, alert, open-upward)
+  //   • angry / sad               → oval   (multiple internal threads)
+  // The geometry-based fallback (groundedness/openness/complexity) only
+  // takes over when no emotion words are detected — so a story that says
+  // "I felt anxious and small" overrides any seed-driven default.
+  const EMOTION_BODY_KEYWORDS = {
+    round: /\b(tranquil|calm|peace(?:ful)?|content|settled|grounded|joy(?:ful)?|loving|love|warm|gratitude|grateful|relief|relieved|comfort(?:ed|able)?)\b/gi,
+    tall:  /\b(surpris(?:ed|e)|awe(?:d|some)?|amazed|excited|excitement|wonder|hopeful|interested|curious|alert|eager|anxious|anxiety|afraid|fear(?:ful)?|nervous|scared|worried|vulnerable|vulnerability)\b/gi,
+    oval:  /\b(angry|anger|frustrat(?:ed|ion)|resent(?:ful|ment)?|hate(?:ful)?|contempt(?:uous)?|annoyed|sad(?:ness)?|lonely|loneliness|grieving|grief|hopeless|disappoint(?:ed|ment)?|ashamed|shame|guilt(?:y)?|hurt|heavy|empty|lost|conflicted|confus(?:ed|ion))\b/gi,
+  }
+  let bodyType = null
+  let bodyScore = 0
+  for (const [name, re] of Object.entries(EMOTION_BODY_KEYWORDS)) {
+    const score = (story.match(re) || []).length
+    if (score > bodyScore) { bodyScore = score; bodyType = name }
+  }
+  if (bodyType === null) {
+    // Geometry fallback (preserved from the original implementation)
+    bodyType = bodies[seed % bodies.length]
+    if (groundedness > 0.7) bodyType = 'round'
+    else if (openness > 0.7 && groundedness < 0.5) bodyType = 'tall'
+    else if (complexity > 0.55) bodyType = 'oval'
+  }
 
   let plantType = plants[(seed >> 2) % plants.length]
   if (vitality < 0.38) plantType = 'sprout'
@@ -737,7 +797,41 @@ const TRANS = {
       {label:'Something that feels different lately', nudge:"What feels different about you, or how you see things? Even something subtle counts."},
       {label:'Something someone said that stayed with me', nudge:"What did they say? What was the situation? You don't need to know why it stuck."},
       {label:'Two parts of me want different things', nudge:"What does each part want? What does it feel like to be in between?"},
+      {label:'A thought, feeling, or sensation I am having right now.', nudge:"What's here in you right now? A mood, a thought, a body sensation — anything you notice. You don't need to know what it means."},
     ],
+    // Consent page (was previously hardcoded English in JSX)
+    consent: {
+      whatIsBody:    'A structured space to reflect on a realization moment — something that shifted how you understand your experience. The AI helps you stay with your story, notice what matters, and leave with something that still belongs to you.',
+      whatIsNotBody: 'This is not therapy, counseling, crisis support, or clinical care. It cannot diagnose anything or make decisions about your wellbeing. It is not a replacement for human connection or professional help. If you are in distress, please reach out to someone who can actually be with you.',
+      privacyBody:   "Please avoid entering your full name, specific schools, workplaces, locations, or immigration details. Your story doesn't need those to be meaningful here — and diaspora stories can be uniquely identifiable even without names. What you write is processed by AI (OpenAI) and stored locally on your device only if you choose to save it. Outputs are AI-generated and may be incomplete or wrong.",
+      safetyBody:    'If your writing suggests you are in danger, crisis, or severe distress, the tool will pause and direct you to human support. It will not attempt to hold crisis material within the reflection flow.',
+    },
+    // Stage 3 hybrid layout
+    stage3SeeAll: 'See all questions',
+    stage3FocusOne: 'Focus on one',
+    stage3Next: 'Next',
+    stage3Prev: 'Previous',
+    stage3RespondAtLeastOne: 'Respond to at least one',
+    stage3OneOf: (i, n) => `Question ${i} of ${n}`,
+    // Stage 4 min-2 rule
+    stage4MinHint: 'Mark at least 2 threads to continue. The rest are optional.',
+    // Errors / fallbacks (used when /api/reflect fails)
+    errGenericSummary: 'Could not generate synthesis.',
+    errS1Short: 'Thank you for sharing that. Can you say a bit more about a specific moment?',
+    errS1Deep:  "Thank you. What feels most alive in what you've described?",
+    errS3Fallback: [
+      {label:'Another side',                question:"Have there been moments where this didn't fit?"},
+      {label:'The bigger picture',          question:'Do any larger pressures come to mind?'},
+      {label:'A moment that did not fit',   question:'Was there a moment where something felt different?'},
+      {label:'What matters most',           question:'What does this say about what you care about?'},
+    ],
+    errS4Fallback: [
+      {thread:'A tension worth staying with',  statement:'It seems like there is an important tension in what you shared.', opening:'What feels most unresolved about it?'},
+      {thread:'Something may be shifting',     statement:'Something may be shifting in how you understand this.',           opening:'If that shift is real, what might it change?'},
+      {thread:'What matters underneath',       statement:'There may be something here about what you care about most.',     opening:'What would honoring that actually look like?'},
+      {thread:'Who you may be becoming',       statement:'It could be that this moment is part of a longer change.',        opening:'What feels different about how you see yourself now?'},
+    ],
+    errS5: "Your reflection is here. Take what fits, revise what doesn't.",
   },
   zh: {
     begin:'开始', pastReflections:'历史记录', back:'← 返回',
@@ -771,7 +865,37 @@ const TRANS = {
       {label:'最近感觉有些不同的事', nudge:'你或你看待事物的方式，有什么不一样？哪怕是微小的变化都算。'},
       {label:'某人说的话，一直留在我心里', nudge:'他们说了什么？是什么情况？不需要知道为什么它还在。'},
       {label:'我内心有两个部分想要不同的东西', nudge:'每个部分想要什么？身处两者之间是什么感觉？'},
+      {label:'我此刻的一个想法、感受或身体感觉。', nudge:'此刻你身体或心里有什么？情绪、念头、身体的感受 — 都可以。不需要知道它是什么意思。'},
     ],
+    consent: {
+      whatIsBody:    '一个有结构的反思空间，用来停留在一个"领悟时刻" — 一些让你对自己的经验有了不同理解的瞬间。AI 会陪你停在你的故事里，留意什么对你重要，最后留下一份仍然属于你自己的东西。',
+      whatIsNotBody: '这不是心理治疗、咨询、危机支持或临床照护。它无法做出诊断，也不能替你决定与你的身心健康有关的事。它不能替代真正的人际连结或专业帮助。如果你正处在困境之中，请联系一个能真正陪伴你的人。',
+      privacyBody:   '请尽量不要写下你的全名、具体的学校、工作地点、住址或移民身份等可识别身份的细节。你的故事不需要这些就已经有意义 — 而且离散群体的故事即使没有名字也可能是高度可识别的。你写下的内容会被 AI（OpenAI）处理；只有当你选择保存时，才会存储在本设备上。AI 生成的回应可能不完整或不正确。',
+      safetyBody:    '如果你的文字显示你处在危险、危机或严重痛苦中，本工具会暂停反思流程，并把你引导到真正的人类支持。它不会试图在反思流程内承接危机内容。',
+    },
+    stage3SeeAll: '查看全部问题',
+    stage3FocusOne: '一次只看一个',
+    stage3Next: '下一题',
+    stage3Prev: '上一题',
+    stage3RespondAtLeastOne: '至少回答一个',
+    stage3OneOf: (i, n) => `第 ${i} / ${n} 题`,
+    stage4MinHint: '至少标记 2 条线索以继续。其余可以留空。',
+    errGenericSummary: '无法生成回顾。',
+    errS1Short: '谢谢你愿意写下来。可以再多说一些某个具体时刻吗？',
+    errS1Deep:  '谢谢你。你刚刚写下的内容里，哪一部分现在感觉最鲜活？',
+    errS3Fallback: [
+      {label:'另一面',           question:'有没有某些时刻，这个感受其实并不完全成立？'},
+      {label:'更大的画面',       question:'有什么外部的压力或情境可能也参与塑造了这件事？'},
+      {label:'一个不太一样的瞬间', question:'有没有一个瞬间，事情的感觉和"主流叙事"不一样？'},
+      {label:'最重要的是什么',   question:'这件事情透露出你最在意、最想守护的是什么？'},
+    ],
+    errS4Fallback: [
+      {thread:'值得停留的张力',   statement:'你写下的内容里似乎有一处重要的张力。',     opening:'其中最未解、最让你停留的是哪一部分？'},
+      {thread:'似乎有什么在松动', statement:'你对这件事的理解似乎正在发生一些变化。',   opening:'如果这个变化是真的，它可能改变什么？'},
+      {thread:'底层在意的事',     statement:'这里也许有一些关于你最在意的东西。',       opening:'真的去守护它，会是什么样子？'},
+      {thread:'你正在成为的样子', statement:'这一刻可能是一段更长的变化的一部分。',     opening:'你看自己的眼光，现在和以前有什么不同？'},
+    ],
+    errS5: '你的反思在这里。留下合适的部分，修改其他不合适的。',
   }
 }
 
@@ -919,12 +1043,12 @@ function SummaryCard({text,period,onExport}) {
 }
 
 /* ─── HISTORY VIEW ─── */
-function Hist({items,onBack,onView,onDel}){
+function Hist({items,onBack,onView,onDel,lang='en'}){
   const[filter,setFilter]=useState('all');const[summaryText,setSummaryText]=useState('');const[summaryLoading,setSummaryLoading]=useState(false);const[summaryError,setSummaryError]=useState('')
   const now=new Date()
   const filtered=items.filter(r=>{if(filter==='all')return true;const d=new Date(r.timestamp);if(filter==='month')return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();if(filter==='year')return d.getFullYear()===now.getFullYear();return true})
   const periodLabel=filter==='month'?now.toLocaleDateString('en-US',{month:'long',year:'numeric'}):filter==='year'?String(now.getFullYear()):'All time'
-  const generateSummary=async()=>{if(!filtered.length)return;setSummaryLoading(true);setSummaryError('');setSummaryText('');try{const text=await ask(pSummary(periodLabel,filtered));setSummaryText(text);await saveSummary({period:filter,periodLabel,summaryText:text})}catch(e){setSummaryError(e.message||'Could not generate synthesis.')}setSummaryLoading(false)}
+  const generateSummary=async()=>{if(!filtered.length)return;setSummaryLoading(true);setSummaryError('');setSummaryText('');try{const text=await ask(pSummary(periodLabel,filtered,lang));setSummaryText(text);await saveSummary({period:filter,periodLabel,summaryText:text})}catch(e){setSummaryError(e.message||TRANS[lang].errGenericSummary)}setSummaryLoading(false)}
   const FBtn=({val,label})=><button onClick={()=>{setFilter(val);setSummaryText('');setSummaryError('')}} style={{padding:'5px 14px',borderRadius:14,border:`1.5px solid ${filter===val?C.celadon:C.line}`,background:filter===val?C.celadonP+'33':'transparent',color:filter===val?C.celadonD:C.ash,fontSize:11,fontFamily:'DM Sans,sans-serif',cursor:'pointer',transition:'all 0.15s'}}>{label}</button>
   if(!items.length)return(<div style={{textAlign:'center',padding:'48px 16px'}}><Pot phase="clay" size={48}/><p style={{color:C.ash,fontSize:15,margin:'12px 0 16px',fontFamily:'DM Sans,sans-serif'}}>No reflections yet.</p><Btn v="secondary" onClick={onBack}>Back</Btn></div>)
   return(
@@ -962,10 +1086,13 @@ function Hist({items,onBack,onView,onDel}){
 /* ─── MAIN APP ─── */
 export default function Home(){
   const[stage,setStage]=useState('landing');const[lang,setLang]=useState('en');const[selC,setSC]=useState(null);const[story,setStory]=useState('');const[s1,setS1]=useState('');const[focal,setFocal]=useState('');const[rC,setRC]=useState([]);const[cR,setCR]=useState({});const[oC,setOC]=useState(null);const[rvS,setRvS]=useState([]);const[rvM,setRvM]=useState({});const[stmtDetail,setStmtDetail]=useState({});const[oT,setOT]=useState(null);const[oTx,setOTx]=useState('');const[ld,setLd]=useState(false);const[err,setErr]=useState('');const[past,setPast]=useState([]);const[vw,setVw]=useState(null);const[svd,setSvd]=useState(null);const[nm,setNm]=useState(false);const[dR,setDR]=useState('');const[dT,setDT]=useState('')
+  // Stage 3 hybrid layout: 'focus' shows one question at a time; 'all' shows the
+  // full 4-card collapsible list. Default to focus per the user's requested UX.
+  const[s3Mode,setS3Mode]=useState('focus');const[s3Idx,setS3Idx]=useState(0)
   const sr=useRef(null)
   useEffect(()=>{sr.current?.scrollTo({top:0,behavior:'smooth'})},[stage])
   useEffect(()=>{loadReflections().then(setPast)},[])
-  const reset=useCallback(()=>{setSC(null);setStory('');setS1('');setFocal('');setRC([]);setCR({});setOC(null);setRvS([]);setRvM({});setStmtDetail({});setOT(null);setOTx('');setSvd(null);setVw(null);setNm(false);setDR('');setDT('');setErr('')},[])
+  const reset=useCallback(()=>{setSC(null);setStory('');setS1('');setFocal('');setRC([]);setCR({});setOC(null);setRvS([]);setRvM({});setStmtDetail({});setOT(null);setOTx('');setSvd(null);setVw(null);setNm(false);setDR('');setDT('');setErr('');setS3Mode('focus');setS3Idx(0)},[])
   const sd=useCallback(()=>({timestamp:Date.now(),entryCard:selC?.label,userStory:story,stage1Response:s1,focalPointText:focal,cardResponses:cR,confirmedStatements:rvS.filter((_,i)=>rvM[i]==='fits'||rvM[i]==='notquite').map(s=>s?.statement||s),outputType:oT,outputText:oTx,stmtDetails:stmtDetail}),[selC,story,s1,focal,cR,rvS,rvM,stmtDetail,oT,oTx])
   const W={minHeight:'100vh',background:C.kiln,fontFamily:'DM Serif Display,Georgia,serif',color:C.charcoal,display:'flex',justifyContent:'center',overflowY:'auto'}
   const I={width:'100%',maxWidth:560,padding:'32px 18px 64px'}
@@ -981,48 +1108,51 @@ export default function Home(){
 
   if(stage==='history'){
     if(vw)return(<div style={W} ref={sr}><div style={I}><FadeIn><Btn v="secondary" onClick={()=>setVw(null)} style={{fontSize:11,padding:'5px 11px',marginBottom:12}}>← Back</Btn><Journey data={vw} onEdit={async t=>{await updateReflectionOutput(vw.id,t);setVw({...vw,outputText:t});setPast(await loadReflections())}} onExport={()=>dlFile(buildExportText(vw),`reflection-${new Date(vw.timestamp).toISOString().slice(0,10)}.txt`)}/></FadeIn></div></div>)
-    return(<div style={W} ref={sr}><div style={I}><Hist items={past} onBack={()=>setStage('landing')} onView={r=>setVw(r)} onDel={async id=>{await deleteReflection(id);setPast(await loadReflections())}}/></div></div>)
+    return(<div style={W} ref={sr}><div style={I}><Hist items={past} lang={lang} onBack={()=>setStage('landing')} onView={r=>setVw(r)} onDel={async id=>{await deleteReflection(id);setPast(await loadReflections())}}/></div></div>)
   }
 
-  if(stage==='consent')return(
+  if(stage==='consent'){
+    const T = TRANS[lang]
+    return(
     <div style={W} ref={sr}><div style={I}>
-      <FadeIn><p style={{fontSize:11,letterSpacing:'0.10em',textTransform:'uppercase',color:C.ash,marginBottom:20,fontFamily:'DM Sans,sans-serif',textAlign:'center'}}>Before you begin</p></FadeIn>
+      <FadeIn><p style={{fontSize:11,letterSpacing:'0.10em',textTransform:'uppercase',color:C.ash,marginBottom:20,fontFamily:'DM Sans,sans-serif',textAlign:'center'}}>{T.beforeYouBegin}</p></FadeIn>
       <FadeIn delay={40}>
         <div style={{background:C.cream,borderRadius:18,padding:'18px 20px',boxShadow:C.glow,border:`1px solid ${C.line}`,marginBottom:12}}>
-          <p style={{fontSize:15,fontFamily:'DM Serif Display,Georgia,serif',marginBottom:8,color:C.charcoal}}>What this tool is</p>
-          <p style={{fontSize:14,lineHeight:1.75,color:C.stone,fontFamily:'DM Sans,sans-serif',margin:0}}>A structured space to reflect on a realization moment — something that shifted how you understand your experience. The AI helps you stay with your story, notice what matters, and leave with something that still belongs to you.</p>
+          <p style={{fontSize:15,fontFamily:'DM Serif Display,Georgia,serif',marginBottom:8,color:C.charcoal}}>{T.whatThisIs}</p>
+          <p style={{fontSize:14,lineHeight:1.75,color:C.stone,fontFamily:'DM Sans,sans-serif',margin:0}}>{T.consent.whatIsBody}</p>
         </div>
       </FadeIn>
       <FadeIn delay={80}>
         <div style={{background:C.cream,borderRadius:18,padding:'18px 20px',boxShadow:C.glow,border:`1px solid ${C.line}`,marginBottom:12}}>
-          <p style={{fontSize:15,fontFamily:'DM Serif Display,Georgia,serif',marginBottom:8,color:C.charcoal}}>What this tool is not</p>
-          <p style={{fontSize:14,lineHeight:1.75,color:C.stone,fontFamily:'DM Sans,sans-serif',margin:0}}>This is not therapy, counseling, crisis support, or clinical care. It cannot diagnose anything or make decisions about your wellbeing. It is not a replacement for human connection or professional help. If you are in distress, please reach out to someone who can actually be with you.</p>
+          <p style={{fontSize:15,fontFamily:'DM Serif Display,Georgia,serif',marginBottom:8,color:C.charcoal}}>{T.whatThisIsNot}</p>
+          <p style={{fontSize:14,lineHeight:1.75,color:C.stone,fontFamily:'DM Sans,sans-serif',margin:0}}>{T.consent.whatIsNotBody}</p>
         </div>
       </FadeIn>
       <FadeIn delay={120}>
         <div style={{background:C.cream,borderRadius:18,padding:'18px 20px',boxShadow:C.glow,border:`1px solid ${C.line}`,marginBottom:12}}>
-          <p style={{fontSize:15,fontFamily:'DM Serif Display,Georgia,serif',marginBottom:8,color:C.charcoal}}>Privacy</p>
-          <p style={{fontSize:14,lineHeight:1.75,color:C.stone,fontFamily:'DM Sans,sans-serif',margin:0}}>Please avoid entering your full name, specific schools, workplaces, locations, or immigration details. Your story doesn't need those to be meaningful here — and diaspora stories can be uniquely identifiable even without names. What you write is processed by AI (OpenAI) and stored locally on your device only if you choose to save it. Outputs are AI-generated and may be incomplete or wrong.</p>
+          <p style={{fontSize:15,fontFamily:'DM Serif Display,Georgia,serif',marginBottom:8,color:C.charcoal}}>{T.privacy}</p>
+          <p style={{fontSize:14,lineHeight:1.75,color:C.stone,fontFamily:'DM Sans,sans-serif',margin:0}}>{T.consent.privacyBody}</p>
         </div>
       </FadeIn>
       <FadeIn delay={160}>
         <div style={{background:C.cream,borderRadius:18,padding:'18px 20px',boxShadow:C.glow,border:`1px solid ${C.line}`,marginBottom:20}}>
-          <p style={{fontSize:15,fontFamily:'DM Serif Display,Georgia,serif',marginBottom:8,color:C.charcoal}}>Safety</p>
-          <p style={{fontSize:14,lineHeight:1.75,color:C.stone,fontFamily:'DM Sans,sans-serif',margin:0}}>If your writing suggests you are in danger, crisis, or severe distress, the tool will pause and direct you to human support. It will not attempt to hold crisis material within the reflection flow.</p>
+          <p style={{fontSize:15,fontFamily:'DM Serif Display,Georgia,serif',marginBottom:8,color:C.charcoal}}>{T.safety}</p>
+          <p style={{fontSize:14,lineHeight:1.75,color:C.stone,fontFamily:'DM Sans,sans-serif',margin:0}}>{T.consent.safetyBody}</p>
         </div>
       </FadeIn>
       <FadeIn delay={200}><div style={{textAlign:'center',display:'flex',flexDirection:'column',gap:8}}>
-        <Btn onClick={()=>setStage('entry')} style={{padding:'11px 44px',fontSize:14,borderRadius:24}}>I understand — continue</Btn>
-        <button onClick={()=>setStage('landing')} style={{fontSize:12,color:C.ash,background:'none',border:'none',cursor:'pointer',fontFamily:'DM Sans,sans-serif',padding:'4px 0'}}>← Back</button>
+        <Btn onClick={()=>setStage('entry')} style={{padding:'11px 44px',fontSize:14,borderRadius:24}}>{T.continueBtn}</Btn>
+        <button onClick={()=>setStage('landing')} style={{fontSize:12,color:C.ash,background:'none',border:'none',cursor:'pointer',fontFamily:'DM Sans,sans-serif',padding:'4px 0'}}>{T.back}</button>
       </div></FadeIn>
     </div></div>)
+  }
 
   if(stage==='entry')return(
     <div style={W} ref={sr}><div style={I}>
       <FadeIn><div style={{textAlign:'center',marginBottom:18}}><Pot phase="clay" size={48}/></div></FadeIn>
       <FadeIn delay={40}><p style={{fontSize:15,color:C.ash,marginBottom:16,textAlign:'center',fontFamily:'DM Sans,sans-serif'}}>{TRANS[lang].pickStart}</p></FadeIn>
       <div style={{display:'flex',flexDirection:'column',gap:6,marginBottom:20}}>{TRANS[lang].cards.map((c,i)=><FadeIn key={i} delay={60+i*35}><button onClick={()=>setSC(selC?.label===c.label?null:c)} style={{width:'100%',textAlign:'left',padding:'12px 14px',borderRadius:14,border:`1.5px solid ${selC?.label===c.label?C.celadon:C.line}`,background:selC?.label===c.label?C.celadonP+'22':C.cream,cursor:'pointer',fontSize:14,fontFamily:'DM Serif Display,Georgia,serif',color:C.charcoal,transition:'all 0.2s',boxShadow:C.glow}}>{c.label}</button></FadeIn>)}</div>
-      {selC&&<FadeIn key={selC.label}><p style={{fontSize:14,color:C.ash,lineHeight:1.6,marginBottom:8,fontStyle:'italic',fontFamily:'DM Sans,sans-serif'}}>{selC.nudge}</p><TA value={story} onChange={setStory} placeholder={TRANS[lang].writeHere} minH={130}/><ErrMsg err={err}/><div style={{textAlign:'right',marginTop:10}}><Btn onClick={async()=>{setLd(true);setErr('');setStage('stage1');try{const raw=await ask(pS1(selC.label,story,lang));if(raw.startsWith('[NEEDS_MORE]')){setNm(true);setDR(raw.replace('[NEEDS_MORE]','').trim());setS1('')}else{setNm(false);setS1(raw.replace('[READY]','').trim())}}catch(e){setErr(e.message);setS1('Thank you for sharing that. Can you say a bit more about a specific moment?')}setLd(false)}} disabled={!story.trim()}>{TRANS[lang].continue}</Btn></div></FadeIn>}
+      {selC&&<FadeIn key={selC.label}><p style={{fontSize:14,color:C.ash,lineHeight:1.6,marginBottom:8,fontStyle:'italic',fontFamily:'DM Sans,sans-serif'}}>{selC.nudge}</p><TA value={story} onChange={setStory} placeholder={TRANS[lang].writeHere} minH={130}/><ErrMsg err={err}/><div style={{textAlign:'right',marginTop:10}}><Btn onClick={async()=>{setLd(true);setErr('');setStage('stage1');try{const raw=await ask(pS1(selC.label,story,lang));if(raw.startsWith('[NEEDS_MORE]')){setNm(true);setDR(raw.replace('[NEEDS_MORE]','').trim());setS1('')}else{setNm(false);setS1(raw.replace('[READY]','').trim())}}catch(e){setErr(e.message);setS1(TRANS[lang].errS1Short)}setLd(false)}} disabled={!story.trim()}>{TRANS[lang].continue}</Btn></div></FadeIn>}
     </div></div>)
 
   if(stage==='stage1')return(
@@ -1031,12 +1161,153 @@ export default function Home(){
         <div style={{textAlign:'center',marginBottom:4}}><Pot phase="shaped" size={48}/></div>
         <Progress stage={stage} phases={TRANS[lang].phases}/>
       </div>
-      {ld?<Dots/>:nm?(<><FadeIn delay={50}><div style={{background:C.cream,borderRadius:16,padding:16,boxShadow:C.glow,marginBottom:16,borderLeft:`3px solid ${C.terra}`,border:`1px solid ${C.line}`}}><p style={{fontSize:16,lineHeight:1.8,fontFamily:'DM Sans,sans-serif'}}>{dR}</p></div></FadeIn><FadeIn delay={120}><TA value={dT} onChange={setDT} placeholder={TRANS[lang].addMore} minH={80}/><ErrMsg err={err}/><div style={{textAlign:'right',marginTop:10}}><Btn onClick={async()=>{setLd(true);setErr('');const c=story+'\n\n'+dT;setStory(c);try{const raw=await ask(pDeep(selC.label,story,dR,dT,lang));setS1(raw.replace('[READY]','').trim())}catch(e){setErr(e.message);setS1("Thank you. What feels most alive in what you've described?")}setNm(false);setLd(false)}} disabled={!dT.trim()}>{TRANS[lang].continue}</Btn></div></FadeIn></>):(<><FadeIn delay={50}><Tag>{TRANS[lang].listening}</Tag><div style={{background:C.cream,borderRadius:16,padding:16,boxShadow:C.glow,marginTop:8,marginBottom:16,borderLeft:`3px solid ${C.celadon}`,border:`1px solid ${C.line}`}}><p style={{fontSize:16,lineHeight:1.8,fontFamily:'DM Sans,sans-serif'}}>{s1}</p></div></FadeIn><FadeIn delay={120}><TA value={focal} onChange={setFocal} placeholder={TRANS[lang].respondHere} minH={80}/><ErrMsg err={err}/><div style={{textAlign:'right',marginTop:10}}><Btn onClick={async()=>{setLd(true);setErr('');setStage('stage3');try{setRC(JSON.parse((await ask(pS3(selC.label,story,s1,focal,lang))).replace(/```json|```/g,'').trim()))}catch{setRC([{label:'Another side',question:"Have there been moments where this didn't fit?"},{label:'The bigger picture',question:"Do any larger pressures come to mind?"},{label:'A moment that did not fit',question:"Was there a moment where something felt different?"},{label:'What matters most',question:"What does this say about what you care about?"}])}setLd(false)}} disabled={!focal.trim()}>{TRANS[lang].continue}</Btn></div></FadeIn></>)}
+      {ld?<Dots/>:nm?(<><FadeIn delay={50}><div style={{background:C.cream,borderRadius:16,padding:16,boxShadow:C.glow,marginBottom:16,borderLeft:`3px solid ${C.terra}`,border:`1px solid ${C.line}`}}><p style={{fontSize:16,lineHeight:1.8,fontFamily:'DM Sans,sans-serif'}}>{dR}</p></div></FadeIn><FadeIn delay={120}><TA value={dT} onChange={setDT} placeholder={TRANS[lang].addMore} minH={80}/><ErrMsg err={err}/><div style={{textAlign:'right',marginTop:10}}><Btn onClick={async()=>{setLd(true);setErr('');const c=story+'\n\n'+dT;setStory(c);try{const raw=await ask(pDeep(selC.label,story,dR,dT,lang));setS1(raw.replace('[READY]','').trim())}catch(e){setErr(e.message);setS1(TRANS[lang].errS1Deep)}setNm(false);setLd(false)}} disabled={!dT.trim()}>{TRANS[lang].continue}</Btn></div></FadeIn></>):(<><FadeIn delay={50}><Tag>{TRANS[lang].listening}</Tag><div style={{background:C.cream,borderRadius:16,padding:16,boxShadow:C.glow,marginTop:8,marginBottom:16,borderLeft:`3px solid ${C.celadon}`,border:`1px solid ${C.line}`}}><p style={{fontSize:16,lineHeight:1.8,fontFamily:'DM Sans,sans-serif'}}>{s1}</p></div></FadeIn><FadeIn delay={120}><TA value={focal} onChange={setFocal} placeholder={TRANS[lang].respondHere} minH={80}/><ErrMsg err={err}/><div style={{textAlign:'right',marginTop:10}}><Btn onClick={async()=>{setLd(true);setErr('');setStage('stage3');try{setRC(JSON.parse((await ask(pS3(selC.label,story,s1,focal,lang),{json:true})).replace(/```json|```/g,'').trim()))}catch{setRC(TRANS[lang].errS3Fallback)}setLd(false)}} disabled={!focal.trim()}>{TRANS[lang].continue}</Btn></div></FadeIn></>)}
     </div></div>)
 
-  if(stage==='stage3'){const ans=Object.values(cR).filter(v=>v?.trim()).length;const _pv3=derivePotVisual({entryCard:selC?.label,userStory:story},0);return(<div style={W} ref={sr}><div style={I}><div style={{position:'sticky',top:0,zIndex:20,background:C.kiln,paddingTop:6,paddingBottom:4,marginBottom:4}}><div style={{textAlign:'center',marginBottom:4}}><Pot phase="bisque" size={48} {..._pv3}/></div><Progress stage={stage} phases={TRANS[lang].phases}/></div>{ld?<Dots/>:<><FadeIn><Tag>{TRANS[lang].exploring}</Tag><p style={{fontSize:15,lineHeight:1.55,marginTop:6,marginBottom:16,color:C.stone,fontFamily:'DM Sans,sans-serif'}}>{TRANS[lang].takeWhat}</p></FadeIn><div style={{display:'flex',flexDirection:'column',gap:8,marginBottom:20}}>{rC.map((c,i)=>{const op=oC===i,has=cR[c.label]?.trim();return(<FadeIn key={i} delay={40+i*35}><div style={{background:C.cream,borderRadius:16,border:`1.5px solid ${has?C.celadon:C.line}`,boxShadow:op?C.lift:C.glow,overflow:'hidden',transition:'all 0.2s'}}><button onClick={()=>setOC(op?null:i)} style={{width:'100%',textAlign:'left',padding:'12px 14px',background:'transparent',border:'none',cursor:'pointer',fontFamily:'DM Serif Display,Georgia,serif',display:'flex',alignItems:'center',gap:9}}><span style={{width:7,height:7,borderRadius:'50%',background:has?C.celadon:C.line,flexShrink:0,transition:'background 0.2s'}}/><span style={{fontSize:15,color:C.charcoal}}>{c.label}</span><span style={{marginLeft:'auto',fontSize:12,color:C.ash,transform:op?'rotate(180deg)':'',transition:'transform 0.2s'}}>▾</span></button>{op&&<div style={{padding:'0 14px 14px'}}><p style={{fontSize:14,color:C.ash,lineHeight:1.6,marginBottom:8,fontStyle:'italic',fontFamily:'DM Sans,sans-serif'}}>{c.question}</p><TA value={cR[c.label]||''} onChange={v=>setCR({...cR,[c.label]:v})} placeholder="Write as much or as little as you'd like…" minH={65}/></div>}</div></FadeIn>)})}</div><FadeIn delay={200}><ErrMsg err={err}/><div style={{textAlign:'right'}}><Btn onClick={async()=>{setLd(true);setErr('');setStage('stage4');try{setRvS(JSON.parse((await ask(pS4(selC.label,story,s1,focal,cR,lang))).replace(/```json|```/g,'').trim()))}catch{setRvS([{thread:'A tension worth staying with',statement:'It seems like there is an important tension in what you shared.',opening:'What feels most unresolved about it?'},{thread:'Something may be shifting',statement:'Something may be shifting in how you understand this.',opening:'If that shift is real, what might it change?'},{thread:'What matters underneath',statement:'There may be something here about what you care about most.',opening:'What would honoring that actually look like?'},{thread:'Who you may be becoming',statement:'It could be that this moment is part of a longer change.',opening:'What feels different about how you see yourself now?'}])}setLd(false)}} disabled={ans===0}>{TRANS[lang].continue}</Btn>{ans===0&&<p style={{fontSize:11,color:C.ash,marginTop:4,fontFamily:'DM Sans,sans-serif'}}>Respond to at least one</p>}</div></FadeIn></>}</div></div>)}
+  if(stage==='stage3'){
+    const ans=Object.values(cR).filter(v=>v?.trim()).length
+    const _pv3=derivePotVisual({entryCard:selC?.label,userStory:story},0)
+    const T3=TRANS[lang]
+    // Stage 3 hybrid layout: default 'focus' shows one question at a time with
+    // prev/next; the user can flip to 'all' to peek at the full list. The
+    // continue button + advance logic is identical in both modes.
+    const advance=async()=>{
+      setLd(true);setErr('');setStage('stage4')
+      try{
+        setRvS(JSON.parse((await ask(pS4(selC.label,story,s1,focal,cR,lang),{json:true})).replace(/```json|```/g,'').trim()))
+      }catch{
+        setRvS(T3.errS4Fallback)
+      }
+      setLd(false)
+    }
+    return(<div style={W} ref={sr}><div style={I}>
+      <div style={{position:'sticky',top:0,zIndex:20,background:C.kiln,paddingTop:6,paddingBottom:4,marginBottom:4}}>
+        <div style={{textAlign:'center',marginBottom:4}}><Pot phase="bisque" size={48} {..._pv3}/></div>
+        <Progress stage={stage} phases={T3.phases}/>
+      </div>
+      {ld?<Dots/>:<>
+        <FadeIn>
+          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:8,flexWrap:'wrap'}}>
+            <Tag>{T3.exploring}</Tag>
+            {rC.length>0 && (
+              <button onClick={()=>setS3Mode(s3Mode==='focus'?'all':'focus')} style={{background:'transparent',border:`1px solid ${C.line}`,borderRadius:14,padding:'4px 11px',fontSize:11,color:C.stone,fontFamily:'DM Sans,sans-serif',cursor:'pointer',transition:'all 0.15s'}}>
+                {s3Mode==='focus'?T3.stage3SeeAll:T3.stage3FocusOne}
+              </button>
+            )}
+          </div>
+          <p style={{fontSize:15,lineHeight:1.55,marginTop:6,marginBottom:16,color:C.stone,fontFamily:'DM Sans,sans-serif'}}>{T3.takeWhat}</p>
+        </FadeIn>
+        {s3Mode==='focus' && rC.length>0 ? (
+          // ── FOCUS MODE: one question at a time ─────────────────────────
+          <div style={{marginBottom:20}}>
+            {(()=>{
+              const i=Math.min(s3Idx,rC.length-1)
+              const c=rC[i]
+              const has=cR[c.label]?.trim()
+              return(<FadeIn key={`focus-${i}`}>
+                <p style={{fontSize:11,letterSpacing:'0.08em',textTransform:'uppercase',color:C.ash,marginBottom:6,fontFamily:'DM Sans,sans-serif'}}>{T3.stage3OneOf(i+1,rC.length)}</p>
+                <div style={{background:C.cream,borderRadius:16,border:`1.5px solid ${has?C.celadon:C.line}`,boxShadow:C.lift,padding:'16px 18px',marginBottom:12}}>
+                  <p style={{fontSize:16,fontFamily:'DM Serif Display,Georgia,serif',color:C.charcoal,margin:'0 0 6px',display:'flex',alignItems:'center',gap:8}}>
+                    <span style={{width:7,height:7,borderRadius:'50%',background:has?C.celadon:C.line,flexShrink:0,transition:'background 0.2s'}}/>
+                    {c.label}
+                  </p>
+                  <p style={{fontSize:14,color:C.ash,lineHeight:1.6,marginBottom:10,fontStyle:'italic',fontFamily:'DM Sans,sans-serif'}}>{c.question}</p>
+                  <TA value={cR[c.label]||''} onChange={v=>setCR({...cR,[c.label]:v})} placeholder="Write as much or as little as you'd like…" minH={90}/>
+                </div>
+                <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:8}}>
+                  <Btn v="secondary" onClick={()=>setS3Idx(Math.max(0,i-1))} disabled={i===0} style={{fontSize:12,padding:'6px 12px'}}>← {T3.stage3Prev}</Btn>
+                  <div style={{display:'flex',gap:5}}>
+                    {rC.map((_,j)=>(
+                      <button key={j} onClick={()=>setS3Idx(j)} aria-label={T3.stage3OneOf(j+1,rC.length)} style={{width:8,height:8,borderRadius:'50%',border:'none',cursor:'pointer',padding:0,background:j===i?C.celadon:cR[rC[j].label]?.trim()?C.celadonP:C.line,transition:'background 0.15s'}}/>
+                    ))}
+                  </div>
+                  <Btn v="secondary" onClick={()=>setS3Idx(Math.min(rC.length-1,i+1))} disabled={i===rC.length-1} style={{fontSize:12,padding:'6px 12px'}}>{T3.stage3Next} →</Btn>
+                </div>
+              </FadeIn>)
+            })()}
+          </div>
+        ) : (
+          // ── ALL MODE: existing 4-card collapsible list ────────────────
+          <div style={{display:'flex',flexDirection:'column',gap:8,marginBottom:20}}>
+            {rC.map((c,i)=>{
+              const op=oC===i,has=cR[c.label]?.trim()
+              return(<FadeIn key={i} delay={40+i*35}>
+                <div style={{background:C.cream,borderRadius:16,border:`1.5px solid ${has?C.celadon:C.line}`,boxShadow:op?C.lift:C.glow,overflow:'hidden',transition:'all 0.2s'}}>
+                  <button onClick={()=>setOC(op?null:i)} style={{width:'100%',textAlign:'left',padding:'12px 14px',background:'transparent',border:'none',cursor:'pointer',fontFamily:'DM Serif Display,Georgia,serif',display:'flex',alignItems:'center',gap:9}}>
+                    <span style={{width:7,height:7,borderRadius:'50%',background:has?C.celadon:C.line,flexShrink:0,transition:'background 0.2s'}}/>
+                    <span style={{fontSize:15,color:C.charcoal}}>{c.label}</span>
+                    <span style={{marginLeft:'auto',fontSize:12,color:C.ash,transform:op?'rotate(180deg)':'',transition:'transform 0.2s'}}>▾</span>
+                  </button>
+                  {op&&<div style={{padding:'0 14px 14px'}}>
+                    <p style={{fontSize:14,color:C.ash,lineHeight:1.6,marginBottom:8,fontStyle:'italic',fontFamily:'DM Sans,sans-serif'}}>{c.question}</p>
+                    <TA value={cR[c.label]||''} onChange={v=>setCR({...cR,[c.label]:v})} placeholder="Write as much or as little as you'd like…" minH={65}/>
+                  </div>}
+                </div>
+              </FadeIn>)
+            })}
+          </div>
+        )}
+        <FadeIn delay={200}>
+          <ErrMsg err={err}/>
+          <div style={{textAlign:'right'}}>
+            <Btn onClick={advance} disabled={ans===0}>{T3.continue}</Btn>
+            {ans===0&&<p style={{fontSize:11,color:C.ash,marginTop:4,fontFamily:'DM Sans,sans-serif'}}>{T3.stage3RespondAtLeastOne}</p>}
+          </div>
+        </FadeIn>
+      </>}
+    </div></div>)
+  }
 
-  if(stage==='stage4'){const done=rvS.length>0&&rvS.every((_,i)=>rvM[i]);const _pv4=derivePotVisual({entryCard:selC?.label,userStory:story},0);return(<div style={W} ref={sr}><div style={I}><div style={{position:'sticky',top:0,zIndex:20,background:C.kiln,paddingTop:6,paddingBottom:4,marginBottom:4}}><div style={{textAlign:'center',marginBottom:4}}><Pot phase="glazed" size={48} {..._pv4}/></div><Progress stage={stage} phases={TRANS[lang].phases}/></div>{ld?<Dots/>:<><FadeIn><Tag color={C.ochre}>{TRANS[lang].emerging}</Tag><p style={{fontSize:15,lineHeight:1.55,marginTop:6,marginBottom:16,color:C.stone,fontFamily:'DM Sans,sans-serif'}}>{TRANS[lang].fourThreads}</p></FadeIn><div style={{display:'flex',flexDirection:'column',gap:10,marginBottom:20}}>{rvS.map((item,i)=>{const st=item?.statement||item,thread=item?.thread,opening=item?.opening;return(<FadeIn key={i} delay={40+i*35}><div style={{background:C.cream,borderRadius:16,padding:14,boxShadow:C.glow,border:`1.5px solid ${rvM[i]==='fits'?C.celadon:rvM[i]==='no'?C.terra:rvM[i]==='notquite'?C.ochre:C.line}`,transition:'border-color 0.2s'}}>{thread&&<p style={{fontSize:12,letterSpacing:'0.08em',textTransform:'uppercase',color:C.ash,marginBottom:5,fontFamily:'DM Sans,sans-serif'}}>{thread}</p>}<p style={{fontSize:15,lineHeight:1.7,marginBottom:6,fontFamily:'DM Sans,sans-serif'}}>{st}</p>{opening&&<p style={{fontSize:14,color:C.stone,lineHeight:1.6,marginBottom:8,fontStyle:'italic',fontFamily:'DM Sans,sans-serif',borderTop:`1px solid ${C.line}`,paddingTop:6}}>{opening}</p>}<div style={{display:'flex',gap:5}}>{[{k:'fits',l:TRANS[lang].fits,c:C.celadon},{k:'notquite',l:TRANS[lang].close,c:C.ochre},{k:'no',l:TRANS[lang].remove,c:C.terra}].map(o=><button key={o.k} onClick={()=>setRvM({...rvM,[i]:o.k})} style={{padding:'3px 10px',borderRadius:14,border:`1.5px solid ${rvM[i]===o.k?o.c:C.line}`,background:rvM[i]===o.k?o.c+'18':'transparent',color:rvM[i]===o.k?C.charcoal:C.ash,fontSize:11,fontFamily:'DM Sans,sans-serif',cursor:'pointer',transition:'all 0.15s'}}>{o.l}</button>)}</div>{(rvM[i]==='fits'||rvM[i]==='notquite') && (<div style={{marginTop:8,borderTop:`1px solid ${C.line}`,paddingTop:8}}><p style={{fontSize:13,color:C.ash,fontFamily:'DM Sans,sans-serif',marginBottom:4}}>{TRANS[lang].optionalDetail}</p><textarea value={stmtDetail[i]||''} onChange={e=>setStmtDetail({...stmtDetail,[i]:e.target.value})} placeholder={TRANS[lang].optionalDetailPlaceholder} style={{width:'100%',minHeight:60,padding:10,borderRadius:10,border:`1.5px solid ${C.line}`,background:C.white,color:C.charcoal,fontSize:14,lineHeight:1.6,fontFamily:'DM Sans,sans-serif',resize:'none',outline:'none',boxSizing:'border-box'}} onFocus={e=>e.target.style.borderColor=C.celadon} onBlur={e=>e.target.style.borderColor=C.line}/></div>)}</div></FadeIn>)})}</div><FadeIn delay={180}><div style={{textAlign:'right'}}><Btn onClick={()=>setStage('stage5')} disabled={!done}>{TRANS[lang].continue}</Btn></div></FadeIn></>}</div></div>)}
+  if(stage==='stage4'){
+    // Stage 4 min-2 rule (was: every thread must be marked). At least 2 marks
+    // required; the rest are optional. This honors Reflective Ambiguity (Kim
+    // et al. RA) by not forcing the person to commit to all four threads.
+    const markedCount=rvS.length>0?Object.values(rvM).filter(v=>v==='fits'||v==='notquite'||v==='no').length:0
+    const done=markedCount>=2
+    const _pv4=derivePotVisual({entryCard:selC?.label,userStory:story},0)
+    return(<div style={W} ref={sr}><div style={I}>
+      <div style={{position:'sticky',top:0,zIndex:20,background:C.kiln,paddingTop:6,paddingBottom:4,marginBottom:4}}>
+        <div style={{textAlign:'center',marginBottom:4}}><Pot phase="glazed" size={48} {..._pv4}/></div>
+        <Progress stage={stage} phases={TRANS[lang].phases}/>
+      </div>
+      {ld?<Dots/>:<>
+        <FadeIn>
+          <Tag color={C.ochre}>{TRANS[lang].emerging}</Tag>
+          <p style={{fontSize:15,lineHeight:1.55,marginTop:6,marginBottom:6,color:C.stone,fontFamily:'DM Sans,sans-serif'}}>{TRANS[lang].fourThreads}</p>
+          <p style={{fontSize:12,color:C.ash,marginBottom:16,fontFamily:'DM Sans,sans-serif',fontStyle:'italic'}}>{TRANS[lang].stage4MinHint}</p>
+        </FadeIn>
+        <div style={{display:'flex',flexDirection:'column',gap:10,marginBottom:20}}>
+          {rvS.map((item,i)=>{
+            const st=item?.statement||item,thread=item?.thread,opening=item?.opening
+            return(<FadeIn key={i} delay={40+i*35}>
+              <div style={{background:C.cream,borderRadius:16,padding:14,boxShadow:C.glow,border:`1.5px solid ${rvM[i]==='fits'?C.celadon:rvM[i]==='no'?C.terra:rvM[i]==='notquite'?C.ochre:C.line}`,transition:'border-color 0.2s'}}>
+                {thread&&<p style={{fontSize:12,letterSpacing:'0.08em',textTransform:'uppercase',color:C.ash,marginBottom:5,fontFamily:'DM Sans,sans-serif'}}>{thread}</p>}
+                <p style={{fontSize:15,lineHeight:1.7,marginBottom:6,fontFamily:'DM Sans,sans-serif'}}>{st}</p>
+                {opening&&<p style={{fontSize:14,color:C.stone,lineHeight:1.6,marginBottom:8,fontStyle:'italic',fontFamily:'DM Sans,sans-serif',borderTop:`1px solid ${C.line}`,paddingTop:6}}>{opening}</p>}
+                <div style={{display:'flex',gap:5}}>
+                  {[{k:'fits',l:TRANS[lang].fits,c:C.celadon},{k:'notquite',l:TRANS[lang].close,c:C.ochre},{k:'no',l:TRANS[lang].remove,c:C.terra}].map(o=>(
+                    <button key={o.k} onClick={()=>setRvM({...rvM,[i]:o.k})} style={{padding:'3px 10px',borderRadius:14,border:`1.5px solid ${rvM[i]===o.k?o.c:C.line}`,background:rvM[i]===o.k?o.c+'18':'transparent',color:rvM[i]===o.k?C.charcoal:C.ash,fontSize:11,fontFamily:'DM Sans,sans-serif',cursor:'pointer',transition:'all 0.15s'}}>{o.l}</button>
+                  ))}
+                </div>
+                {(rvM[i]==='fits'||rvM[i]==='notquite') && (
+                  <div style={{marginTop:8,borderTop:`1px solid ${C.line}`,paddingTop:8}}>
+                    <p style={{fontSize:13,color:C.ash,fontFamily:'DM Sans,sans-serif',marginBottom:4}}>{TRANS[lang].optionalDetail}</p>
+                    <textarea value={stmtDetail[i]||''} onChange={e=>setStmtDetail({...stmtDetail,[i]:e.target.value})} placeholder={TRANS[lang].optionalDetailPlaceholder} style={{width:'100%',minHeight:60,padding:10,borderRadius:10,border:`1.5px solid ${C.line}`,background:C.white,color:C.charcoal,fontSize:14,lineHeight:1.6,fontFamily:'DM Sans,sans-serif',resize:'none',outline:'none',boxSizing:'border-box'}} onFocus={e=>e.target.style.borderColor=C.celadon} onBlur={e=>e.target.style.borderColor=C.line}/>
+                  </div>
+                )}
+              </div>
+            </FadeIn>)
+          })}
+        </div>
+        <FadeIn delay={180}>
+          <div style={{textAlign:'right'}}>
+            <Btn onClick={()=>setStage('stage5')} disabled={!done}>{TRANS[lang].continue}</Btn>
+            {!done&&<p style={{fontSize:11,color:C.ash,marginTop:4,fontFamily:'DM Sans,sans-serif'}}>{markedCount}/2</p>}
+          </div>
+        </FadeIn>
+      </>}
+    </div></div>)
+  }
 
   if(stage==='stage5'){
     const conf=rvS.map((s,i)=>{
@@ -1058,7 +1329,7 @@ export default function Home(){
       {key:'keep',label:'What I want to keep with me',desc:'A short line, question, or reminder to return to later.',example:'"The question I want to keep near me is…"',color:C.terra,
         icon:<svg width="22" height="22" viewBox="0 0 22 22" fill="none"><rect x="5" y="4" width="12" height="14" rx="2" stroke={C.terra} strokeWidth="1.4"/><path d="M8 8h6M8 11h6M8 14h3" stroke={C.terra} strokeWidth="1.2" strokeLinecap="round" opacity="0.5"/><path d="M14 4v4l-3-1.5L8 8V4" fill={C.terra} opacity="0.35"/></svg>},
     ]
-    const go=async(key)=>{setOT(key);setLd(true);setErr('');setStage('artifact');try{setOTx(await ask(pS5(key,conf,story,focal,lang)))}catch(e){setErr(e.message);setOTx("Your reflection is here. Take what fits, revise what doesn't.")}setLd(false)}
+    const go=async(key)=>{setOT(key);setLd(true);setErr('');setStage('artifact');try{setOTx(await ask(pS5(key,conf,story,focal,lang)))}catch(e){setErr(e.message);setOTx(TRANS[lang].errS5)}setLd(false)}
     const primary=S5_CARDS.find(c=>c.key===autoRec)
     const others=S5_CARDS.filter(c=>c.key!==autoRec)
     const S5_LABELS={
