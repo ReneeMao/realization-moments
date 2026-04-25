@@ -954,7 +954,7 @@ const TRANS = {
     sectionReflections:'Reflections',whatStayedTrue:'What stayed true',yourArtifact:'Your artifact',
     draftYours:'A draft. Yours to change.',copy:'Copy',exportTxt:'Export .txt',
     synthesis:'Synthesis',provisionalReading:'A provisional reading. Yours to contest or keep.',
-    allTime:T.allTime,filterAll:'All',filterMonth:'This month',filterYear:'This year',
+    allTime:'All time',filterAll:'All',filterMonth:'This month',filterYear:'This year',
     s5Desc:{see:'A gentle note about what may be becoming clearer.',carry:'A note about what feels important enough to guide you.',keep:'A short line, question, or reminder to return to later.'},
     s5Example:{see:'“Maybe what this is really showing me is…”',carry:'“What I don\'t want to lose from this is…”',keep:'“The question I want to keep near me is…”'},
   },
@@ -1210,7 +1210,7 @@ function Hist({items,onBack,onView,onDel,lang='en'}){
   const[filter,setFilter]=useState('all');const[summaryText,setSummaryText]=useState('');const[summaryLoading,setSummaryLoading]=useState(false);const[summaryError,setSummaryError]=useState('')
   const now=new Date()
   const filtered=items.filter(r=>{if(filter==='all')return true;const d=new Date(r.timestamp);if(filter==='month')return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();if(filter==='year')return d.getFullYear()===now.getFullYear();return true})
-  const periodLabel=filter==='month'?now.toLocaleDateString(lang==='zh'?'zh-CN':'en-US',{month:'long',year:'numeric'}):filter==='year'?String(now.getFullYear()):'All time'
+  const periodLabel=filter==='month'?now.toLocaleDateString(lang==='zh'?'zh-CN':'en-US',{month:'long',year:'numeric'}):filter==='year'?String(now.getFullYear()):T.allTime
   const generateSummary=async()=>{if(!filtered.length)return;setSummaryLoading(true);setSummaryError('');setSummaryText('');try{const text=await ask(pSummary(periodLabel,filtered,lang));setSummaryText(text);await saveSummary({period:filter,periodLabel,summaryText:text})}catch(e){setSummaryError(e.message||TRANS[lang].errGenericSummary)}setSummaryLoading(false)}
   const FBtn=({val,label})=><button onClick={()=>{setFilter(val);setSummaryText('');setSummaryError('')}} style={{padding:'5px 14px',borderRadius:14,border:`1.5px solid ${filter===val?C.celadon:C.line}`,background:filter===val?C.celadonP+'33':'transparent',color:filter===val?C.celadonD:C.ash,fontSize:11,fontFamily:'DM Sans,sans-serif',cursor:'pointer',transition:'all 0.15s'}}>{label}</button>
   if(!items.length)return(<div style={{textAlign:'center',padding:'48px 16px'}}><Pot phase="clay" size={48}/><p style={{color:C.ash,fontSize:15,margin:'12px 0 16px',fontFamily:'DM Sans,sans-serif'}}>{T.noReflections}</p><Btn v="secondary" onClick={onBack}>{T.back}</Btn></div>)
