@@ -1048,6 +1048,7 @@ const TRANS = {
         {id:'Bored',label:'倦怠'},{id:'Lonely',label:'孤单'},{id:'Disappointed',label:'失望'},
         {id:'Guilty',label:'内疚'},{id:'Grieving',label:'哀恸'},
       ]},
+    ],
     whereIStarted:'我从哪里出发',whatIHeardBack:'我听到的回应',goingDeeper:'深入探索',
     sectionReflections:'回应记录',whatStayedTrue:'留下来的部分',yourArtifact:'你的收获',
     draftYours:'这是草稿，由你决定。',copy:'复制',exportTxt:'导出 .txt',
@@ -1055,7 +1056,6 @@ const TRANS = {
     allTime:'全部时间',filterAll:'全部',filterMonth:'本月',filterYear:'本年',
     s5Desc:{see:'关于正在变得更清晰的事物，一句温和的记录。',carry:'关于足够重要、值得引导你前行的事物，一句记录。',keep:'一行短句、一个问题、或稍后回来的提醒。'},
     s5Example:{see:'"也许这件事真正告诉我的是……"',carry:'"我不想从这段经历中失去的是……"',keep:'"我想随身携带的那个问题是……"'},
-    ],
   }
 }
 
