@@ -111,6 +111,16 @@ const ACCENTS = {
     bloom: '#E7DDF0',
     center: '#AA93B2',
   },
+  /* coral — Angry family (Resentful, Frustrated, Hateful, Contemptuous).
+     Added in the right-now check-in feature so anger has its own warm red
+     glaze rather than being collapsed into terracotta. */
+  coral: {
+    glaze: '#D8856E',
+    glazeSoft: '#EFCABA',
+    leaf: '#A88876',
+    bloom: '#EFCABA',
+    center: '#C77459',
+  },
 }
 
 const C = {
@@ -179,14 +189,30 @@ SAFETY: If what the person has written suggests self-harm, suicidal ideation, ab
 
 /* ─── PROMPT BUILDERS ─── */
 
+/* buildCheckinCtx — formats the right-now check-in into a small context block.
+   The block is appended near the top of the user-role message so the model has
+   it as orientation but does NOT receive it as instruction. Importantly, the
+   note "do not echo emotion labels back unless the user uses them" preserves
+   Reflective Agency Framework principle (IO) Internal Origination — insights
+   must arise from the person, not be pre-named for them. */
+const buildCheckinCtx = (emotions, text) => {
+  const emo = Array.isArray(emotions) ? emotions.filter(Boolean) : []
+  const tx  = (text || '').trim()
+  if (emo.length === 0 && !tx) return ''
+  let s = '\n\nRIGHT-NOW CHECK-IN (orientation only — do not echo these labels back unless the user uses them in their own writing):'
+  if (emo.length) s += `\n- Feelings they named on arrival: ${emo.join(', ')}`
+  if (tx)         s += `\n- Their own words: "${tx.replace(/"/g,'\\"')}"`
+  return s
+}
+
 /* pS1 — REFLECTIVE SUMMARY (Stage 1)
    Grounded in White's "scaffolding conversations": start close to the person's
    immediate experience, stay with their words, move slowly toward what matters.
    Grounded in Denborough: notice the person's response to difficulty — they are
    not passive recipients; look for moments of initiative, resistance, or care
    even within the difficulty. Do not locate the problem inside the person. */
-const pS1 = (card, story, lang) =>
-  `${SYS}\n\nSTAGE: REFLECTIVE SUMMARY\nEntry card: "${card}"\n\nPRIVACY REMINDER (include this as one plain sentence before your response, only on this first turn): "A note: as you write, please avoid including your full name, specific schools, workplaces, or immigration details — your story doesn't need those to be meaningful here."\n\nThey wrote:\n<USER_STORY>\n${story}\n</USER_STORY>\n\nYour task: reflect what you heard using their own words — not interpretations or labels.\n\nAlso scan for any "unique outcomes" (White): small moments in their telling when the difficulty did NOT fully define them — a choice they made, something they held onto, a way they responded. If you find one, name it gently in 1 clause. If you find none, do not invent one.\n\nLAYERED SCAFFOLD GUIDANCE (Han 2025): Reflection naturally moves from surface to depth — events first, then interpretation; fragments first, then pattern; what happened before what it means. Stay at the layer the person is actually at. Do not pull them toward meaning-making before they have placed the experience in the room.\n\nAssess depth:\n\nTOO SHORT (1-2 sentences, no concrete scene):\n- Stay at Layer 1 (emotional disclosure): one sentence acknowledging what they named. Then ONE grounding question asking for a specific moment or scene ("Can you tell me about a specific time when...?"). Do not interpret — only invite them to place the experience more concretely.\n- Begin with: [NEEDS_MORE]\n\nSHORT (one clear tension, enough detail):\n- Layer 1 → entering Layer 2: 1-2 sentences using their language to reflect what's at stake — including the specific difficulty AND any response or initiative you noticed. Then ask which part of this they want to go deeper into.\n- Begin with: [READY]\n\nLONG (multiple threads):\n- Layer 2 → touching Layer 3: 2-4 sentences using their specific words. Notice if any thread sounds like a "unique outcome" — a moment outside the main difficulty — or if something about what they care about (values) flickers through. Ask which part feels most important to stay with.\n- Begin with: [READY]\n\nDo not add emotional labels they didn't use. Do not conclude anything about who they are.\nPlain text, no markdown. Include tag at start.${langNote(lang)}`
+const pS1 = (card, story, checkinCtx, lang) =>
+  `${SYS}\n\nSTAGE: REFLECTIVE SUMMARY\nEntry card: "${card}"${checkinCtx || ''}\n\nPRIVACY REMINDER (include this as one plain sentence before your response, only on this first turn): "A note: as you write, please avoid including your full name, specific schools, workplaces, or immigration details — your story doesn't need those to be meaningful here."\n\nThey wrote:\n<USER_STORY>\n${story}\n</USER_STORY>\n\nYour task: reflect what you heard using their own words — not interpretations or labels.\n\nAlso scan for any "unique outcomes" (White): small moments in their telling when the difficulty did NOT fully define them — a choice they made, something they held onto, a way they responded. If you find one, name it gently in 1 clause. If you find none, do not invent one.\n\nLAYERED SCAFFOLD GUIDANCE (Han 2025): Reflection naturally moves from surface to depth — events first, then interpretation; fragments first, then pattern; what happened before what it means. Stay at the layer the person is actually at. Do not pull them toward meaning-making before they have placed the experience in the room.\n\nAssess depth:\n\nTOO SHORT (1-2 sentences, no concrete scene):\n- Stay at Layer 1 (emotional disclosure): one sentence acknowledging what they named. Then ONE grounding question asking for a specific moment or scene ("Can you tell me about a specific time when...?"). Do not interpret — only invite them to place the experience more concretely.\n- Begin with: [NEEDS_MORE]\n\nSHORT (one clear tension, enough detail):\n- Layer 1 → entering Layer 2: 1-2 sentences using their language to reflect what's at stake — including the specific difficulty AND any response or initiative you noticed. Then ask which part of this they want to go deeper into.\n- Begin with: [READY]\n\nLONG (multiple threads):\n- Layer 2 → touching Layer 3: 2-4 sentences using their specific words. Notice if any thread sounds like a "unique outcome" — a moment outside the main difficulty — or if something about what they care about (values) flickers through. Ask which part feels most important to stay with.\n- Begin with: [READY]\n\nDo not add emotional labels they didn't use. Do not conclude anything about who they are.\nPlain text, no markdown. Include tag at start.${langNote(lang)}`
 
 /* pDeep — REFLECTIVE SUMMARY second pass */
 const pDeep = (card, orig, _resp, extra, lang) =>
@@ -344,65 +370,98 @@ function derivePotVisual(reflection = {}, idx = 0) {
     0.1, 0.95
   )
 
-  const accents = ['sage', 'honey', 'terracotta', 'bluegrey', 'olive', 'lavender']
+  const accents = ['sage', 'terracotta', 'coral', 'lavender', 'bluegrey', 'honey', 'olive']
   const bodies = ['round', 'oval', 'tall']
   const glazes = ['wash', 'pooled', 'drift', 'satin']
   const plants = ['sprout', 'pair', 'bud', 'flower', 'branch']
 
-  // ── Accent (glaze color) from Schwartz value categories ──────────────────
-  // Maps the four Schwartz value supercategories from Emotional Experiences.xlsx
-  // onto our six-accent palette. When a story names values (e.g. "I want
-  // freedom" → Openness-to-change → lavender), the accent reflects that.
-  // Ties go to the higher-scoring category; if nothing matches, we fall back
-  // to the original keyword-based emotional palette (terracotta/bluegrey are
-  // reserved for emotion-coded language: grief/hurt/courage, clarity/distance).
-  const VALUE_KEYWORDS = {
-    // Conservation: security, conformity, tradition — rootedness
-    olive:    /\b(security|peace|certainty|stability|family|tradition|trust|safety|loyal(?:ty)?|discipline|conform(?:ity)?|authentic(?:ity)?|health|home)\b/gi,
-    // Self-Enhancement: achievement, power — vitality reaching outward
-    honey:    /\b(growth|achievement|ambition|competence|excellence|wealth|success|control|power|influence|status|recognition|ambitious)\b/gi,
-    // Self-Transcendence: benevolence, universalism — care
-    sage:     /\b(love|compassion|kindness|care|caring|helpfulness|justice|equality|fairness|contribution|commitment|wisdom|inner harmony|acceptance|ethics|appreciation|gratitude|empathy|service|meaning(?:ful)?)\b/gi,
-    // Openness to change: self-direction, stimulation, hedonism — becoming
-    lavender: /\b(creativity|creative|curiosity|curious|challenge|adventure|independence|independent|freedom|free|exploration|discover(?:y|ing)?|novelty|pleasure|self[- ]direction|courage(?:ous)?|privacy|intelligence)\b/gi,
+  // ── Accent (glaze color) from EMOTION FAMILY ─────────────────────────────
+  // Five emotion families from Emotional Experiences.xlsx + 情绪水滴.pdf →
+  // five pot glaze colors. Color encodes the emotional STATE — a fast,
+  // first-impression read of how this person was feeling.
+  //
+  //   Happy     → sage       (green)
+  //   Surprised → terracotta (warm orange)
+  //   Angry     → coral      (red)
+  //   Fearful   → lavender   (purple)
+  //   Sad       → bluegrey   (blue)
+  //
+  // Priority: (1) the right-now check-in selection, if any — direct mapping
+  // from the dominant family the user picked; (2) story keyword scan — if no
+  // check-in, scan the user's writing for emotion words; (3) seed-based
+  // default. The legacy `honey` / `olive` accents are retained as additional
+  // seed-rotation options but no longer carry semantic mapping.
+  const SUB_EMOTION_FAMILY = {
+    // Happy
+    tranquil:'Happy', content:'Happy', joyful:'Happy', interested:'Happy', loving:'Happy',
+    // Surprised
+    confused:'Surprised', awed:'Surprised', excited:'Surprised',
+    // Angry
+    resentful:'Angry', frustrated:'Angry', hateful:'Angry', contemptuous:'Angry',
+    // Fearful
+    insecure:'Fearful', ashamed:'Fearful', anxious:'Fearful',
+    // Sad
+    bored:'Sad', lonely:'Sad', disappointed:'Sad', guilty:'Sad', grieving:'Sad',
   }
-  // Emotion-coded fallback palette — when no Schwartz value is named, these
-  // catch the older emotional-quality language.
-  const EMOTION_ACCENT_KEYWORDS = {
-    terracotta: /\b(grief|grieving|honest|tender|hurt|hurting|raw|reckon(?:ing)?)\b/gi,
-    bluegrey:   /\b(truth|clarity|clear|space|distance|perspective|step ?back|see(?:ing)? clearly)\b/gi,
+  const FAMILY_ACCENT = {
+    Happy:'sage', Surprised:'terracotta', Angry:'coral',
+    Fearful:'lavender', Sad:'bluegrey',
   }
-  let accent = accents[seed % accents.length]
-  let accentScore = 0
-  for (const [name, re] of Object.entries(VALUE_KEYWORDS)) {
-    const score = (story.match(re) || []).length
-    if (score > accentScore) { accentScore = score; accent = name }
+  const EMOTION_FAMILY_KEYWORDS = {
+    Happy:     /\b(tranquil|calm|peace(?:ful)?|content|settled|grounded|joy(?:ful)?|interested|loving|love|warm|gratitude|grateful|relief|relieved|comfort(?:ed|able)?)\b/gi,
+    Surprised: /\b(surpris(?:ed|e)|awe(?:d|some)?|amazed|excited|excitement|wonder|confus(?:ed|ion))\b/gi,
+    Angry:     /\b(angry|anger|frustrat(?:ed|ion)|resent(?:ful|ment)?|hate(?:ful)?|contempt(?:uous)?|annoyed|irritat(?:ed|ion)?|furious)\b/gi,
+    Fearful:   /\b(afraid|fear(?:ful)?|anxious|anxiety|nervous|scared|worried|insecur(?:e|ity)|asham(?:ed|e)|vulnerable|vulnerability)\b/gi,
+    Sad:       /\b(sad(?:ness)?|lonely|loneliness|bored|grieving|grief|hopeless|disappoint(?:ed|ment)?|guilt(?:y)?|hurt|heavy|empty|lost)\b/gi,
   }
-  // Only consult the emotion-coded fallback when no Schwartz value scored.
-  if (accentScore === 0) {
-    for (const [name, re] of Object.entries(EMOTION_ACCENT_KEYWORDS)) {
-      const score = (story.match(re) || []).length
-      if (score > accentScore) { accentScore = score; accent = name }
+  // 1. Check-in selection takes priority
+  let accent = null
+  const checkinEmotions = Array.isArray(reflection.checkinEmotions) ? reflection.checkinEmotions : []
+  if (checkinEmotions.length > 0) {
+    const counts = {}
+    for (const e of checkinEmotions) {
+      const fam = SUB_EMOTION_FAMILY[String(e).toLowerCase()]
+      if (fam) counts[fam] = (counts[fam] || 0) + 1
     }
+    const top = Object.entries(counts).sort((a,b) => b[1] - a[1])[0]
+    if (top) accent = FAMILY_ACCENT[top[0]]
   }
+  // 2. Story keyword scan
+  if (!accent) {
+    const familyHits = {}
+    let bestFamily = null
+    let bestScore = 0
+    for (const [fam, re] of Object.entries(EMOTION_FAMILY_KEYWORDS)) {
+      const score = (story.match(re) || []).length
+      familyHits[fam] = score
+      if (score > bestScore) { bestScore = score; bestFamily = fam }
+    }
+    if (bestFamily) accent = FAMILY_ACCENT[bestFamily]
+  }
+  // 3. Seed-based default
+  if (!accent) accent = accents[seed % accents.length]
 
-  // ── Body type from Ekman-style emotion categories ────────────────────────
-  // Five core emotion families from Emotional Experiences.xlsx. Each maps to
-  // one of the three pot bodies based on the felt posture of that emotion:
-  //   • happy / loving / settled  → round  (grounded, settled)
-  //   • surprised / fearful       → tall   (reaching, alert, open-upward)
-  //   • angry / sad               → oval   (multiple internal threads)
-  // The geometry-based fallback (groundedness/openness/complexity) only
-  // takes over when no emotion words are detected — so a story that says
-  // "I felt anxious and small" overrides any seed-driven default.
-  const EMOTION_BODY_KEYWORDS = {
-    round: /\b(tranquil|calm|peace(?:ful)?|content|settled|grounded|joy(?:ful)?|loving|love|warm|gratitude|grateful|relief|relieved|comfort(?:ed|able)?)\b/gi,
-    tall:  /\b(surpris(?:ed|e)|awe(?:d|some)?|amazed|excited|excitement|wonder|hopeful|interested|curious|alert|eager|anxious|anxiety|afraid|fear(?:ful)?|nervous|scared|worried|vulnerable|vulnerability)\b/gi,
-    oval:  /\b(angry|anger|frustrat(?:ed|ion)|resent(?:ful|ment)?|hate(?:ful)?|contempt(?:uous)?|annoyed|sad(?:ness)?|lonely|loneliness|grieving|grief|hopeless|disappoint(?:ed|ment)?|ashamed|shame|guilt(?:y)?|hurt|heavy|empty|lost|conflicted|confus(?:ed|ion))\b/gi,
+  // ── Body type from CORE VALUES ───────────────────────────────────────────
+  // Core values from Emotional Experiences.xlsx (Peace, Growth, Pleasure,
+  // Creativity, Curiosity, Love, Justice, Acceptance, Certainty, Compassion,
+  // Challenge, Responsibility, Control) → three pot bodies. Shape encodes
+  // the value POSTURE — an enduring identity-level read, in contrast to the
+  // emotional state encoded by color.
+  //
+  //   round  — care / fullness  (Love, Compassion, Pleasure, Gratitude)
+  //   tall   — reaching upward  (Growth, Challenge, Curiosity, Creativity, Control)
+  //   oval   — settled / wide   (Peace, Acceptance, Certainty, Justice, Responsibility)
+  //
+  // We retain the existing 3 SVG body shapes (round/oval/tall) for now;
+  // future work can add `low`, `bud-vase`, `upright` as additional shapes.
+  const VALUE_BODY_KEYWORDS = {
+    round: /\b(love|loving|compassion|kindness|care|caring|warmth|tender(?:ness)?|pleasure|joy(?:ful)?|gratitude|grateful|empathy|belonging|connect(?:ion|ed)?|intimacy)\b/gi,
+    tall:  /\b(growth|grow(?:ing)?|challenge|curiosity|curious|creativity|creative|control|ambition|ambitious|achievement|achieve|exploration|explor(?:e|ing)?|adventure|freedom|free|independence|independent|courage(?:ous)?|discover(?:y|ing)?)\b/gi,
+    oval:  /\b(peace|peaceful|acceptance|accept(?:ing)?|certainty|certain|stability|stable|security|secure|justice|just|fairness|fair|responsibility|responsible|tradition|family|home|safety|trust|loyal(?:ty)?|wisdom|integrity|honesty)\b/gi,
   }
   let bodyType = null
   let bodyScore = 0
-  for (const [name, re] of Object.entries(EMOTION_BODY_KEYWORDS)) {
+  for (const [name, re] of Object.entries(VALUE_BODY_KEYWORDS)) {
     const score = (story.match(re) || []).length
     if (score > bodyScore) { bodyScore = score; bodyType = name }
   }
@@ -832,6 +891,33 @@ const TRANS = {
       {thread:'Who you may be becoming',       statement:'It could be that this moment is part of a longer change.',        opening:'What feels different about how you see yourself now?'},
     ],
     errS5: "Your reflection is here. Take what fits, revise what doesn't.",
+    // Right-now check-in (between consent and entry cards)
+    checkinTitle: "Right now",
+    checkinPrompt: "What's here in you right now? Pick a few — or none. You don't need to know what they mean.",
+    checkinTextLabel: "Want to add a few words? (optional)",
+    checkinTextPlaceholder: "A mood, a thought, a body sensation…",
+    checkinSkip: "Skip",
+    checkinContinue: "Continue",
+    emotionFamilies: [
+      { id:'Happy',     label:'Happy',     items:[
+        {id:'Tranquil',label:'Tranquil'},{id:'Content',label:'Content'},{id:'Joyful',label:'Joyful'},
+        {id:'Interested',label:'Interested'},{id:'Loving',label:'Loving'},
+      ]},
+      { id:'Surprised', label:'Surprised', items:[
+        {id:'Confused',label:'Confused'},{id:'Awed',label:'Awed'},{id:'Excited',label:'Excited'},
+      ]},
+      { id:'Angry',     label:'Angry',     items:[
+        {id:'Resentful',label:'Resentful'},{id:'Frustrated',label:'Frustrated'},
+        {id:'Hateful',label:'Hateful'},{id:'Contemptuous',label:'Contemptuous'},
+      ]},
+      { id:'Fearful',   label:'Fearful',   items:[
+        {id:'Insecure',label:'Insecure'},{id:'Ashamed',label:'Ashamed'},{id:'Anxious',label:'Anxious'},
+      ]},
+      { id:'Sad',       label:'Sad',       items:[
+        {id:'Bored',label:'Bored'},{id:'Lonely',label:'Lonely'},{id:'Disappointed',label:'Disappointed'},
+        {id:'Guilty',label:'Guilty'},{id:'Grieving',label:'Grieving'},
+      ]},
+    ],
   },
   zh: {
     begin:'开始', pastReflections:'历史记录', back:'← 返回',
@@ -896,6 +982,33 @@ const TRANS = {
       {thread:'你正在成为的样子', statement:'这一刻可能是一段更长的变化的一部分。',     opening:'你看自己的眼光，现在和以前有什么不同？'},
     ],
     errS5: '你的反思在这里。留下合适的部分，修改其他不合适的。',
+    // Right-now check-in (consent 与入口卡片之间的小停顿)
+    checkinTitle: '此刻',
+    checkinPrompt: '此刻你身体或心里有什么？选几个 — 或都不选。不需要知道它是什么意思。',
+    checkinTextLabel: '想多写一句吗？（可选）',
+    checkinTextPlaceholder: '一个情绪、一个念头、一个身体的感受…',
+    checkinSkip: '跳过',
+    checkinContinue: '继续',
+    emotionFamilies: [
+      { id:'Happy',     label:'喜悦', items:[
+        {id:'Tranquil',label:'安宁'},{id:'Content',label:'满足'},{id:'Joyful',label:'欢喜'},
+        {id:'Interested',label:'好奇'},{id:'Loving',label:'被爱 / 爱'},
+      ]},
+      { id:'Surprised', label:'惊讶', items:[
+        {id:'Confused',label:'困惑'},{id:'Awed',label:'敬畏'},{id:'Excited',label:'兴奋'},
+      ]},
+      { id:'Angry',     label:'愤怒', items:[
+        {id:'Resentful',label:'怨怼'},{id:'Frustrated',label:'挫败'},
+        {id:'Hateful',label:'憎恶'},{id:'Contemptuous',label:'轻蔑'},
+      ]},
+      { id:'Fearful',   label:'恐惧', items:[
+        {id:'Insecure',label:'不安'},{id:'Ashamed',label:'羞愧'},{id:'Anxious',label:'焦虑'},
+      ]},
+      { id:'Sad',       label:'悲伤', items:[
+        {id:'Bored',label:'倦怠'},{id:'Lonely',label:'孤单'},{id:'Disappointed',label:'失望'},
+        {id:'Guilty',label:'内疚'},{id:'Grieving',label:'哀恸'},
+      ]},
+    ],
   }
 }
 
@@ -1089,11 +1202,15 @@ export default function Home(){
   // Stage 3 hybrid layout: 'focus' shows one question at a time; 'all' shows the
   // full 4-card collapsible list. Default to focus per the user's requested UX.
   const[s3Mode,setS3Mode]=useState('focus');const[s3Idx,setS3Idx]=useState(0)
+  // Right-now check-in: array of selected sub-emotion ids (e.g. ['Anxious','Lonely'])
+  // and an optional free-text supplement. Both seed the pot visual and are
+  // included in the saved reflection.
+  const[checkinEm,setCheckinEm]=useState([]);const[checkinTx,setCheckinTx]=useState('')
   const sr=useRef(null)
   useEffect(()=>{sr.current?.scrollTo({top:0,behavior:'smooth'})},[stage])
   useEffect(()=>{loadReflections().then(setPast)},[])
-  const reset=useCallback(()=>{setSC(null);setStory('');setS1('');setFocal('');setRC([]);setCR({});setOC(null);setRvS([]);setRvM({});setStmtDetail({});setOT(null);setOTx('');setSvd(null);setVw(null);setNm(false);setDR('');setDT('');setErr('');setS3Mode('focus');setS3Idx(0)},[])
-  const sd=useCallback(()=>({timestamp:Date.now(),entryCard:selC?.label,userStory:story,stage1Response:s1,focalPointText:focal,cardResponses:cR,confirmedStatements:rvS.filter((_,i)=>rvM[i]==='fits'||rvM[i]==='notquite').map(s=>s?.statement||s),outputType:oT,outputText:oTx,stmtDetails:stmtDetail}),[selC,story,s1,focal,cR,rvS,rvM,stmtDetail,oT,oTx])
+  const reset=useCallback(()=>{setSC(null);setStory('');setS1('');setFocal('');setRC([]);setCR({});setOC(null);setRvS([]);setRvM({});setStmtDetail({});setOT(null);setOTx('');setSvd(null);setVw(null);setNm(false);setDR('');setDT('');setErr('');setS3Mode('focus');setS3Idx(0);setCheckinEm([]);setCheckinTx('')},[])
+  const sd=useCallback(()=>({timestamp:Date.now(),entryCard:selC?.label,userStory:story,stage1Response:s1,focalPointText:focal,cardResponses:cR,confirmedStatements:rvS.filter((_,i)=>rvM[i]==='fits'||rvM[i]==='notquite').map(s=>s?.statement||s),outputType:oT,outputText:oTx,stmtDetails:stmtDetail,checkinEmotions:checkinEm,checkinText:checkinTx}),[selC,story,s1,focal,cR,rvS,rvM,stmtDetail,oT,oTx,checkinEm,checkinTx])
   const W={minHeight:'100vh',background:C.kiln,fontFamily:'DM Serif Display,Georgia,serif',color:C.charcoal,display:'flex',justifyContent:'center',overflowY:'auto'}
   const I={width:'100%',maxWidth:560,padding:'32px 18px 64px'}
 
@@ -1141,9 +1258,61 @@ export default function Home(){
         </div>
       </FadeIn>
       <FadeIn delay={200}><div style={{textAlign:'center',display:'flex',flexDirection:'column',gap:8}}>
-        <Btn onClick={()=>setStage('entry')} style={{padding:'11px 44px',fontSize:14,borderRadius:24}}>{T.continueBtn}</Btn>
+        <Btn onClick={()=>setStage('checkin')} style={{padding:'11px 44px',fontSize:14,borderRadius:24}}>{T.continueBtn}</Btn>
         <button onClick={()=>setStage('landing')} style={{fontSize:12,color:C.ash,background:'none',border:'none',cursor:'pointer',fontFamily:'DM Sans,sans-serif',padding:'4px 0'}}>{T.back}</button>
       </div></FadeIn>
+    </div></div>)
+  }
+
+  // ── Right-now check-in ────────────────────────────────────────────────────
+  // A skippable, single-screen pre-stage: pick a few emotion droplets that
+  // describe what's here right now, optionally add a few words, then enter the
+  // 6-card flow. Selection seeds the pot's color and is saved on the reflection.
+  if(stage==='checkin'){
+    const T = TRANS[lang]
+    const FAMILY_ACCENT_LOCAL = {Happy:'sage',Surprised:'terracotta',Angry:'coral',Fearful:'lavender',Sad:'bluegrey'}
+    const toggle=(id)=>setCheckinEm(prev => prev.includes(id) ? prev.filter(x=>x!==id) : [...prev, id])
+    return(
+    <div style={W} ref={sr}><div style={I}>
+      <FadeIn><div style={{textAlign:'center',marginBottom:14}}><Pot phase="clay" size={48}/></div></FadeIn>
+      <FadeIn delay={40}><h2 style={{fontSize:20,fontWeight:400,margin:'0 0 8px',textAlign:'center',letterSpacing:'-0.01em'}}>{T.checkinTitle}</h2></FadeIn>
+      <FadeIn delay={80}><p style={{fontSize:14,color:C.ash,lineHeight:1.65,marginBottom:18,textAlign:'center',fontFamily:'DM Sans,sans-serif',maxWidth:380,marginLeft:'auto',marginRight:'auto'}}>{T.checkinPrompt}</p></FadeIn>
+      <div style={{display:'flex',flexDirection:'column',gap:10,marginBottom:18}}>
+        {T.emotionFamilies.map((fam,fi)=>{
+          const accentName = FAMILY_ACCENT_LOCAL[fam.id] || 'sage'
+          const A = ACCENTS[accentName]
+          return(
+            <FadeIn key={fam.id} delay={100+fi*40}>
+              <div style={{background:C.cream,borderRadius:14,padding:'10px 12px',border:`1px solid ${C.line}`,boxShadow:C.glow}}>
+                <p style={{fontSize:11,letterSpacing:'0.10em',textTransform:'uppercase',color:A.center,margin:'0 0 8px',fontFamily:'DM Sans,sans-serif'}}>{fam.label}</p>
+                <div style={{display:'flex',flexWrap:'wrap',gap:6}}>
+                  {fam.items.map(item=>{
+                    const on = checkinEm.includes(item.id)
+                    return(
+                      <button key={item.id} onClick={()=>toggle(item.id)}
+                        style={{padding:'6px 12px',borderRadius:16,border:`1.5px solid ${on?A.center:C.line}`,
+                          background:on?A.glazeSoft:'transparent',color:on?A.center:C.stone,
+                          fontSize:13,fontFamily:'DM Sans,sans-serif',cursor:'pointer',transition:'all 0.15s'}}>
+                        {item.label}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            </FadeIn>
+          )
+        })}
+      </div>
+      <FadeIn delay={360}>
+        <p style={{fontSize:12,color:C.ash,marginBottom:6,fontFamily:'DM Sans,sans-serif'}}>{T.checkinTextLabel}</p>
+        <TA value={checkinTx} onChange={setCheckinTx} placeholder={T.checkinTextPlaceholder} minH={70}/>
+      </FadeIn>
+      <FadeIn delay={420}>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginTop:14,gap:10}}>
+          <Btn v="secondary" onClick={()=>{setCheckinEm([]);setCheckinTx('');setStage('entry')}} style={{fontSize:13}}>{T.checkinSkip}</Btn>
+          <Btn onClick={()=>setStage('entry')} style={{fontSize:14,padding:'9px 30px'}}>{T.checkinContinue}</Btn>
+        </div>
+      </FadeIn>
     </div></div>)
   }
 
@@ -1152,7 +1321,7 @@ export default function Home(){
       <FadeIn><div style={{textAlign:'center',marginBottom:18}}><Pot phase="clay" size={48}/></div></FadeIn>
       <FadeIn delay={40}><p style={{fontSize:15,color:C.ash,marginBottom:16,textAlign:'center',fontFamily:'DM Sans,sans-serif'}}>{TRANS[lang].pickStart}</p></FadeIn>
       <div style={{display:'flex',flexDirection:'column',gap:6,marginBottom:20}}>{TRANS[lang].cards.map((c,i)=><FadeIn key={i} delay={60+i*35}><button onClick={()=>setSC(selC?.label===c.label?null:c)} style={{width:'100%',textAlign:'left',padding:'12px 14px',borderRadius:14,border:`1.5px solid ${selC?.label===c.label?C.celadon:C.line}`,background:selC?.label===c.label?C.celadonP+'22':C.cream,cursor:'pointer',fontSize:14,fontFamily:'DM Serif Display,Georgia,serif',color:C.charcoal,transition:'all 0.2s',boxShadow:C.glow}}>{c.label}</button></FadeIn>)}</div>
-      {selC&&<FadeIn key={selC.label}><p style={{fontSize:14,color:C.ash,lineHeight:1.6,marginBottom:8,fontStyle:'italic',fontFamily:'DM Sans,sans-serif'}}>{selC.nudge}</p><TA value={story} onChange={setStory} placeholder={TRANS[lang].writeHere} minH={130}/><ErrMsg err={err}/><div style={{textAlign:'right',marginTop:10}}><Btn onClick={async()=>{setLd(true);setErr('');setStage('stage1');try{const raw=await ask(pS1(selC.label,story,lang));if(raw.startsWith('[NEEDS_MORE]')){setNm(true);setDR(raw.replace('[NEEDS_MORE]','').trim());setS1('')}else{setNm(false);setS1(raw.replace('[READY]','').trim())}}catch(e){setErr(e.message);setS1(TRANS[lang].errS1Short)}setLd(false)}} disabled={!story.trim()}>{TRANS[lang].continue}</Btn></div></FadeIn>}
+      {selC&&<FadeIn key={selC.label}><p style={{fontSize:14,color:C.ash,lineHeight:1.6,marginBottom:8,fontStyle:'italic',fontFamily:'DM Sans,sans-serif'}}>{selC.nudge}</p><TA value={story} onChange={setStory} placeholder={TRANS[lang].writeHere} minH={130}/><ErrMsg err={err}/><div style={{textAlign:'right',marginTop:10}}><Btn onClick={async()=>{setLd(true);setErr('');setStage('stage1');try{const raw=await ask(pS1(selC.label,story,buildCheckinCtx(checkinEm,checkinTx),lang));if(raw.startsWith('[NEEDS_MORE]')){setNm(true);setDR(raw.replace('[NEEDS_MORE]','').trim());setS1('')}else{setNm(false);setS1(raw.replace('[READY]','').trim())}}catch(e){setErr(e.message);setS1(TRANS[lang].errS1Short)}setLd(false)}} disabled={!story.trim()}>{TRANS[lang].continue}</Btn></div></FadeIn>}
     </div></div>)
 
   if(stage==='stage1')return(
@@ -1166,7 +1335,7 @@ export default function Home(){
 
   if(stage==='stage3'){
     const ans=Object.values(cR).filter(v=>v?.trim()).length
-    const _pv3=derivePotVisual({entryCard:selC?.label,userStory:story},0)
+    const _pv3=derivePotVisual({entryCard:selC?.label,userStory:story,checkinEmotions:checkinEm},0)
     const T3=TRANS[lang]
     // Stage 3 hybrid layout: default 'focus' shows one question at a time with
     // prev/next; the user can flip to 'all' to peek at the full list. The
@@ -1264,7 +1433,7 @@ export default function Home(){
     // et al. RA) by not forcing the person to commit to all four threads.
     const markedCount=rvS.length>0?Object.values(rvM).filter(v=>v==='fits'||v==='notquite'||v==='no').length:0
     const done=markedCount>=2
-    const _pv4=derivePotVisual({entryCard:selC?.label,userStory:story},0)
+    const _pv4=derivePotVisual({entryCard:selC?.label,userStory:story,checkinEmotions:checkinEm},0)
     return(<div style={W} ref={sr}><div style={I}>
       <div style={{position:'sticky',top:0,zIndex:20,background:C.kiln,paddingTop:6,paddingBottom:4,marginBottom:4}}>
         <div style={{textAlign:'center',marginBottom:4}}><Pot phase="glazed" size={48} {..._pv4}/></div>
@@ -1316,7 +1485,7 @@ export default function Home(){
       const detail=stmtDetail[i]
       return detail?.trim()?`${base}\n(More context: ${detail})`:base
     }).filter(Boolean)
-    const _pv5=derivePotVisual({entryCard:selC?.label,userStory:story,confirmedStatements:conf},0)
+    const _pv5=derivePotVisual({entryCard:selC?.label,userStory:story,confirmedStatements:conf,checkinEmotions:checkinEm},0)
     // Auto-recommend based on which thread category got 'fits':
     // idx 0 = newly seen → see | idx 1 = unresolved → keep | idx 2/3 = matters/becoming → carry
     const fitsIdx=rvS.findIndex((_,i)=>rvM[i]==='fits')
@@ -1370,6 +1539,6 @@ export default function Home(){
 
   if(stage==='artifact'){const d=sd();return(<div style={W} ref={sr}><div style={I}>{ld?<Dots/>:<FadeIn><Journey data={d} onEdit={t=>setOTx(t)} onExport={()=>dlFile(buildExportText(d),`reflection-${new Date().toISOString().slice(0,10)}.txt`)}/><div style={{display:'flex',justifyContent:'center',gap:8,marginTop:20}}><Btn onClick={async()=>{const d2=sd();const id=await saveReflection(d2);if(id)setSvd(id);setPast(await loadReflections());setStage('closing')}}>{svd?TRANS[lang].saved:TRANS[lang].saveFinish}</Btn><Btn v="secondary" onClick={()=>setStage('closing')}>{TRANS[lang].finish}</Btn></div></FadeIn>}</div></div>)}
 
-  if(stage==='closing'){const _pvc=derivePotVisual({entryCard:selC?.label,userStory:story,confirmedStatements:rvS.filter((_,i)=>rvM[i]==='fits'||rvM[i]==='notquite').map(s=>s?.statement||s),outputType:oT},0);return(<div style={W} ref={sr}><div style={{...I,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',minHeight:'55vh'}}><FadeIn><div style={{textAlign:'center',maxWidth:320}}><Pot phase="blooming" size={64} {..._pvc} showFace/><p style={{fontSize:16,lineHeight:1.75,margin:'16px 0 6px'}}>{TRANS[lang].thisIsYours}</p><p style={{fontSize:15,lineHeight:1.55,color:C.stone,marginBottom:4,fontFamily:'DM Sans,sans-serif'}}>{TRANS[lang].toKeep}</p><Sep/><p style={{fontSize:15,color:C.ash,marginBottom:22,fontFamily:'DM Sans,sans-serif'}}>{TRANS[lang].thankyou}</p><div style={{display:'flex',gap:8,justifyContent:'center',flexWrap:'wrap'}}><Btn v="secondary" onClick={()=>{reset();setStage('landing')}}>{TRANS[lang].home}</Btn>{(svd||past.length>0)&&<Btn v="soft" onClick={()=>{setStage('history');setVw(null)}}>{TRANS[lang].pastReflections}</Btn>}</div></div></FadeIn><FadeIn delay={80}><div style={{marginTop:20,background:C.slip,borderRadius:14,padding:'12px 16px',border:`1px dashed ${C.celadonP}`,maxWidth:300,margin:'20px auto 0'}}><p style={{fontSize:14,color:C.stone,fontFamily:'DM Sans,sans-serif',lineHeight:1.65,margin:0,textAlign:'center'}}>{TRANS[lang].synthesisReminder}</p></div></FadeIn></div></div>)}
+  if(stage==='closing'){const _pvc=derivePotVisual({entryCard:selC?.label,userStory:story,confirmedStatements:rvS.filter((_,i)=>rvM[i]==='fits'||rvM[i]==='notquite').map(s=>s?.statement||s),outputType:oT,checkinEmotions:checkinEm},0);return(<div style={W} ref={sr}><div style={{...I,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',minHeight:'55vh'}}><FadeIn><div style={{textAlign:'center',maxWidth:320}}><Pot phase="blooming" size={64} {..._pvc} showFace/><p style={{fontSize:16,lineHeight:1.75,margin:'16px 0 6px'}}>{TRANS[lang].thisIsYours}</p><p style={{fontSize:15,lineHeight:1.55,color:C.stone,marginBottom:4,fontFamily:'DM Sans,sans-serif'}}>{TRANS[lang].toKeep}</p><Sep/><p style={{fontSize:15,color:C.ash,marginBottom:22,fontFamily:'DM Sans,sans-serif'}}>{TRANS[lang].thankyou}</p><div style={{display:'flex',gap:8,justifyContent:'center',flexWrap:'wrap'}}><Btn v="secondary" onClick={()=>{reset();setStage('landing')}}>{TRANS[lang].home}</Btn>{(svd||past.length>0)&&<Btn v="soft" onClick={()=>{setStage('history');setVw(null)}}>{TRANS[lang].pastReflections}</Btn>}</div></div></FadeIn><FadeIn delay={80}><div style={{marginTop:20,background:C.slip,borderRadius:14,padding:'12px 16px',border:`1px dashed ${C.celadonP}`,maxWidth:300,margin:'20px auto 0'}}><p style={{fontSize:14,color:C.stone,fontFamily:'DM Sans,sans-serif',lineHeight:1.65,margin:0,textAlign:'center'}}>{TRANS[lang].synthesisReminder}</p></div></FadeIn></div></div>)}
   return null
 }
