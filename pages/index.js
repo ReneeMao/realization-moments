@@ -856,7 +856,10 @@ const TRANS = {
       {label:'Something that feels different lately', nudge:"What feels different about you, or how you see things? Even something subtle counts."},
       {label:'Something someone said that stayed with me', nudge:"What did they say? What was the situation? You don't need to know why it stuck."},
       {label:'Two parts of me want different things', nudge:"What does each part want? What does it feel like to be in between?"},
-      {label:'A thought, feeling, or sensation I am having right now.', nudge:"What's here in you right now? A mood, a thought, a body sensation — anything you notice. You don't need to know what it means."},
+      // The "thought / feeling / sensation right now" card was removed once
+      // the dedicated right-now check-in screen landed before this entry list
+      // — the check-in already captures that, so leaving the card in created
+      // a redundant on-ramp.
     ],
     // Consent page (was previously hardcoded English in JSX)
     consent: {
@@ -951,7 +954,8 @@ const TRANS = {
       {label:'最近感觉有些不同的事', nudge:'你或你看待事物的方式，有什么不一样？哪怕是微小的变化都算。'},
       {label:'某人说的话，一直留在我心里', nudge:'他们说了什么？是什么情况？不需要知道为什么它还在。'},
       {label:'我内心有两个部分想要不同的东西', nudge:'每个部分想要什么？身处两者之间是什么感觉？'},
-      {label:'我此刻的一个想法、感受或身体感觉。', nudge:'此刻你身体或心里有什么？情绪、念头、身体的感受 — 都可以。不需要知道它是什么意思。'},
+      // 第 6 张卡（"此刻的一个想法/感受/身体感觉"）在新加的 right-now check-in
+      // 页面上线之后就移除了 —— check-in 已经在问这个，留着会重复。
     ],
     consent: {
       whatIsBody:    '一个有结构的反思空间，用来停留在一个"领悟时刻" — 一些让你对自己的经验有了不同理解的瞬间。AI 会陪你停在你的故事里，留意什么对你重要，最后留下一份仍然属于你自己的东西。',
