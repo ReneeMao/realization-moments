@@ -1,6 +1,19 @@
 -- ═══════════════════════════════════════════════════════════════════
 -- Realization Moments — Supabase Schema
 -- Supabase Dashboard → SQL Editor → New query → paste → Run
+--
+-- IMPORTANT — read before deploying:
+-- This schema denies anonymous (anon) access entirely. All reads and writes
+-- happen server-side via /api/data using SUPABASE_SERVICE_ROLE_KEY (which
+-- bypasses RLS). This means:
+--   1. The `anon` key in the browser cannot read or modify any rows.
+--   2. The Next.js server holds the service-role key and scopes every query
+--      to the request's session_id, so two browsers with two different UUIDs
+--      cannot see each other's reflections.
+--   3. Without auth, the only "identity" is the localStorage UUID. Anyone
+--      who learns another user's UUID (e.g. by seeing it on their screen)
+--      could impersonate them. This is acceptable for a research prototype.
+--      For production, add Supabase Auth and key rows by auth.uid().
 -- ═══════════════════════════════════════════════════════════════════
 
 -- ── Reflections ──────────────────────────────────────────────────────
@@ -38,6 +51,19 @@ CREATE INDEX IF NOT EXISTS summaries_session_idx ON summaries (session_id);
 ALTER TABLE reflections ENABLE ROW LEVEL SECURITY;
 ALTER TABLE summaries   ENABLE ROW LEVEL SECURITY;
 
--- Open policies for research prototype (tighten when you add auth)
-CREATE POLICY "allow_all_reflections" ON reflections FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "allow_all_summaries"   ON summaries   FOR ALL USING (true) WITH CHECK (true);
+-- If you ran the previous "allow_all_*" policies, drop them so the new
+-- restrictive defaults take effect.
+DROP POLICY IF EXISTS "allow_all_reflections" ON reflections;
+DROP POLICY IF EXISTS "allow_all_summaries"   ON summaries;
+
+-- No anon policies are defined. With RLS enabled and no policy granting
+-- access, the `anon` role (i.e. the browser-side client using the public
+-- anon key) cannot SELECT, INSERT, UPDATE, or DELETE these rows.
+--
+-- The `service_role` key, used only by the Next.js API routes, bypasses
+-- RLS entirely and is the only path through which data flows.
+--
+-- Verify with:
+--   SET ROLE anon;
+--   SELECT * FROM reflections;   -- should return 0 rows / permission denied
+--   RESET ROLE;
