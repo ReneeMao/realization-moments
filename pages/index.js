@@ -1967,35 +1967,44 @@ ${snippets}
 </REFLECTIONS>
 
 TASK
-Write a short, direct note — 4 to 6 plain sentences — addressed to the person themselves (use "you").
-Speak to them as someone who has been quietly watching what they've been carrying across these reflections.
+Write a warm, direct note — 5 to 7 plain sentences — addressed to the person themselves (use "you").
+Speak to them as someone who has read everything they've written and genuinely sees what they've been carrying.
 
-This is not a summary of each session.
-This is not a diagnosis or final interpretation.
-This is not advice.
-This is not a compliment or validation.
-This is a gentle, honest observation of what seems to keep coming back for them.
+This note should do three things:
+
+1. VALIDATE what has been real and hard.
+   Acknowledge the weight of what they've been navigating — not to flatter them, but because it genuinely deserves to be named.
+   Make them feel seen, not analyzed.
+
+2. NOTICE a pattern or thread across the reflections that they may not have named themselves.
+   This is where you offer a small new angle — something they were circling but perhaps didn't say out loud.
+   This should feel like a gentle revelation, not a diagnosis.
+   It should make them think: "I hadn't quite put it that way, but yes."
+
+   To find this: look for what recurs across sessions — a tension, a care, a question, a way they respond to difficulty.
+   Name it softly. You are offering a possible lens, not a verdict.
+
+3. END with one quiet sentence that opens something rather than closes it.
+   A question they might sit with. An observation that invites them to keep looking.
+   Not a lesson. Not a resolution. Something that feels like a door left slightly open.
 
 ADDRESS THE PERSON DIRECTLY.
 Use "you" — not "the person", not "they", not "one".
 
 Examples of the right register:
-"Across these reflections, something about belonging seems to keep surfacing for you."
-"You've returned more than once to the tension between what others expected and what felt true to you."
-"There may be a thread here about what you do when a situation doesn't leave room for all of you."
-"You've been sitting with something that doesn't seem to have a clean answer yet."
+"Something about this period stands out — you kept showing up to look at hard things, even when there was no easy answer waiting."
+"Across these reflections, there's a recurring tension between what you're expected to hold and what you actually have space for."
+"You seem to know when something doesn't fit, even before you have words for why — that noticing seems to matter to you."
+"What strikes me is that you haven't been looking for resolution. You've been looking for honesty. That's a different thing."
+"I wonder if part of what you're navigating is the gap between how things look from the outside and how they actually feel from inside."
 
-Use the person's own words when possible — echo back what they wrote, not new language you've invented.
-Name recurring themes tentatively — "something like…", "there may be…", "it seems as though…", "you seem to keep returning to…"
-Do not decide what the threads mean.
-Do not push toward resolution, growth, or action.
-Do not skip difficulty or hardship — name what has been hard, not just what has been noticed.
-Do not be falsely warm or congratulatory.
+Use the person's own words when possible — echo their language, not new language you've invented.
+Name recurring themes tentatively — "something like…", "there may be…", "what strikes me is…", "I wonder if…"
+Do not skip difficulty — name what has been hard with the same weight the person gave it.
+Do not be falsely cheerful, motivational, or congratulatory.
+Do not tell them what to do next.
 
-If the reflections are very different from each other, name that honestly — you do not need to force a connection.
-
-End with one quiet sentence — a thread, question, or honest observation addressed directly to them.
-Something they might return to. Not a conclusion. Not an instruction.
+If the reflections are genuinely different from each other, you can still look for an underlying question or way of engaging that connects them — even loosely.
 
 Plain text only. No markdown. No bullet points. No headings.
 ${langNote(lang)}`
