@@ -89,7 +89,7 @@ export default async function handler(req, res) {
   }
 
   // Build messages array from either { system, user } or legacy { prompt }.
-  let { system, user, prompt, json } = req.body || {}
+  let { system, user, prompt, json, maxTokens } = req.body || {}
   let messages
 
   if (typeof system === 'string' && typeof user === 'string' && user.length > 0) {
@@ -120,8 +120,8 @@ export default async function handler(req, res) {
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
 
     const completion = await openai.chat.completions.create({
-      model: 'gpt-4o',       // change to 'gpt-4o-mini' to reduce cost
-      max_tokens: 1800,
+      model: 'gpt-4.1',      // upgraded from gpt-4o for better instruction-following
+      max_tokens: maxTokens || 1800,
       temperature,
       messages,
     })
