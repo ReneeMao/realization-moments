@@ -3098,6 +3098,15 @@ function Hist({items,onBack,onView,onDel,lang='en'}){
   )
 }
 
+function buildCheckinCtx(em, tx) {
+  const parts = []
+  if (Array.isArray(em) && em.length > 0)
+    parts.push(`Check-in emotions: ${em.join(', ')}`)
+  if (typeof tx === 'string' && tx.trim())
+    parts.push(`Check-in note: ${tx.trim()}`)
+  return parts.length ? '\n\nCheck-in context:\n' + parts.join('\n') : ''
+}
+
 /* ─── MAIN APP ─── */
 export default function Home(){
   const[stage,setStage]=useState('landing');const[lang,setLang]=useState('en');const[selC,setSC]=useState(null);const[story,setStory]=useState('');const[s1,setS1]=useState('');const[focal,setFocal]=useState('');const[rC,setRC]=useState([]);const[cR,setCR]=useState({});const[oC,setOC]=useState(null);const[rvS,setRvS]=useState([]);const[rvM,setRvM]=useState({});const[stmtDetail,setStmtDetail]=useState({});const[oT,setOT]=useState(null);const[oTx,setOTx]=useState('');const[ld,setLd]=useState(false);const[err,setErr]=useState('');const[past,setPast]=useState([]);const[vw,setVw]=useState(null);const[svd,setSvd]=useState(null);const[nm,setNm]=useState(false);const[dR,setDR]=useState('');const[dT,setDT]=useState('')
