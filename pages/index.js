@@ -232,6 +232,8 @@ Prefer simple phrases like:
 - "这可能不只是你一个人的问题，也和周围的期待有关"
 - "好像有好几种声音同时在拉你"
 - "也许现在不用把它讲成一个完整的故事"
+
+IMPORTANT: Write ALL output in Chinese, including question labels, thread titles, statements, and any JSON string values. Do not use English words except for names or terms the user themselves wrote in English.
 `;
   }
 
@@ -519,8 +521,11 @@ Reference grounding:
 These references guide behavior but should not appear in user-facing output.
 */
 
-const pS1 = (card, story, checkinCtx, lang) =>
-  `${SYS}
+const pS1 = (card, story, checkinCtx, lang) => {
+  const privacyLine = lang === 'zh'
+    ? '小提示：写的时候，不需要写出你的全名、具体的学校、工作单位或移民信息——你的故事不需要这些才能有意义。'
+    : 'A note: as you write, please avoid including your full name, specific schools, workplaces, or immigration details — your story doesn\'t need those to be meaningful here.';
+  return `${SYS}
 
 STAGE: FIRST REFLECTION
 
@@ -529,7 +534,7 @@ Entry card:
 
 PRIVACY REMINDER
 On this first turn only, begin with this exact plain sentence:
-"A note: as you write, please avoid including your full name, specific schools, workplaces, or immigration details — your story doesn't need those to be meaningful here."
+"${privacyLine}"
 
 They wrote:
 <USER_STORY>
@@ -636,6 +641,20 @@ Do not force a positive ending.
 Before meaning, help them place the experience in the room.
 Before pattern, help them name one moment.
 Before insight, help them choose where to look.
+
+SPECIFICITY REQUIREMENT
+
+Before writing your reflection, read the user's story and identify 1-2 specific phrases they used. Quote them directly or echo them closely. Your reflection should make the person feel "yes, that is exactly what I said."
+
+A reflection that works:
+- uses at least one specific phrase from their story word-for-word or near word-for-word
+- would NOT make sense for a different person's story on the same topic
+- keeps their wording, even if it is informal or fragmented
+
+A reflection that does not work:
+- could apply to any story about loneliness / pressure / change (choose the applicable topic)
+- replaces their words with cleaner psychological language
+- summarizes away the specific texture of what they wrote
 
 DEPTH ASSESSMENT
 
@@ -744,7 +763,7 @@ Not an AI explaining a framework.
 
 Plain text only.
 Include the tag at the start.
-${langNote(lang)}`;
+${langNote(lang)}`;};
 
 
 /* pDeep — DEEPENING REFLECTION */
@@ -1008,8 +1027,12 @@ Reference grounding:
 These references guide behavior but should not appear in user-facing output.
 */
 
-const pS3 = (card, story, s1, focal, lang) =>
-  `${SYS}
+const pS3 = (card, story, s1, focal, lang) => {
+  const isZh = lang === 'zh';
+  const L = isZh
+    ? { l1: '一个具体时刻', l2: '周围的处境', l3: '什么是重要的', l4: '一个小开口' }
+    : { l1: 'A small moment', l2: 'Around it', l3: 'What mattered', l4: 'A small opening' };
+  return `${SYS}
 
 STAGE: GUIDED QUESTIONS
 
@@ -1113,29 +1136,43 @@ Avoid:
 "How can you turn this into growth?"
 "What action step will you take?"
 
+SPECIFICITY REQUIREMENT
+
+Before writing each question, identify one specific word, phrase, or detail from the focal point or the user's story. Build the question around that exact anchor.
+
+A question that works:
+- uses 1-2 specific words from what the person actually wrote
+- could only have been written for this story, not for any story about this topic
+- makes the person feel "this question came from reading what I shared"
+
+A question that does not work:
+- could be asked of anyone in this situation
+- uses general language rather than the person's own words
+- feels like it could come from any reflection template
+
 Return ONLY valid JSON in this exact shape:
 [
   {
-    "label": "A small moment",
+    "label": "${L.l1}",
     "question": "..."
   },
   {
-    "label": "Around it",
+    "label": "${L.l2}",
     "question": "..."
   },
   {
-    "label": "What mattered",
+    "label": "${L.l3}",
     "question": "..."
   },
   {
-    "label": "A small opening",
+    "label": "${L.l4}",
     "question": "..."
   }
 ]
 
 Do not include markdown.
 Do not include any text outside the JSON.
-${langNote(lang)}`;
+${langNote(lang)}`;};
 
 
 /* pS4 — CHECK-BACK THREADS (Stage 4)
