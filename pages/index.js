@@ -1559,6 +1559,7 @@ export default function Home(){
   }
 
   if(stage==='stage5'){
+    const T = TRANS[lang]
     // Mirror the stage4 fallback so that if stage4 had to render hand-written
     // threads, stage5's "confirmed statements" are pulled from the same list.
     const threads5 = (Array.isArray(rvS) && rvS.length > 0) ? rvS : TRANS[lang].errS4Fallback
