@@ -1935,6 +1935,59 @@ Before returning the JSON, silently check:
 ${langNote(lang)}`;
 
 
+/* pSynth — CROSS-SESSION SYNTHESIS
+   Called from the Hist (history) view when the user clicks "Synthesize".
+   Input: an array of saved reflection objects, each with entryCard, userStory,
+   focalPointText, confirmedThreads, closingNote fields.
+   Output: plain text (not JSON) — 4-6 sentences synthesizing threads across sessions.
+*/
+const pSynth = (periodLabel, reflections, lang) => {
+  const snippets = reflections.map((r, i) => {
+    const lines = []
+    lines.push(`Reflection ${i + 1} (${new Date(r.timestamp).toLocaleDateString(lang === 'zh' ? 'zh-CN' : 'en-US', { month: 'short', day: 'numeric' })}):`)
+    lines.push(`Entry point: "${r.entryCard || ''}"`)
+    if (r.userStory) lines.push(`Story: ${r.userStory.slice(0, 400)}`)
+    if (r.focalPointText) lines.push(`Focus: ${r.focalPointText}`)
+    if (Array.isArray(r.confirmedThreads) && r.confirmedThreads.length)
+      lines.push(`Threads kept: ${r.confirmedThreads.join(' / ')}`)
+    if (r.closingNote) lines.push(`Closing note: ${r.closingNote.slice(0, 200)}`)
+    return lines.join('\n')
+  }).join('\n\n---\n\n')
+
+  return `${SYS}
+
+STAGE: CROSS-SESSION SYNTHESIS
+
+Period: ${periodLabel}
+
+You have access to ${reflections.length} reflection session(s) from this period.
+
+<REFLECTIONS>
+${snippets}
+</REFLECTIONS>
+
+TASK
+Write a short synthesis — 4 to 6 plain sentences — of what threads, questions, or tensions seem to recur or connect across these reflections.
+
+This is not a summary of each session.
+This is not a diagnosis or final interpretation.
+This is not advice.
+This is a gentle provisional reading of what seems to be staying present across this person's reflections.
+
+Use the person's own words when possible.
+Name recurring themes tentatively — "something like…", "there may be…", "it seems as though…"
+Do not decide what the threads mean.
+Do not push toward resolution or growth.
+Do not skip difficulty or hardship.
+
+If the reflections are very different from each other, name that honestly — you do not need to force connection.
+
+End with one quiet sentence — a thread, question, or observation the person might want to return to.
+
+Plain text only. No markdown. No bullet points. No headings.
+${langNote(lang)}`
+}
+
 /* ─── API CALL ───
    This frontend helper calls /api/reflect.
    The backend decides whether the request goes to OpenAI, Claude, or another model.
@@ -3063,7 +3116,7 @@ function Hist({items,onBack,onView,onDel,lang='en'}){
   const now=new Date()
   const filtered=items.filter(r=>{if(filter==='all')return true;const d=new Date(r.timestamp);if(filter==='month')return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();if(filter==='year')return d.getFullYear()===now.getFullYear();return true})
   const periodLabel=filter==='month'?now.toLocaleDateString(lang==='zh'?'zh-CN':'en-US',{month:'long',year:'numeric'}):filter==='year'?String(now.getFullYear()):T.allTime
-  const generateSummary=async()=>{if(!filtered.length)return;setSummaryLoading(true);setSummaryError('');setSummaryText('');try{const text=await ask(pSummary(periodLabel,filtered,lang));setSummaryText(text);await saveSummary({period:filter,periodLabel,summaryText:text})}catch(e){setSummaryError(e.message||TRANS[lang].errGenericSummary)}setSummaryLoading(false)}
+  const generateSummary=async()=>{if(!filtered.length)return;setSummaryLoading(true);setSummaryError('');setSummaryText('');try{const text=await ask(pSynth(periodLabel,filtered,lang));setSummaryText(text);await saveSummary({period:filter,periodLabel,summaryText:text})}catch(e){setSummaryError(e.message||TRANS[lang].errGenericSummary)}setSummaryLoading(false)}
   const FBtn=({val,label})=><button onClick={()=>{setFilter(val);setSummaryText('');setSummaryError('')}} style={{padding:'5px 14px',borderRadius:14,border:`1.5px solid ${filter===val?C.celadon:C.line}`,background:filter===val?C.celadonP+'33':'transparent',color:filter===val?C.celadonD:C.ash,fontSize:11,fontFamily:'DM Sans,sans-serif',cursor:'pointer',transition:'all 0.15s'}}>{label}</button>
   if(!items.length)return(<div style={{textAlign:'center',padding:'48px 16px'}}><Pot phase="clay" size={48}/><p style={{color:C.ash,fontSize:15,margin:'12px 0 16px',fontFamily:'DM Sans,sans-serif'}}>{T.noReflections}</p><Btn v="secondary" onClick={onBack}>{T.back}</Btn></div>)
   return(
