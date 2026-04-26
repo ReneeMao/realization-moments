@@ -251,7 +251,7 @@ const pS3 = (card, story, s1, focal, lang) =>
    The person may see things entirely differently; that openness is the goal. Never reduce to conclusion. */
 const pS4 = (card, story, s1, focal, cr, lang) => {
   const ct = Object.entries(cr).filter(([,v])=>v?.trim()).map(([l,t])=>`[${l}]: ${t}`).join('\n')
-  return `${SYS}\n\nSTAGE: EMERGENCE CHECK-BACK\nEntry: "${card}"\nStory:\n<USER_STORY>\n${story}\n</USER_STORY>\nSummary: "${s1}"\nFocal: "${focal}"\nReflections:\n${ct}\n\nGenerate EXACTLY 4 items — one for each category, in this order:\n\n1. What may be newly seen — look for any "rupture in the knowing context" (Miller & C'de Baca): something that can no longer be seen the way it was before. Name it as ONE possible shift in how they understand this, using their words. REFLECTIVE AMBIGUITY: offer this as a possibility they may confirm, revise, or reject — not a determination.\n2. What still feels unresolved — Denborough reminds us that not everything resolves, and that is not a failure. Name the unresolved thing without pushing it toward resolution. Hold it with care. Do not attempt to provide closure.\n3. What seems to matter enough to guide — Han Layer 3 (values alignment): what value, care, or commitment surfaces in what they've said? Connect experience to intrinsic motivation. Name it tentatively as a thread of a preferred story (White), not a conclusion about who they are.\n4. Who you may be becoming — Han Layer 4 (empowered agency) + Denborough's "migration of identity": identity is not fixed; it moves across contexts and relationships. Notice one possible shift toward agency or direction that may be emerging. Keep it open — as a direction beginning to form, not an arrival. McAdams & McLean (2013) two-step model: genuine growth in narrative identity requires both (1) deep exploratory engagement — which this conversation is — and (2) eventually finding a positive resolution or reframing the person can hold. You do not need to force resolution; but if the person is still in the exploration phase, name that as meaningful and sufficient: "being in the middle of this question is already part of the work."\n\nFor each item return:\n- "thread": a short title for the possible storyline (4-7 words, using the person's own language)\n- "statement": one tentative recognition grounded in their words ("It seems like…", "Could it be that…", "There may be something here about…", "One thing that seems to be shifting is…")\n- "opening": one genuine Socratic question (Favero et al.) that helps them go further. Choose one purpose: test fit · probe an assumption · clarify a discrepancy · connect to values · notice what may endure · imagine a possible self · ask what would make this more real in daily life.\n\nDo not conclude. Do not explain the person to themselves. No polished therapeutic language.\nJSON: [{"thread":"…","statement":"…","opening":"…"}, …]\nONLY JSON.${langNote(lang)}`
+  return `${SYS}\n\nSTAGE: EMERGENCE CHECK-BACK\nEntry: "${card}"\nStory:\n<USER_STORY>\n${story}\n</USER_STORY>\nSummary: "${s1}"\nFocal: "${focal}"\nReflections:\n${ct}\n\nGenerate EXACTLY 4 items — one for each category, in this order:\n\n1. What may be newly seen — look for any "rupture in the knowing context" (Miller & C'de Baca): something that can no longer be seen the way it was before. Name it as ONE possible shift in how they understand this, using their words. REFLECTIVE AMBIGUITY: offer this as a possibility they may confirm, revise, or reject — not a determination.\n2. What still feels unresolved — Denborough reminds us that not everything resolves, and that is not a failure. Name the unresolved thing without pushing it toward resolution. Hold it with care. Do not attempt to provide closure.\n3. What seems to matter enough to guide — Han Layer 3 (values alignment): what value, care, or commitment surfaces in what they've said? Connect experience to intrinsic motivation. Name it tentatively as a thread of a preferred story (White), not a conclusion about who they are.\n4. Who you may be becoming — Han Layer 4 (empowered agency) + Denborough's "migration of identity": identity is not fixed; it moves across contexts and relationships. Notice one possible shift toward agency or direction that may be emerging. Keep it open — as a direction beginning to form, not an arrival. McAdams & McLean (2013) two-step model: genuine growth in narrative identity requires both (1) deep exploratory engagement — which this conversation is — and (2) eventually finding a positive resolution or reframing the person can hold. You do not need to force resolution; but if the person is still in the exploration phase, name that as meaningful and sufficient: "being in the middle of this question is already part of the work."\n\nFor each item return:\n- "thread": a short title for the possible storyline (4-7 words, using the person's own language)\n- "statement": one tentative recognition grounded in their words ("It seems like…", "Could it be that…", "There may be something here about…", "One thing that seems to be shifting is…")\n- "insight": one sentence naming what this thread suggests at an identity or relational level — not just what happened, but what it might mean for who they are, how they relate, or what they value. Ground it in their own words (McLean & Pratt, 2006: aim for self/world meaning, not only event-level lessons).\n- "opening": one genuine Socratic question (Favero et al.) that helps them go further. Choose one purpose: test fit · probe an assumption · clarify a discrepancy · connect to values · notice what may endure · imagine a possible self · ask what would make this more real in daily life.\n\nDo not conclude. Do not explain the person to themselves. No polished therapeutic language.\nJSON: [{"thread":"…","statement":"…","opening":"…"}, …]\nONLY JSON.${langNote(lang)}`
 }
 
 /* pS5 — CLOSING NOTE (Stage 5, three types)
@@ -282,7 +282,9 @@ const pS5 = (type, conf, story, focal, lang) => {
    White's "unique outcomes": do moments of exception cluster across reflections?
    Miller & C'de Baca's "enduring change": which realizations seem to have lasted?
    Han (2025) layered scaffold: what layer is activating across entries — are
-   they moving from disclosure → restructuring → values → agency? */
+   they moving from disclosure → restructuring → values → agency?
+
+   VOICE ANCHOR (applies to all three types): Open with a word or phrase the person actually used in their confirmed statement — let them hear their own language back before you expand. Every sentence should feel written for this specific person. Reference their focal question and the language they chose. Do not start with "I" or abstract phrasing — start with something they said or something directly visible in what they shared. */
 const pSummary = (period, items, lang) => {
   const entries = items.map((r,i) => {
     const p = [`Reflection ${i+1} (${new Date(r.timestamp).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})}):`]
@@ -363,7 +365,7 @@ function derivePotVisual(reflection = {}, idx = 0) {
   const outputType = reflection.outputType || ''
   const entry = reflection.entryCard || ''
 
-  const seed = hashString(`${entry}|${story}|${confirmed.join('|')}|${outputType}|${idx}`)
+  const seed = hashString(`${entry}|${story}`)
   const len = story.length
   const depth = clamp(len / 700, 0, 1)
   const certainty = clamp(confirmed.length / 4, 0, 1)
@@ -1225,7 +1227,7 @@ function Hist({items,onBack,onView,onDel,lang='en'}){
         <FadeIn><div style={{display:'flex',alignItems:'flex-end',gap:5,paddingBottom:10,marginBottom:10,borderBottom:`1px solid ${C.line}`,overflowX:'auto'}}>
           {filtered.map((r,i)=>(
             <div key={r.id} title={r.entryCard||'reflection'} style={{flexShrink:0,cursor:'pointer',opacity:0.9}} onClick={()=>onView(r)}>
-              <Pot phase="blooming" size={38} {...derivePotVisual(r,i)}/>
+              <Pot phase="blooming" size={38} {...derivePotVisual(r,0)}/>
             </div>
           ))}
         </div></FadeIn>
@@ -1237,7 +1239,7 @@ function Hist({items,onBack,onView,onDel,lang='en'}){
       {filtered.length===0?(<p style={{fontSize:15,color:C.ash,textAlign:'center',padding:'24px 0',fontFamily:'DM Sans,sans-serif'}}>No reflections in this period.</p>):(
         <div style={{display:'flex',flexDirection:'column',gap:7}}>
           {filtered.map((r,i)=>(<FadeIn key={r.id} delay={i*30}><div style={{background:C.cream,borderRadius:14,padding:'12px 14px',boxShadow:C.glow,border:`1px solid ${C.line}`,display:'flex',alignItems:'center',gap:10}}>
-            <Pot phase="blooming" size={34} {...derivePotVisual(r,i)}/>
+            <Pot phase="blooming" size={34} {...derivePotVisual(r,0)}/>
             <div style={{flex:1,minWidth:0}}><p style={{fontSize:15,margin:'0 0 2px',color:C.charcoal}}>{r.entryCard}</p><p style={{fontSize:11,color:C.ash,margin:0,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',fontFamily:'DM Sans,sans-serif'}}>{new Date(r.timestamp).toLocaleDateString('en-US',{month:'short',day:'numeric'})} · {r.userStory?.substring(0,50)}…</p></div>
             <Btn v="soft" onClick={()=>onView(r)} style={{fontSize:10,padding:'4px 10px'}}>View</Btn>
             <button onClick={()=>onDel(r.id)} style={{background:'transparent',border:'none',cursor:'pointer',color:C.ash,fontSize:16,lineHeight:1}}>×</button>
@@ -1572,8 +1574,8 @@ export default function Home(){
     const _pv5=derivePotVisual({entryCard:selC?.label,userStory:story,confirmedStatements:conf,checkinEmotions:checkinEm},0)
     // Auto-recommend based on which thread category got 'fits':
     // idx 0 = newly seen → see | idx 1 = unresolved → keep | idx 2/3 = matters/becoming → carry
-    const fitsIdx=rvS.findIndex((_,i)=>rvM[i]==='fits')
-    const autoRec=fitsIdx===1?'keep':fitsIdx>=2?'carry':'see'
+    const fitsIdx=(()=>{let last=-1;rvS.forEach((_,i)=>{if(rvM[i]==='fits')last=i});return last})()
+    const autoRec=fitsIdx>=2?'carry':fitsIdx===1?'keep':'see'
     const S5_CARDS=[
       {key:'see',label:T.seeLabel,desc:T.s5Desc.see,example:T.s5Example.see,_ex:'"Maybe what this is really showing me is…"',color:C.celadon,
         icon:<svg width="22" height="22" viewBox="0 0 22 22" fill="none"><ellipse cx="11" cy="11" rx="7" ry="4.5" stroke={C.celadon} strokeWidth="1.4"/><circle cx="11" cy="11" r="2" fill={C.celadon} opacity="0.7"/><path d="M11 4V2M11 20v-2M4 11H2M20 11h-2" stroke={C.celadon} strokeWidth="1.2" strokeLinecap="round" opacity="0.4"/></svg>},
