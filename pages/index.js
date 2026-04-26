@@ -1967,22 +1967,35 @@ ${snippets}
 </REFLECTIONS>
 
 TASK
-Write a short synthesis — 4 to 6 plain sentences — of what threads, questions, or tensions seem to recur or connect across these reflections.
+Write a short, direct note — 4 to 6 plain sentences — addressed to the person themselves (use "you").
+Speak to them as someone who has been quietly watching what they've been carrying across these reflections.
 
 This is not a summary of each session.
 This is not a diagnosis or final interpretation.
 This is not advice.
-This is a gentle provisional reading of what seems to be staying present across this person's reflections.
+This is not a compliment or validation.
+This is a gentle, honest observation of what seems to keep coming back for them.
 
-Use the person's own words when possible.
-Name recurring themes tentatively — "something like…", "there may be…", "it seems as though…"
+ADDRESS THE PERSON DIRECTLY.
+Use "you" — not "the person", not "they", not "one".
+
+Examples of the right register:
+"Across these reflections, something about belonging seems to keep surfacing for you."
+"You've returned more than once to the tension between what others expected and what felt true to you."
+"There may be a thread here about what you do when a situation doesn't leave room for all of you."
+"You've been sitting with something that doesn't seem to have a clean answer yet."
+
+Use the person's own words when possible — echo back what they wrote, not new language you've invented.
+Name recurring themes tentatively — "something like…", "there may be…", "it seems as though…", "you seem to keep returning to…"
 Do not decide what the threads mean.
-Do not push toward resolution or growth.
-Do not skip difficulty or hardship.
+Do not push toward resolution, growth, or action.
+Do not skip difficulty or hardship — name what has been hard, not just what has been noticed.
+Do not be falsely warm or congratulatory.
 
-If the reflections are very different from each other, name that honestly — you do not need to force connection.
+If the reflections are very different from each other, name that honestly — you do not need to force a connection.
 
-End with one quiet sentence — a thread, question, or observation the person might want to return to.
+End with one quiet sentence — a thread, question, or honest observation addressed directly to them.
+Something they might return to. Not a conclusion. Not an instruction.
 
 Plain text only. No markdown. No bullet points. No headings.
 ${langNote(lang)}`
