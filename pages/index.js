@@ -2838,6 +2838,9 @@ const TRANS = {
     stage4MinHint: 'Mark at least 2 threads to continue. The rest are optional.',
     // Errors / fallbacks (used when /api/reflect fails)
     errGenericSummary: 'Could not generate synthesis.',
+    synthesizeThemes: 'Synthesize themes across this period',
+    synthesizeBtn: 'Synthesize ✦',
+    synthesisExportHeader: 'REALIZATION MOMENTS — SYNTHESIS',
     errS1Short: 'Thank you for sharing that. Can you say a bit more about a specific moment?',
     errS1Deep:  "Thank you. What feels most alive in what you've described?",
     errS3Fallback: [
@@ -2937,6 +2940,9 @@ const TRANS = {
     stage3OneOf: (i, n) => `第 ${i} / ${n} 题`,
     stage4MinHint: '至少标记 2 条线索以继续。其余可以留空。',
     errGenericSummary: '无法生成回顾。',
+    synthesizeThemes: '整合这段时间的主题',
+    synthesizeBtn: '整合回顾 ✦',
+    synthesisExportHeader: '觉知时刻 — 综合回顾',
     errS1Short: '谢谢你愿意写下来。可以再多说一些某个具体时刻吗？',
     errS1Deep:  '谢谢你。你刚刚写下的内容里，哪一部分现在感觉最鲜活？',
     errS3Fallback: [
@@ -3154,10 +3160,10 @@ function Hist({items,onBack,onView,onDel,lang='en'}){
             </div>
           ))}
         </div></FadeIn>
-        {!summaryText&&!summaryLoading&&(<FadeIn><div style={{background:C.slip,borderRadius:14,padding:'12px 14px',border:`1px dashed ${C.celadonP}`,display:'flex',alignItems:'center',justifyContent:'space-between',gap:10,flexWrap:'wrap'}}><div><p style={{fontSize:12,color:C.stone,fontFamily:'DM Sans,sans-serif',margin:'0 0 2px'}}>{filtered.length} reflection{filtered.length>1?'s':''} · {periodLabel}</p><p style={{fontSize:11,color:C.ash,fontFamily:'DM Sans,sans-serif',margin:0}}>Synthesize themes across this period</p></div><Btn onClick={generateSummary} style={{fontSize:11,padding:'7px 14px',whiteSpace:'nowrap'}}>Synthesize ✦</Btn></div></FadeIn>)}
+        {!summaryText&&!summaryLoading&&(<FadeIn><div style={{background:C.slip,borderRadius:14,padding:'12px 14px',border:`1px dashed ${C.celadonP}`,display:'flex',alignItems:'center',justifyContent:'space-between',gap:10,flexWrap:'wrap'}}><div><p style={{fontSize:12,color:C.stone,fontFamily:'DM Sans,sans-serif',margin:'0 0 2px'}}>{lang==='zh'?`${filtered.length}条反思`:`${filtered.length} reflection${filtered.length>1?'s':''}`} · {periodLabel}</p><p style={{fontSize:11,color:C.ash,fontFamily:'DM Sans,sans-serif',margin:0}}>{T.synthesizeThemes}</p></div><Btn onClick={generateSummary} style={{fontSize:11,padding:'7px 14px',whiteSpace:'nowrap'}}>{T.synthesizeBtn}</Btn></div></FadeIn>)}
         {summaryLoading&&(<div style={{background:C.slip,borderRadius:14,padding:'12px 14px'}}><p style={{fontSize:12,color:C.ash,fontFamily:'DM Sans,sans-serif',marginBottom:4}}>Reading across your reflections…</p><Dots/></div>)}
         {summaryError&&(<div style={{background:C.terraP+'44',borderRadius:14,padding:'12px 14px',border:`1px solid ${C.terra}44`,marginBottom:8}}><p style={{fontSize:12,color:C.terra,fontFamily:'DM Sans,sans-serif'}}>{summaryError}</p></div>)}
-        {summaryText&&(<FadeIn><SummaryCard lang={lang} text={summaryText} period={periodLabel} onExport={()=>dlFile(`REALIZATION MOMENTS — SYNTHESIS\n${periodLabel}\n\n${summaryText}\n\nA provisional reading. Yours to contest or keep.`,`synthesis-${filter}-${new Date().toISOString().slice(0,10)}.txt`)}/></FadeIn>)}
+        {summaryText&&(<FadeIn><SummaryCard lang={lang} text={summaryText} period={periodLabel} onExport={()=>dlFile(`${T.synthesisExportHeader}\n${periodLabel}\n\n${summaryText}\n\n${T.provisionalReading}`,`synthesis-${filter}-${new Date().toISOString().slice(0,10)}.txt`)}/></FadeIn>)}
       </div>)}
       {filtered.length===0?(<p style={{fontSize:15,color:C.ash,textAlign:'center',padding:'24px 0',fontFamily:'DM Sans,sans-serif'}}>No reflections in this period.</p>):(
         <div style={{display:'flex',flexDirection:'column',gap:7}}>
