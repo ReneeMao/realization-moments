@@ -752,6 +752,35 @@ Do not use:
 - markdown
 - bullet points
 
+CORE VALUE SIGNAL
+
+After your reflection (at the very end, after your closing question), add one quiet sentence that gently names a value or care that seems to be present in their story.
+
+This is NOT a label or diagnosis.
+This is a soft observation — something they may not have named but that seems to be operating underneath what they wrote.
+
+Format:
+One sentence, starting with something like:
+- "There may be something here about [value]."
+- "Something in what you wrote suggests [value] matters to you."
+- "I notice something that might be about [value] running through this."
+
+Examples of values to name (choose what genuinely fits — do not invent or force):
+- connection, belonging, being truly seen
+- creative expression, having a voice
+- integrity, staying honest with yourself
+- family, home, continuity
+- freedom, not being confined
+- being useful, contributing
+- fairness, things being right
+- stability, not losing what matters
+- growth, not standing still
+- trust, being believed
+
+Keep it tentative. Keep it specific to what they wrote. Do not explain it.
+Do not turn it into a lesson.
+One sentence only.
+
 VOICE
 
 Sound like a warm, careful person sitting beside them.
@@ -2840,6 +2869,12 @@ const TRANS = {
     oneMoreStep:'One more step', suggestedFor:'Suggested for this reflection:',
     orChoose:'or choose',
     seeLabel:"What I'm seeing now", carryLabel:'What matters going forward', keepLabel:'What I want to keep with me',
+    bodyTypeLabel:{
+      bowl:'Connection & care',tall:'Achievement & impact',squat:'Stability & trust',
+      vase:'Creativity & expression',gourd:'Family & home',lantern:'Integrity & justice',
+      teapot:'Curiosity & freedom',oval:'Balance',round:'Care',
+    },
+    valueSignalPrefix:'Something in your story:',
     saveFinish:'Save & finish', finish:'Finish', saved:'Saved ✓',
     thisIsYours:'This is yours.', toKeep:'To keep, to change, to come back to.',
     thankyou:'Thank you for this time.',
@@ -3027,7 +3062,13 @@ const TRANS = {
     whereIStarted:'我从哪里出发',whatIHeardBack:'我听到的回应',goingDeeper:'深入探索',
     sectionReflections:'回应记录',whatStayedTrue:'留下来的部分',yourArtifact:'你的收获',
     draftYours:'这是草稿，由你决定。',copy:'复制',exportTxt:'导出 .txt',
-    synthesis:'综合回顾',provisionalReading:'暂定的解读，留下或挑战，由你决定。',
+    synthesis:'综合回顾',
+    bodyTypeLabel:{
+      bowl:'连结与关怀',tall:'成就与影响',squat:'稳定与信任',
+      vase:'创意与表达',gourd:'家庭与归属',lantern:'正直与公正',
+      teapot:'好奇与自由',oval:'平衡',round:'关怀',
+    },
+    valueSignalPrefix:'你的故事里藏着：',provisionalReading:'暂定的解读，留下或挑战，由你决定。',
     allTime:'全部时间',filterAll:'全部',filterMonth:'本月',filterYear:'本年',
     s5Desc:{see:'关于正在变得更清晰的事物，一句温和的记录。',carry:'关于足够重要、值得引导你前行的事物，一句记录。',keep:'一行短句、一个问题、或稍后回来的提醒。'},
     s5Example:{see:'"也许这件事真正告诉我的是……"',carry:'"我不想从这段经历中失去的是……"',keep:'"我想随身携带的那个问题是……"'},
@@ -3070,6 +3111,12 @@ function Journey({data,onEdit,onExport,lang='en'}) {
           <div style={{fontSize:14,color:C.ash,fontFamily:'DM Sans,sans-serif'}}>
             {new Date(data.timestamp).toLocaleDateString(lang==='zh'?'zh-CN':'en-US',{month:'long',day:'numeric',year:'numeric'})}
           </div>
+          {pv.bodyType && T.bodyTypeLabel?.[pv.bodyType] && (
+            <div style={{marginTop:5,display:'flex',alignItems:'center',gap:5}}>
+              <span style={{fontSize:10,color:C.stone,fontFamily:'DM Sans,sans-serif'}}>{T.valueSignalPrefix}</span>
+              <span style={{fontSize:11,color:C.celadonD,fontFamily:'DM Sans,sans-serif',fontWeight:500,background:C.celadonP+'44',padding:'1px 7px',borderRadius:10}}>{T.bodyTypeLabel[pv.bodyType]}</span>
+            </div>
+          )}
         </div>
       </div>
 
