@@ -2420,35 +2420,39 @@ function derivePotVisual(reflection = {}, idx = 0) {
   //
   // We retain the existing 3 SVG body shapes (round/oval/tall) for now;
   // future work can add `low`, `bud-vase`, `upright` as additional shapes.
+  // Schwartz's 8 basic value clusters — each maps to a distinct pot shape.
+  // Keywords drawn directly from the Core Values framework PDF.
   const VALUE_BODY_KEYWORDS = {
-    // bowl — care, connection, giving (widest rim, open embrace)
-    bowl:    /\b(love|loving|compassion|kindness|care|caring|empathy|belonging|connect(?:ion|ed)?|intimacy|giving|contribution|unity|community|generosity|service|meaning|purpose|nurtur(?:e|ing)?)\b/gi,
-    // tall — ambition, achievement, reaching upward
-    tall:    /\b(achievement|achieve|success|power|authority|recognition|excellence|influence|status|ambition|ambitious|wealth|prestige|control|mastery|perform(?:ance)?|winning|lead(?:ership)?|impact)\b/gi,
-    // squat — stability, groundedness, endurance
-    squat:   /\b(peace|peaceful|acceptance|certainty|stability|stable|security|secure|safety|safe|trust|loyal(?:ty)?|duty|tradition|endur(?:e|ance)|persist(?:ence)?|patience|persever(?:e|ance)|ground(?:ed|ing)?)\b/gi,
-    // vase — creativity, self-expression, beauty, identity
-    vase:    /\b(creativity|creative|art(?:istic)?|express(?:ion|ing)?|beauty|beautiful|aesthetic|design|voice|identity|self|authentic(?:ity)?|unique(?:ness)?|imagination|imagin(?:e|ing)?|story|storytelling|write|writing)\b/gi,
-    // gourd — family, nourishment, warmth, home
-    gourd:   /\b(family|home|warmth|nourish(?:ment|ing)?|mother|father|parent(?:hood|ing)?|child(?:ren)?|ancestors?|roots?|belong(?:ing)?|heritage|culture|cook(?:ing)?|gather(?:ing)?|comfort|hearth)\b/gi,
-    // lantern — justice, clarity, integrity, structure, responsibility
-    lantern: /\b(justice|fairness|responsibility|integrity|honesty|wisdom|order|clarity|principle(?:d)?|ethics?|moral(?:ity)?|equal(?:ity)?|right(?:s|ness)?|accountab(?:le|ility)|transparent|truth)\b/gi,
-    // teapot — curiosity, adventure, freedom, discovery
-    teapot:  /\b(freedom|free|curiosity|curious|novelty|adventure|independence|independent|discover(?:y|ing)?|change|growth|grow(?:ing)?|exploration|explor(?:e|ing)?|openness|open|wander(?:ing)?|travel)\b/gi,
+    // squat — Security: Health, Peace, Trust, Certainty
+    squat:   /\b(health|peace|peaceful|trust|certain(?:ty)?|security|secure|safe(?:ty)?|stability|stable|calm(?:ness)?|ground(?:ed|ing)?|settled|protection|protect|shelter|steady|reliable|reliab(?:le|ility))\b/gi,
+    // gourd — Conformity / Tradition: Discipline, Family
+    gourd:   /\b(family|discipline|tradition(?:al)?|mother|father|parent(?:hood|ing)?|child(?:ren)?|ancestor(?:s)?|root(?:s)?|heritage|culture|home|duty|obedience|respect(?:ful)?|loyal(?:ty)?|ritual|custom|continuity|generation)\b/gi,
+    // tall — Achievement: Growth, Influence, Competence, Ambition, Excellence
+    tall:    /\b(achievement|achieve(?:ment)?|growth|grow(?:ing)?|success|excellence|excellen(?:t|ce)|competence|competent|influence|ambition|ambitious|perform(?:ance)?|mastery|master|accomplish|progress|improve(?:ment)?|skill(?:ful)?|capable|capability|strive|aspire|aspiration)\b/gi,
+    // lantern — Power: Wealth, Control
+    lantern: /\b(power|control|wealth|rich(?:ness)?|authority|prestige|status|dominan(?:ce|t)|leadership|lead(?:er)?|command|resource(?:s)?|recognition|reputation|influence|winning|win|strong(?:er)?|strength)\b/gi,
+    // bowl — Benevolence: Love, Compassion, Helpfulness, Friendship, Responsibility, Respect
+    bowl:    /\b(love|loving|compassion|compassionate|helpfulness|helpful|help(?:ing)?|friendship|friend(?:s)?|responsibility|responsible|respect|kindness|kind(?:ness)?|care(?:ing)?|empathy|warmth|giving|generous(?:ity)?|support(?:ing)?|nurtur(?:e|ing)?|belonging|connect(?:ion|ed)?|together|community|unity|service|sacrifice)\b/gi,
+    // oval — Universalism: Appreciation, Freedom, Justice, Inner Harmony, Wisdom, Acceptance, Ethics, Spirituality
+    oval:    /\b(justice|fairness|wisdom|acceptance|accept(?:ing)?|harmony|inner.peace|appreciation|appreciat(?:e|ing)?|ethics?|ethical|spiritual(?:ity)?|equal(?:ity)?|right(?:s)?|freedom|free|tolerance|toleran(?:t|ce)|environment|nature|universal|humanity|meaning|mindful(?:ness)?|present|awareness|integrit(?:y)?)\b/gi,
+    // vase — Self-direction: Creativity, Curiosity, Independence, Privacy, Intelligence
+    vase:    /\b(creativity|creative|curious(?:ity)?|curiosity|independence|independent|privacy|private|intelligence|intelligent|imagination|imagin(?:e|ing)?|authentic(?:ity)?|originality|original|self(?:-direction|-expression|-determination)?|autonomous|autonomy|express(?:ion|ing)?|invent(?:ion|ing)?|discover(?:y|ing)?|innovate|innovation|think(?:ing)?)\b/gi,
+    // teapot — Stimulation / Hedonism: Adventure, Challenge, Courage, Pleasure
+    teapot:  /\b(adventure|adventur(?:e|ous)|challenge(?:d|ing)?|courage(?:ous)?|courageous|pleasure|enjoy(?:ment)?|excitement|excit(?:ed|ing)?|thrill(?:ing)?|novelty|new|risk(?:ing|y)?|bold|daring|dare|explore|exploration|travel|wander(?:ing)?|spontan(?:eous|eity)?|fun|alive|vib(?:rant|e))\b/gi,
   }
+  // Score each cluster; require score > 0 to assign shape
+  const clusterScores = {}
   let bodyType = null
   let bodyScore = 0
   for (const [name, re] of Object.entries(VALUE_BODY_KEYWORDS)) {
     const score = (story.match(re) || []).length
+    clusterScores[name] = score
     if (score > bodyScore) { bodyScore = score; bodyType = name }
   }
-  if (bodyType === null) {
-    // Geometry fallback (preserved from the original implementation)
-    bodyType = bodies[seed % bodies.length]
-    if (groundedness > 0.7) bodyType = 'round'
-    else if (openness > 0.7 && groundedness < 0.5) bodyType = 'tall'
-    else if (complexity > 0.55) bodyType = 'oval'
-  }
+  // Fallback: distribute evenly across all 8 shapes by seed
+  const allShapes = ['squat','gourd','tall','lantern','bowl','oval','vase','teapot']
+  if (bodyType === null) bodyType = allShapes[seed % allShapes.length]
+  const valueCluster = bodyType
 
   let plantType = plants[(seed >> 2) % plants.length]
   if (vitality < 0.38) plantType = 'sprout'
@@ -2465,6 +2469,7 @@ function derivePotVisual(reflection = {}, idx = 0) {
   return {
     accent,
     bodyType,
+    valueCluster,
     glazeStyle,
     plantType,
     openness,
@@ -2502,82 +2507,84 @@ function Pot({
   const A = ACCENTS[accent] || ACCENTS.sage
 
   const rimW =
-    bodyType === 'tall'    ? w * (0.19 + openness * 0.04)
-    : bodyType === 'bowl'   ? w * (0.32 + openness * 0.02)
-    : bodyType === 'squat'  ? w * (0.28 + openness * 0.02)
-    : bodyType === 'teapot' ? w * (0.22 + openness * 0.02)
-    : bodyType === 'oval'   ? w * (0.23 + openness * 0.03)
-    : bodyType === 'vase'   ? w * (0.26 + openness * 0.02)
-    : bodyType === 'gourd'  ? w * (0.18 + openness * 0.02)
-    : bodyType === 'lantern'? w * (0.21 + openness * 0.03)
-    : w * (0.24 + openness * 0.03)
+    bodyType === 'squat'   ? w * 0.33   // very wide — grounded basin
+    : bodyType === 'gourd'  ? w * 0.18   // narrow top — calabash neck
+    : bodyType === 'tall'   ? w * 0.13   // slim — upright cylinder
+    : bodyType === 'lantern'? w * 0.24   // medium — structured amphora
+    : bodyType === 'bowl'   ? w * 0.38   // very wide — open chalice
+    : bodyType === 'oval'   ? w * 0.24   // balanced oval
+    : bodyType === 'vase'   ? w * 0.16   // narrow — hourglass vase
+    : w * 0.22                           // teapot — round friendly
 
   const neckY = h * 0.36
   const bellyY = h * 0.6
   const bottomY = h * 0.84
 
+  // ── 8 dramatically distinct shapes, one per Schwartz value cluster ──────
+  // squat   = Security (wide, low, grounded like a stone mortar)
+  // gourd   = Tradition (double-bulge with clear pinch — calabash)
+  // tall    = Achievement (slim, upright, minimal outward curve)
+  // lantern = Power (wide shoulders tapering to structured base — amphora)
+  // bowl    = Benevolence (very wide open embrace, chalice-like)
+  // oval    = Universalism (classic balanced oval, harmony)
+  // vase    = Self-direction (hourglass: wide neck, pinched waist, wide belly)
+  // teapot  = Stimulation/Hedonism (round, generous, almost spherical)
   const bodyPath =
-    bodyType === 'tall'
-      ? `M${w*0.31} ${neckY}
-         C${w*0.27} ${h*0.42} ${w*0.24} ${h*0.52} ${w*0.26} ${bellyY}
-         C${w*0.28} ${h*0.75} ${w*0.36} ${bottomY} ${w*0.5} ${bottomY}
-         C${w*0.64} ${bottomY} ${w*0.72} ${h*0.75} ${w*0.74} ${bellyY}
-         C${w*0.76} ${h*0.52} ${w*0.73} ${h*0.42} ${w*0.69} ${neckY}`
-      : bodyType === 'oval'
-      ? `M${w*0.28} ${neckY}
-         C${w*0.22} ${h*0.41} ${w*0.2} ${h*0.53} ${w*0.23} ${bellyY}
-         C${w*0.26} ${h*0.77} ${w*0.36} ${bottomY} ${w*0.5} ${bottomY}
-         C${w*0.64} ${bottomY} ${w*0.74} ${h*0.77} ${w*0.77} ${bellyY}
-         C${w*0.8} ${h*0.53} ${w*0.78} ${h*0.41} ${w*0.72} ${neckY}`
-      : bodyType === 'bowl'
-      ? `M${w*0.18} ${neckY}
-         C${w*0.12} ${h*0.45} ${w*0.14} ${h*0.57} ${w*0.19} ${bellyY}
-         C${w*0.24} ${h*0.79} ${w*0.36} ${bottomY} ${w*0.5} ${bottomY}
-         C${w*0.64} ${bottomY} ${w*0.76} ${h*0.79} ${w*0.81} ${bellyY}
-         C${w*0.86} ${h*0.57} ${w*0.88} ${h*0.45} ${w*0.82} ${neckY}`
-      : bodyType === 'squat'
-      ? `M${w*0.24} ${neckY}
-         C${w*0.15} ${h*0.41} ${w*0.12} ${h*0.51} ${w*0.15} ${bellyY}
-         C${w*0.18} ${h*0.78} ${w*0.34} ${bottomY} ${w*0.5} ${bottomY}
-         C${w*0.66} ${bottomY} ${w*0.82} ${h*0.78} ${w*0.85} ${bellyY}
-         C${w*0.88} ${h*0.51} ${w*0.85} ${h*0.41} ${w*0.76} ${neckY}`
-      : bodyType === 'teapot'
-      ? `M${w*0.28} ${neckY}
-         C${w*0.22} ${h*0.41} ${w*0.2} ${h*0.53} ${w*0.23} ${bellyY}
-         C${w*0.26} ${h*0.77} ${w*0.36} ${bottomY} ${w*0.5} ${bottomY}
-         C${w*0.64} ${bottomY} ${w*0.74} ${h*0.77} ${w*0.77} ${bellyY}
-         C${w*0.8} ${h*0.53} ${w*0.78} ${h*0.41} ${w*0.72} ${neckY}`
-      : bodyType === 'vase'
-      ? `M${w*0.37} ${neckY}
-         C${w*0.38} ${h*0.41} ${w*0.34} ${h*0.48} ${w*0.3} ${h*0.56}
-         C${w*0.26} ${h*0.63} ${w*0.27} ${h*0.72} ${w*0.3} ${bellyY}
-         C${w*0.34} ${h*0.79} ${w*0.4} ${bottomY} ${w*0.5} ${bottomY}
-         C${w*0.6} ${bottomY} ${w*0.66} ${h*0.79} ${w*0.7} ${bellyY}
-         C${w*0.73} ${h*0.72} ${w*0.74} ${h*0.63} ${w*0.7} ${h*0.56}
-         C${w*0.66} ${h*0.48} ${w*0.62} ${h*0.41} ${w*0.63} ${neckY}`
-      : bodyType === 'gourd'
-      ? `M${w*0.32} ${neckY}
-         C${w*0.2} ${h*0.4} ${w*0.19} ${h*0.5} ${w*0.26} ${h*0.57}
-         C${w*0.3} ${h*0.61} ${w*0.3} ${h*0.63} ${w*0.26} ${h*0.67}
-         C${w*0.2} ${h*0.72} ${w*0.2} ${h*0.79} ${w*0.26} ${bottomY}
-         C${w*0.34} ${h*0.88} ${w*0.43} ${bottomY} ${w*0.5} ${bottomY}
-         C${w*0.57} ${bottomY} ${w*0.66} ${h*0.88} ${w*0.74} ${bottomY}
-         C${w*0.8} ${h*0.79} ${w*0.8} ${h*0.72} ${w*0.74} ${h*0.67}
-         C${w*0.7} ${h*0.63} ${w*0.7} ${h*0.61} ${w*0.74} ${h*0.57}
-         C${w*0.81} ${h*0.5} ${w*0.8} ${h*0.4} ${w*0.68} ${neckY}`
-      : bodyType === 'lantern'
-      ? `M${w*0.27} ${neckY}
-         C${w*0.19} ${h*0.39} ${w*0.16} ${h*0.45} ${w*0.2} ${h*0.52}
-         C${w*0.24} ${h*0.59} ${w*0.22} ${h*0.68} ${w*0.27} ${bellyY}
-         C${w*0.32} ${h*0.8} ${w*0.39} ${bottomY} ${w*0.5} ${bottomY}
-         C${w*0.61} ${bottomY} ${w*0.68} ${h*0.8} ${w*0.73} ${bellyY}
-         C${w*0.78} ${h*0.68} ${w*0.76} ${h*0.59} ${w*0.8} ${h*0.52}
-         C${w*0.84} ${h*0.45} ${w*0.81} ${h*0.39} ${w*0.73} ${neckY}`
-      : `M${w*0.26} ${neckY}
-         C${w*0.2} ${h*0.4} ${w*0.18} ${h*0.53} ${w*0.22} ${bellyY}
-         C${w*0.26} ${h*0.79} ${w*0.37} ${bottomY} ${w*0.5} ${bottomY}
-         C${w*0.63} ${bottomY} ${w*0.74} ${h*0.79} ${w*0.78} ${bellyY}
-         C${w*0.82} ${h*0.53} ${w*0.8} ${h*0.4} ${w*0.74} ${neckY}`
+    bodyType === 'squat'
+    ? `M${w*0.17} ${h*0.40}
+       C${w*0.08} ${h*0.46} ${w*0.07} ${h*0.57} ${w*0.11} ${h*0.65}
+       C${w*0.15} ${h*0.75} ${w*0.32} ${h*0.82} ${w*0.5} ${h*0.82}
+       C${w*0.68} ${h*0.82} ${w*0.85} ${h*0.75} ${w*0.89} ${h*0.65}
+       C${w*0.93} ${h*0.57} ${w*0.92} ${h*0.46} ${w*0.83} ${h*0.40}`
+    : bodyType === 'gourd'
+    ? `M${w*0.32} ${h*0.37}
+       C${w*0.18} ${h*0.41} ${w*0.16} ${h*0.50} ${w*0.21} ${h*0.57}
+       C${w*0.26} ${h*0.63} ${w*0.29} ${h*0.64} ${w*0.26} ${h*0.69}
+       C${w*0.20} ${h*0.75} ${w*0.18} ${h*0.80} ${w*0.24} ${h*0.85}
+       C${w*0.32} ${h*0.89} ${w*0.42} ${h*0.87} ${w*0.5} ${h*0.87}
+       C${w*0.58} ${h*0.87} ${w*0.68} ${h*0.89} ${w*0.76} ${h*0.85}
+       C${w*0.82} ${h*0.80} ${w*0.80} ${h*0.75} ${w*0.74} ${h*0.69}
+       C${w*0.71} ${h*0.64} ${w*0.74} ${h*0.63} ${w*0.79} ${h*0.57}
+       C${w*0.84} ${h*0.50} ${w*0.82} ${h*0.41} ${w*0.68} ${h*0.37}`
+    : bodyType === 'tall'
+    ? `M${w*0.37} ${h*0.35}
+       C${w*0.33} ${h*0.43} ${w*0.30} ${h*0.53} ${w*0.31} ${h*0.63}
+       C${w*0.32} ${h*0.73} ${w*0.39} ${h*0.83} ${w*0.5} ${h*0.83}
+       C${w*0.61} ${h*0.83} ${w*0.68} ${h*0.73} ${w*0.69} ${h*0.63}
+       C${w*0.70} ${h*0.53} ${w*0.67} ${h*0.43} ${w*0.63} ${h*0.35}`
+    : bodyType === 'lantern'
+    ? `M${w*0.26} ${h*0.37}
+       C${w*0.14} ${h*0.40} ${w*0.12} ${h*0.47} ${w*0.17} ${h*0.53}
+       C${w*0.22} ${h*0.60} ${w*0.24} ${h*0.67} ${w*0.21} ${h*0.74}
+       C${w*0.18} ${h*0.80} ${w*0.33} ${h*0.83} ${w*0.5} ${h*0.83}
+       C${w*0.67} ${h*0.83} ${w*0.82} ${h*0.80} ${w*0.79} ${h*0.74}
+       C${w*0.76} ${h*0.67} ${w*0.78} ${h*0.60} ${w*0.83} ${h*0.53}
+       C${w*0.88} ${h*0.47} ${w*0.86} ${h*0.40} ${w*0.74} ${h*0.37}`
+    : bodyType === 'bowl'
+    ? `M${w*0.12} ${h*0.39}
+       C${w*0.06} ${h*0.47} ${w*0.08} ${h*0.58} ${w*0.14} ${h*0.67}
+       C${w*0.20} ${h*0.77} ${w*0.35} ${h*0.84} ${w*0.5} ${h*0.84}
+       C${w*0.65} ${h*0.84} ${w*0.80} ${h*0.77} ${w*0.86} ${h*0.67}
+       C${w*0.92} ${h*0.58} ${w*0.94} ${h*0.47} ${w*0.88} ${h*0.39}`
+    : bodyType === 'oval'
+    ? `M${w*0.26} ${h*0.37}
+       C${w*0.18} ${h*0.42} ${w*0.16} ${h*0.53} ${w*0.19} ${h*0.63}
+       C${w*0.23} ${h*0.76} ${w*0.36} ${h*0.84} ${w*0.5} ${h*0.84}
+       C${w*0.64} ${h*0.84} ${w*0.77} ${h*0.76} ${w*0.81} ${h*0.63}
+       C${w*0.84} ${h*0.53} ${w*0.82} ${h*0.42} ${w*0.74} ${h*0.37}`
+    : bodyType === 'vase'
+    ? `M${w*0.34} ${h*0.36}
+       C${w*0.33} ${h*0.42} ${w*0.34} ${h*0.47} ${w*0.30} ${h*0.53}
+       C${w*0.26} ${h*0.59} ${w*0.24} ${h*0.65} ${w*0.27} ${h*0.73}
+       C${w*0.30} ${h*0.80} ${w*0.40} ${h*0.85} ${w*0.5} ${h*0.85}
+       C${w*0.60} ${h*0.85} ${w*0.70} ${h*0.80} ${w*0.73} ${h*0.73}
+       C${w*0.76} ${h*0.65} ${w*0.74} ${h*0.59} ${w*0.70} ${h*0.53}
+       C${w*0.66} ${h*0.47} ${w*0.67} ${h*0.42} ${w*0.66} ${h*0.36}`
+    : `M${w*0.28} ${h*0.38}
+       C${w*0.17} ${h*0.42} ${w*0.14} ${h*0.53} ${w*0.17} ${h*0.63}
+       C${w*0.20} ${h*0.75} ${w*0.35} ${h*0.84} ${w*0.5} ${h*0.84}
+       C${w*0.65} ${h*0.84} ${w*0.80} ${h*0.75} ${w*0.83} ${h*0.63}
+       C${w*0.86} ${h*0.53} ${w*0.83} ${h*0.42} ${w*0.72} ${h*0.38}`
 
   const baseFill = phase === 'clay' ? C.bisque : '#F3EBDD'
   const rimFill = phase === 'clay' ? '#E7DDCE' : '#EFE5D5'
@@ -2875,6 +2882,16 @@ const TRANS = {
       teapot:'Curiosity & freedom',oval:'Balance',round:'Care',
     },
     valueSignalPrefix:'Something in your story:',
+    valueClusters:{
+      squat:{name:'Security',values:'Health · Peace · Trust · Certainty',why:'A wide, low form — like a stone mortar or stable basin. This shape holds its ground. It reflects what you keep coming back to: safety, steadiness, and trust as foundations.'},
+      gourd:{name:'Tradition & Family',values:'Family · Discipline · Heritage · Roots',why:'A double-bulge form — like a calabash passed between generations. This shape carries continuity. It reflects care for what has been kept, and those who kept it.'},
+      tall:{name:'Achievement',values:'Growth · Excellence · Competence · Ambition',why:'A slim upright form — like a vessel that keeps reaching. This shape reflects a drive upward: to grow, to improve, to leave something behind that matters.'},
+      lantern:{name:'Power',values:'Wealth · Control · Authority · Recognition',why:'Wide at the shoulders, structured at the base — like an amphora built to endure. This shape reflects a concern with what you hold, what you lead, and what others recognize.'},
+      bowl:{name:'Benevolence',values:'Love · Compassion · Friendship · Helpfulness · Respect',why:'A wide open form — like a chalice extended toward others. This shape holds the most. It reflects how much of your story is about giving, caring, and staying in relation.'},
+      oval:{name:'Universalism',values:'Justice · Wisdom · Freedom · Acceptance · Ethics · Harmony',why:'A balanced smooth oval — no edges, no extremes. This shape reflects a wish to hold things fairly: to understand before judging, to make space rather than narrow it.'},
+      vase:{name:'Self-direction',values:'Creativity · Curiosity · Independence · Intelligence',why:'An hourglass form — wide at top and belly, pinched at the waist. This shape reflects a self that presses against constraint: curious, expressive, following its own line.'},
+      teapot:{name:'Stimulation',values:'Adventure · Challenge · Courage · Pleasure',why:'A round generous form — like something that invites you to stay and enjoy. This shape reflects energy and aliveness: a pull toward what is new, risky, or exhilarating.'},
+    },
     saveFinish:'Save & finish', finish:'Finish', saved:'Saved ✓',
     thisIsYours:'This is yours.', toKeep:'To keep, to change, to come back to.',
     thankyou:'Thank you for this time.',
@@ -3068,7 +3085,17 @@ const TRANS = {
       vase:'创意与表达',gourd:'家庭与归属',lantern:'正直与公正',
       teapot:'好奇与自由',oval:'平衡',round:'关怀',
     },
-    valueSignalPrefix:'你的故事里藏着：',provisionalReading:'暂定的解读，留下或挑战，由你决定。',
+    valueSignalPrefix:'你的故事里藏着：',
+    valueClusters:{
+      squat:{name:'安全感',values:'健康 · 平和 · 信任 · 确定感',why:'宽阔低矮的形态，像石臼，像稳固的基座。这个形状扎根于地面。它反映你一再回归的底色：安全、稳定、信任，是你所需要的根基。'},
+      gourd:{name:'传统与家庭',values:'家庭 · 纪律 · 传承 · 根源',why:'双球葫芦的形态，像代代相传的器物。这个形状承载着延续。它映照着你对"留下来的东西"的珍视，以及守护它的人。'},
+      tall:{name:'成就',values:'成长 · 卓越 · 能力 · 抱负',why:'纤长直立的形态，像一直向上延伸的容器。这个形状反映一种向上的驱动：想要成长、精进、留下一些有意义的痕迹。'},
+      lantern:{name:'权力与影响',values:'财富 · 掌控 · 权威 · 认可',why:'宽肩、结构感强的形态，像一只经久耐用的双耳瓶。这个形状反映你对"握有什么"、"引领什么"以及"如何被看见"的关注。'},
+      bowl:{name:'仁爱',values:'爱 · 同情 · 友谊 · 助人 · 尊重',why:'宽口敞开的形态，像伸向他人的杯盏。这个形状承载最多。它反映你故事里有多少是关于给予、关怀和保持连结的。'},
+      oval:{name:'普世价值',values:'公正 · 智慧 · 自由 · 接纳 · 伦理 · 和谐',why:'平衡流畅的椭圆，没有棱角，没有极端。这个形状反映一种希望公平地承载万物的愿望：先理解，再评判；先开放，再收窄。'},
+      vase:{name:'自我引导',values:'创造力 · 好奇心 · 独立性 · 智识',why:'沙漏形态——口部与腹部宽阔，腰部收紧。这个形状反映一个不愿被框住的自我：好奇、有表达欲，沿着自己的线索前行。'},
+      teapot:{name:'刺激与享受',values:'冒险 · 挑战 · 勇气 · 乐趣',why:'圆润丰盈的形态，像一只让人想停下来的器物。这个形状反映活力与朝气：被新鲜事物、风险或令人心跳加速的事情所吸引。'},
+    },provisionalReading:'暂定的解读，留下或挑战，由你决定。',
     allTime:'全部时间',filterAll:'全部',filterMonth:'本月',filterYear:'本年',
     s5Desc:{see:'关于正在变得更清晰的事物，一句温和的记录。',carry:'关于足够重要、值得引导你前行的事物，一句记录。',keep:'一行短句、一个问题、或稍后回来的提醒。'},
     s5Example:{see:'"也许这件事真正告诉我的是……"',carry:'"我不想从这段经历中失去的是……"',keep:'"我想随身携带的那个问题是……"'},
@@ -3083,8 +3110,10 @@ function Journey({data,onEdit,onExport,lang='en'}) {
   const [exp,setExp] = useState(null)
   const [editing,setEditing] = useState(false)
   const [draft,setDraft] = useState(data.outputText || '')
+  const [showValue,setShowValue] = useState(false)
 
   useEffect(()=>{ setDraft(data.outputText || '') },[data.outputText])
+  const vc = pv.valueCluster && T.valueClusters?.[pv.valueCluster]
 
   const secs = [
     {k:'story',icon:'✦',t:T.whereIStarted,sub:data.entryCard,body:data.userStory},
@@ -3106,20 +3135,29 @@ function Journey({data,onEdit,onExport,lang='en'}) {
     <div style={{background:C.cream,borderRadius:22,boxShadow:C.lift,overflow:'hidden',border:`1px solid ${C.line}`}}>
       <div style={{background:`linear-gradient(135deg,${C.celadonP}66,${C.slip})`,padding:'20px 20px 16px',display:'flex',alignItems:'center',gap:12}}>
         <Pot phase="blooming" size={44} {...pv} />
-        <div>
+        <div style={{flex:1}}>
           <Tag color={C.celadonD}>Realization Moments</Tag>
           <div style={{fontSize:14,color:C.ash,fontFamily:'DM Sans,sans-serif'}}>
             {new Date(data.timestamp).toLocaleDateString(lang==='zh'?'zh-CN':'en-US',{month:'long',day:'numeric',year:'numeric'})}
           </div>
-          {pv.bodyType && T.bodyTypeLabel?.[pv.bodyType] && (
-            <div style={{marginTop:5,display:'flex',alignItems:'center',gap:5}}>
-              <span style={{fontSize:10,color:C.stone,fontFamily:'DM Sans,sans-serif'}}>{T.valueSignalPrefix}</span>
-              <span style={{fontSize:11,color:C.celadonD,fontFamily:'DM Sans,sans-serif',fontWeight:500,background:C.celadonP+'44',padding:'1px 7px',borderRadius:10}}>{T.bodyTypeLabel[pv.bodyType]}</span>
-            </div>
+          {vc && (
+            <button onClick={()=>setShowValue(v=>!v)} style={{marginTop:6,display:'flex',alignItems:'center',gap:5,background:'none',border:'none',cursor:'pointer',padding:0}}>
+              <span style={{fontSize:11,color:C.stone,fontFamily:'DM Sans,sans-serif'}}>{T.valueSignalPrefix}</span>
+              <span style={{fontSize:11,color:C.celadonD,fontFamily:'DM Sans,sans-serif',fontWeight:500,background:C.celadonP+'55',padding:'2px 8px',borderRadius:10}}>{vc.name}</span>
+              <span style={{fontSize:10,color:C.ash}}>{showValue?'▴':'▾'}</span>
+            </button>
           )}
         </div>
       </div>
 
+      {showValue && vc && (
+        <FadeIn>
+          <div style={{margin:'0 16px 0',padding:'12px 16px',background:C.celadonP+'22',borderRadius:12,border:`1px solid ${C.celadonP}`,borderTop:'none',borderTopLeftRadius:0,borderTopRightRadius:0}}>
+            <div style={{fontSize:12,color:C.celadonD,fontFamily:'DM Sans,sans-serif',fontWeight:600,marginBottom:4}}>{vc.name} · {vc.values}</div>
+            <div style={{fontSize:13,color:C.stone,fontFamily:'DM Sans,sans-serif',lineHeight:1.7}}>{vc.why}</div>
+          </div>
+        </FadeIn>
+      )}
       <div style={{padding:'4px 0'}}>
         {secs.map((s,i)=>{
           const open = exp===s.k
