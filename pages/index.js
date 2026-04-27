@@ -1167,98 +1167,97 @@ const pS4 = (card, story, s1, focal, cr, lang) => {
     .join('\n');
   return `${SYS}
 STAGE: GLAZED CHECK-BACK
+
 Entry card:
 "${card}"
+
 Original story:
 <USER_STORY>
 ${story}
 </USER_STORY>
+
 Earlier reflection:
 <EARLIER_REFLECTION>
 ${s1 || ''}
 </EARLIER_REFLECTION>
+
 Chosen focus:
 <FOCAL_POINT>
 ${focal || ''}
 </FOCAL_POINT>
-Their answers:
+
+Their answers to the guided questions:
 <USER_ANSWERS>
 ${ct || ''}
 </USER_ANSWERS>
-TASK
-Offer exactly 4 possible glazed threads for the person to check.
-This is the glazed step.
-The glaze should not explain the whole story.
-The glaze should not turn the story into a lesson.
-The glaze should not decide who the person is.
-The glaze should gently reflect what may be beginning to show on the surface after the person has stayed with the story for a little while.
-Each thread must include a core value. The core value should be visible — woven naturally into the statement through the person's own language, not announced as a label.
-Ground each thread in the person's actual words, specific moments, and details from their story. Do not write threads that could apply to anyone. Write threads that could only have come from reading this particular story. Echo the person's own phrases and images where possible.
-IMPORTANT
-Do not use ACT terms in user-facing writing.
-Do not mention acceptance, commitment, mindfulness, defusion, or ACT unless the user used those words first.
-Do not sound like a therapist, coach, professor, or self-help book.
-The JSON field coreValue is required for the app.
-The statement and opening should name the value quality naturally — drawn from what the person actually wrote.
-These phrasings are welcome:
-- "the care that seemed to hold this together"
-- "a kind of steadiness you seemed unwilling to give up"
-- "the honesty that made things harder but also kept something alive"
-- "the tenderness still underneath all of it"
-This is noticing, not labeling. Stay close to how the person spoke.
-But do not say:
-- your core value is...
-- this shows your value is...
-- you need to live according to...
-- this is your authentic self...
-- this means you are...
-ACT VALUES GUIDANCE
-Use this silently.
-A value is not:
-- a goal
-- an achievement
-- a personality trait
-- a fixed identity
-- a lesson
-- a rule
-- a perfect version of the self
-- a demand to take action immediately
-- a way to make pain meaningful too quickly
-A value is:
-- a quality of how someone may want to move through life
-- a direction they may return to
-- something shown through small choices, longings, refusals, care, protection, honesty, tenderness, courage, dignity, freedom, connection, steadiness, repair, or curiosity
-- something that can be present even when the situation is painful, unresolved, unfinished, or confusing
+
+═══════════════════════════════════════
+STEP 1 — EXCAVATE SILENTLY BEFORE WRITING
+
+Read everything above. Before generating any threads, do this work privately:
+
+A. SPECIFIC LANGUAGE
+Write down 3–5 exact phrases or sentences the person used that carry the most weight — not paraphrases, their actual words. These become your anchors. Every thread must be traceable to at least one of these anchors.
+
+B. DOUBLE LISTENING (Denborough)
+For each anchor phrase, ask two questions:
+  1. What hardship, pressure, or pain is present here?
+  2. What does this phrase also show about the person — their care, their resistance, their refusal, their hope, their protection, even quietly?
+Hold both sides. Do not skip the hardship to get to the hope. Do not skip the hope to stay in the hardship.
+
+C. UNIQUE OUTCOME (White)
+Is there one moment in this story that does not fit the problem's total claim on the person — a small act of care, choice, honesty, refusal, or connection? Even if tiny, even if painful — it matters.
+
+D. STRUCTURAL CONTEXT (Freire, Schwartz)
+Is there a force in this story that came from outside the person — family expectation, cultural pressure, institutional constraint, language, migration, belonging, generational transmission, discrimination, or something else social? If yes, name it briefly for yourself. This pressure is NOT the person. The thread can name it softly without locating it inside them.
+
+E. MEANING-MAKING EDGE (McAdams & McLean)
+Where is the person at the edge of possible meaning? Not where they have landed, but where understanding is just beginning to form — unfinished, uncertain, not yet named. This is where threads live.
+
+═══════════════════════════════════════
+STEP 2 — GENERATE 4 THREADS
+
+Using only what you excavated in Step 1, build exactly 4 threads.
+
+WHAT A THREAD IS
+A thread is a tentative hypothesis — something that may be beginning to show at the surface after the person has stayed with this story. It is NOT an interpretation, diagnosis, insight, lesson, or conclusion. The person reads it and says "yes, close," "not quite," or "no." All three are valid.
+
+THE 4 THREAD ANGLES
+
+Thread 1 — Newly visible
+Something in the story that may not have been named before. Draw directly from one of your anchor phrases. Show how the hardship and the person's response both live in that same phrase.
+
+Thread 2 — Still unresolved
+Something where a value or care is clearly present, but the situation remains unclear, painful, or unfinished. Do not resolve it. Do not add hope the person did not write.
+
+Thread 3 — Already there
+A quality that was quietly present throughout the story before the person had words for it — found in a small choice, a refusal, a protection, or a way of staying. Connect to the unique outcome you found.
+
+Thread 4 — What they may want to hold
+Connected specifically to what the person chose to focus on (the focal point and their answers). What seems to matter most in where they chose to go?
+
+═══════════════════════════════════════
+STEP 3 — VALUE EXCAVATION
+
+For each thread, choose a coreValue and valueQuality AFTER finding the narrative anchor — not before. The value should emerge from what the person wrote, not be assigned to it.
+
+A value is not a goal, achievement, personality trait, or fixed identity. It is a quality of how someone moves through life — visible in small choices, longings, refusals, protection, honesty, tenderness, courage, dignity, freedom, connection, steadiness, repair, or curiosity.
+
 Look for values in:
-- what the person cared about
 - what hurt because it mattered
-- what they tried to protect
-- what they could not fully accept as normal
+- what the person tried to protect
+- what they could not accept as normal
 - what they reached for, even quietly
 - what they refused to erase
-- what they wanted to preserve
-- what kind of relationship they wanted with themselves, others, or the world
-- what kind of direction they may want to move toward, without making it an identity claim
-CORE VALUE OPTIONS
-Choose one coreValue for each thread from this list only:
-- Security
-- Benevolence
-- Universalism
-- Self-direction
-- Stimulation
-- Hedonism
-- Achievement
-- Power
-- Tradition
-- Conformity
-VALUE QUALITY OPTIONS
-For valueQuality, use plain human language.
-Do not use abstract theory language.
-Examples: honesty, care, tenderness, steadiness, dignity, freedom, curiosity, protection, belonging, courage, repair, openness, rest, fairness, creativity, self-trust, connection, responsibility, aliveness, spaciousness
-CORE VALUE MEANING GUIDE
-Use this guide silently when choosing coreValue.
+- what kind of relationship they wanted — with others, themselves, or the world
+- what structural pressure they were moving inside of or against
+
+CORE VALUE OPTIONS — choose exactly one per thread:
+Security | Benevolence | Universalism | Self-direction | Stimulation | Hedonism | Achievement | Power | Tradition | Conformity
+
+CORE VALUE MEANING GUIDE (use silently):
 Security: safety, steadiness, protection, grounding, stability, peace, or wanting life to feel less threatening.
-Benevolence: care, kindness, loyalty, tenderness, responsibility, repair, protecting someone, or wanting relationships to be held gently.
+Benevolence: care, kindness, loyalty, tenderness, responsibility, repair, protecting someone, or wanting relationships held gently.
 Universalism: fairness, dignity, justice, inclusion, compassion, cultural awareness, shared humanity, or not wanting anyone's experience to be erased.
 Self-direction: honesty, choice, freedom, creativity, curiosity, self-trust, having one's own voice, or wanting space to decide.
 Stimulation: aliveness, courage, change, movement, exploration, possibility, or wanting life to feel less closed.
@@ -1267,52 +1266,74 @@ Achievement: effort, growth, competence, persistence, learning, capability, or w
 Power: boundaries, influence, respect, being taken seriously, having room, being less controlled, or reclaiming one's position.
 Tradition: family history, ancestry, culture, rituals, continuity, memory, inherited meaning, or carrying something forward with care.
 Conformity: restraint, harmony, responsibility, not harming others, meeting expectations, or trying to live carefully within relationships or systems.
-THREAD REQUIREMENTS
-Return exactly 4 threads.
-Each thread must have these fields:
-1. thread: a short title, 3-7 words
-2. coreValue: one value from the required coreValue list
-3. valueQuality: one plain-language quality
-4. statement: 1-2 gentle sentences that echo the person's specific words or moments AND surface the value quality naturally
-5. opening: one small check-back question that lets the user confirm, adjust, or reject it
-The 4 threads should cover different angles:
-1. Something newly visible — drawn from a specific word or moment in the story
-2. Something still unresolved — where the value is present but the situation is not settled
-3. Something that may quietly guide them — a quality that was already there, even if unnamed
-4. Something they may want to carry forward — connected to what they chose to focus on
-Make the 4 threads meaningfully different from each other.
-Do not repeat the same coreValue more than twice.
-Do not repeat the same valueQuality.
-WRITING STYLE
-Use simple, warm, grounded language.
-Stay close to the user's own words — echo their phrasing, images, and specific details wherever possible.
-Each statement must be grounded in at least one specific word, phrase, or moment from the user's story. A thread that could have been written without reading this particular story is not close enough.
-Use "maybe," "it sounds like," "there may be," or "I wonder if."
-Do not over-polish.
-Do not make the story more coherent than it is.
-Do not make the story more hopeful than it is.
-Do not push action.
-Do not give advice.
-Do not tell the person what to do.
-Do not turn suffering into a lesson.
+
+valueQuality — plain human language only, drawn from the person's story:
+Examples: honesty, care, tenderness, steadiness, dignity, freedom, curiosity, protection, belonging, courage, repair, openness, rest, fairness, creativity, self-trust, connection, responsibility, aliveness, spaciousness
+
+Do not repeat the same coreValue more than twice. Do not repeat the same valueQuality.
+
+═══════════════════════════════════════
+STEP 4 — WRITE
+
+EACH THREAD MUST INCLUDE:
+1. thread — short title, 3–7 words, drawn from the person's language
+2. source — a short quote or close echo of the specific phrase from their story that grounds this thread (5–15 words). Use their actual words where possible. This is shown to the user as "from what you shared."
+3. coreValue — one from the list
+4. valueQuality — one plain human word
+5. statement — 1–2 sentences. Must hold the double: hardship AND the person's response. Must echo the person's specific language.
+6. opening — one Socratic question that the person genuinely cannot answer yet. It opens something, it does not confirm something.
+
+STATEMENT RULES:
+- Every statement must be traceable to a specific anchor phrase from Step 1
+- If you could write this statement without having read this particular story, rewrite it
+- Do not make the story more coherent than the person made it
+- Do not make the story more hopeful than the person wrote it
+- Do not name a structural force (family, culture, institution) as the person's fault or identity
+- Hold the problem outside the person — pressure, expectation, silence, constraint are forces, not traits
+
+WHAT NOT TO SAY:
+- "It seems like there is an important tension in what you shared." (generic)
+- "Something may be shifting in how you understand this." (generic)
+- "You seem to be growing through this." (redemptive, imposed)
+- "Your core value is..." (labeling)
+- "This means you are..." (identity claim)
+- "You should..." (advice)
+- Anything that could have been written for anyone
+
+WHAT THE STATEMENT AND OPENING SHOULD FEEL LIKE:
+- The person reads the statement and thinks: "yes, that is almost exactly what I was trying to say"
+- The opening question is one they have not yet asked themselves
+- The value quality surfaces in the sentence the way it lived in their story — quietly, specifically, already there
+
+STATEMENT PATTERN (show both sides):
+"[Echo their words or situation]. Maybe what was also present there — even if it did not have room to show itself fully — was [value quality]."
+
+OPENING PATTERN (Socratic, genuinely open):
+- "When you wrote [echo their phrase], what was underneath that for you?"
+- "If [value quality] had been allowed more room there, what might have been different?"
+- "What was the part of that you were most unwilling to let go?"
+- "What does [specific thing they described] still feel unfinished about?"
+
+═══════════════════════════════════════
+BOUNDARIES
+
+Do not use ACT or therapy jargon in user-facing text (acceptance, defusion, commitment, schema, etc.) unless the person used those words first.
+Do not sound like a therapist, self-help book, or professor.
+Do not push action, growth, healing, or resolution.
 Do not make identity claims.
-The tone should feel like a careful mirror, a quiet pause, a soft check-back — not an interpretation.
-GOOD STATEMENT EXAMPLES
-These show how a value quality surfaces naturally from the narrative — not announced, but woven in:
-- "Maybe part of what mattered here was the honesty you kept, even when it did not make things easier."
-- "There may be a care here — the kind that stayed even when the relationship was unclear."
-- "It sounds like something in you was still reaching for connection, even while you were pulling back."
-- "Maybe the tenderness underneath this was not just for the other person. It sounds like it was also for yourself."
-- "There may be a steadiness here — the way you stayed with it, even when staying was hard."
-- "It sounds like fairness was the thing you could not let go of, even when you had no way to make it right."
-- "Maybe a small part of you was still protecting something — a quieter truth that the situation kept pressing against."
+Do not skip the hardship to get to hope.
+Do not skip the person's response to stay in hardship.
+The person is the author. You are only a careful mirror.
+
+═══════════════════════════════════════
 OUTPUT FORMAT
-Return ONLY valid JSON. No markdown. No explanation. No extra text.
+
+Return ONLY valid JSON. No markdown, no explanation, no extra text.
 [
-  {"thread":"short title","coreValue":"Self-direction","valueQuality":"honesty","statement":"1-2 gentle sentences.","opening":"A small check-back question."},
-  {"thread":"short title","coreValue":"Benevolence","valueQuality":"care","statement":"1-2 gentle sentences.","opening":"A small check-back question."},
-  {"thread":"short title","coreValue":"Security","valueQuality":"steadiness","statement":"1-2 gentle sentences.","opening":"A small check-back question."},
-  {"thread":"short title","coreValue":"Universalism","valueQuality":"dignity","statement":"1-2 gentle sentences.","opening":"A small check-back question."}
+  {"thread":"short title","source":"their actual phrase or close echo","coreValue":"Self-direction","valueQuality":"honesty","statement":"1-2 sentences holding both sides.","opening":"A Socratic question they have not yet asked themselves."},
+  {"thread":"short title","source":"their actual phrase or close echo","coreValue":"Benevolence","valueQuality":"care","statement":"1-2 sentences holding both sides.","opening":"A Socratic question they have not yet asked themselves."},
+  {"thread":"short title","source":"their actual phrase or close echo","coreValue":"Security","valueQuality":"steadiness","statement":"1-2 sentences holding both sides.","opening":"A Socratic question they have not yet asked themselves."},
+  {"thread":"short title","source":"their actual phrase or close echo","coreValue":"Universalism","valueQuality":"dignity","statement":"1-2 sentences holding both sides.","opening":"A Socratic question they have not yet asked themselves."}
 ]
 ${langNote(lang)}`
 }
@@ -2810,7 +2831,8 @@ const TRANS = {
     continue:'Continue',
     listening:'Listening', exploring:'Exploring',
     takeWhat:"Take what resonates. Skip what doesn't.",
-    emerging:"What's emerging", fourThreads:"These reflections are grounded in what you shared and the values we noticed. Mark what feels accurate — adjust anything that doesn't.",
+    emerging:"What's emerging", fourThreads:"Each of these threads was drawn from something specific you wrote. Mark what feels close — adjust or remove anything that doesn't.",
+    fromYourStory:'From what you shared:',
     fits:'✓ Yes, this', close:'~ Close, not quite', remove:'✗ Doesn\'t fit',
     coreValueLabel:'Value we noticed:',
     valueConfirmLabel:'Does this feel like the right value for you?',
@@ -2937,7 +2959,8 @@ const TRANS = {
     continue:'继续',
     listening:'正在聆听', exploring:'深入探索',
     takeWhat:'取有共鸣的，跳过不合适的。',
-    emerging:'正在浮现', fourThreads:'这些回应来自你所分享的内容，以及我们注意到的价值观。标注哪些感觉准确——不准确的，可以调整。',
+    emerging:'正在浮现', fourThreads:'以下每条线索都来自你所写的具体内容。标注哪些感觉接近——不准确的，可以调整或移除。',
+    fromYourStory:'来自你所分享的：',
     fits:'✓ 符合', close:'~ 接近', remove:'✗ 移除',
     coreValueLabel:'我们注意到的价值：',
     valueConfirmLabel:'这个价值观对你来说感觉准确吗？',
@@ -3539,10 +3562,11 @@ export default function Home(){
         </FadeIn>
         <div style={{display:'flex',flexDirection:'column',gap:10,marginBottom:20}}>
           {threads.map((item,i)=>{
-            const st=item?.statement||item,thread=item?.thread,opening=item?.opening,vq=item?.valueQuality
+            const st=item?.statement||item,thread=item?.thread,opening=item?.opening,vq=item?.valueQuality,src=item?.source
             return(<FadeIn key={i} delay={40+i*35}>
               <div style={{background:C.cream,borderRadius:16,padding:14,boxShadow:C.glow,border:`1.5px solid ${rvM[i]==='fits'?C.celadon:rvM[i]==='no'?C.terra:rvM[i]==='notquite'?C.ochre:C.line}`,transition:'border-color 0.2s'}}>
                 {thread&&<p style={{fontSize:11,letterSpacing:'0.07em',textTransform:'uppercase',color:C.ash,margin:'0 0 6px',fontFamily:'DM Sans,sans-serif'}}>{thread}</p>}
+                {src&&<div style={{background:C.slip,borderRadius:8,padding:'6px 10px',marginBottom:10,borderLeft:`2px solid ${C.celadonP}`}}><p style={{fontSize:11,color:C.ash,fontFamily:'DM Sans,sans-serif',margin:'0 0 1px',letterSpacing:'0.04em',textTransform:'uppercase'}}>{TRANS[lang].fromYourStory}</p><p style={{fontSize:13,color:C.stone,fontFamily:'DM Serif Display,Georgia,serif',margin:0,lineHeight:1.5,fontStyle:'italic'}}>"{src}"</p></div>}
                 <p style={{fontSize:15,lineHeight:1.8,marginBottom:opening?8:12,fontFamily:'DM Sans,sans-serif',color:C.charcoal}}>{st}</p>
                 {opening&&<p style={{fontSize:13,color:C.stone,fontFamily:'DM Sans,sans-serif',fontStyle:'italic',marginBottom:12,lineHeight:1.6}}>{opening}</p>}
                 {item?.coreValue&&(
