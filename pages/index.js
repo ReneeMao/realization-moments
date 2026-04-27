@@ -2812,7 +2812,9 @@ const TRANS = {
     takeWhat:"Take what resonates. Skip what doesn't.",
     emerging:"What's emerging", fourThreads:"These reflections are grounded in what you shared and the values we noticed. Mark what feels accurate — adjust anything that doesn't.",
     fits:'✓ Yes, this', close:'~ Close, not quite', remove:'✗ Doesn\'t fit',
-    coreValueLabel:'Value at the heart of this:',
+    coreValueLabel:'Value we noticed:',
+    valueConfirmLabel:'Does this feel like the right value for you?',
+    valueYes:'✓ Yes, this fits', valueNotQuite:'~ Not quite',
     optionalDetail:'Adjust the wording if this doesn\'t quite fit:',
     optionalDetailHint:'For items you marked as fitting, you can expand here.',
     optionalDetailPlaceholder:'Rewrite it in your own words, or leave as is…',
@@ -2937,6 +2939,9 @@ const TRANS = {
     takeWhat:'取有共鸣的，跳过不合适的。',
     emerging:'正在浮现', fourThreads:'这些回应来自你所分享的内容，以及我们注意到的价值观。标注哪些感觉准确——不准确的，可以调整。',
     fits:'✓ 符合', close:'~ 接近', remove:'✗ 移除',
+    coreValueLabel:'我们注意到的价值：',
+    valueConfirmLabel:'这个价值观对你来说感觉准确吗？',
+    valueYes:'✓ 是的，符合', valueNotQuite:'~ 不太准确',
     optionalDetail:'如果措辞不太准确，可以在这里调整：',
     optionalDetailHint:'对于你标注为符合的部分，可以在这里展开说明。',
     optionalDetailPlaceholder:'用你自己的话改写，或者就这样留着…',
@@ -3257,7 +3262,7 @@ function buildCheckinCtx(em, tx) {
 
 /* ─── MAIN APP ─── */
 export default function Home(){
-  const[stage,setStage]=useState('landing');const[lang,setLang]=useState('en');const[selC,setSC]=useState(null);const[story,setStory]=useState('');const[s1,setS1]=useState('');const[focal,setFocal]=useState('');const[rC,setRC]=useState([]);const[cR,setCR]=useState({});const[oC,setOC]=useState(null);const[rvS,setRvS]=useState([]);const[rvM,setRvM]=useState({});const[stmtDetail,setStmtDetail]=useState({});const[oT,setOT]=useState(null);const[oTx,setOTx]=useState('');const[ld,setLd]=useState(false);const[err,setErr]=useState('');const[past,setPast]=useState([]);const[vw,setVw]=useState(null);const[svd,setSvd]=useState(null);const[nm,setNm]=useState(false);const[dR,setDR]=useState('');const[dT,setDT]=useState('')
+  const[stage,setStage]=useState('landing');const[lang,setLang]=useState('en');const[selC,setSC]=useState(null);const[story,setStory]=useState('');const[s1,setS1]=useState('');const[focal,setFocal]=useState('');const[rC,setRC]=useState([]);const[cR,setCR]=useState({});const[oC,setOC]=useState(null);const[rvS,setRvS]=useState([]);const[rvM,setRvM]=useState({});const[rvCV,setRvCV]=useState({});const[stmtDetail,setStmtDetail]=useState({});const[oT,setOT]=useState(null);const[oTx,setOTx]=useState('');const[ld,setLd]=useState(false);const[err,setErr]=useState('');const[past,setPast]=useState([]);const[vw,setVw]=useState(null);const[svd,setSvd]=useState(null);const[nm,setNm]=useState(false);const[dR,setDR]=useState('');const[dT,setDT]=useState('')
   // Stage 3 hybrid layout: 'focus' shows one question at a time; 'all' shows the
   // full 4-card collapsible list. Default to focus per the user's requested UX.
   const[s3Mode,setS3Mode]=useState('focus');const[s3Idx,setS3Idx]=useState(0)
@@ -3268,8 +3273,8 @@ export default function Home(){
   const sr=useRef(null)
   useEffect(()=>{sr.current?.scrollTo({top:0,behavior:'smooth'})},[stage])
   useEffect(()=>{loadReflections().then(setPast)},[])
-  const reset=useCallback(()=>{setSC(null);setStory('');setS1('');setFocal('');setRC([]);setCR({});setOC(null);setRvS([]);setRvM({});setStmtDetail({});setOT(null);setOTx('');setSvd(null);setVw(null);setNm(false);setDR('');setDT('');setErr('');setS3Mode('focus');setS3Idx(0);setCheckinEm([]);setCheckinTx('')},[])
-  const sd=useCallback(()=>({timestamp:Date.now(),entryCard:selC?.label,userStory:story,stage1Response:s1,focalPointText:focal,cardResponses:cR,confirmedStatements:rvS.filter((_,i)=>rvM[i]==='fits'||rvM[i]==='notquite').map(s=>s?.statement||s),confirmedCoreValues:rvS.filter((_,i)=>rvM[i]==='fits'||rvM[i]==='notquite').map(s=>s?.coreValue).filter(Boolean),outputType:oT,outputText:oTx,stmtDetails:stmtDetail,checkinEmotions:checkinEm,checkinText:checkinTx}),[selC,story,s1,focal,cR,rvS,rvM,stmtDetail,oT,oTx,checkinEm,checkinTx])
+  const reset=useCallback(()=>{setSC(null);setStory('');setS1('');setFocal('');setRC([]);setCR({});setOC(null);setRvS([]);setRvM({});setRvCV({});setStmtDetail({});setOT(null);setOTx('');setSvd(null);setVw(null);setNm(false);setDR('');setDT('');setErr('');setS3Mode('focus');setS3Idx(0);setCheckinEm([]);setCheckinTx('')},[])
+  const sd=useCallback(()=>({timestamp:Date.now(),entryCard:selC?.label,userStory:story,stage1Response:s1,focalPointText:focal,cardResponses:cR,confirmedStatements:rvS.filter((_,i)=>rvM[i]==='fits'||rvM[i]==='notquite').map(s=>s?.statement||s),confirmedCoreValues:rvS.filter((_,i)=>rvM[i]==='fits'||rvM[i]==='notquite').map(s=>s?.coreValue).filter(Boolean),valueAgreements:rvCV,outputType:oT,outputText:oTx,stmtDetails:stmtDetail,checkinEmotions:checkinEm,checkinText:checkinTx}),[selC,story,s1,focal,cR,rvS,rvM,rvCV,stmtDetail,oT,oTx,checkinEm,checkinTx])
   const W={minHeight:'100vh',background:C.kiln,fontFamily:'DM Serif Display,Georgia,serif',color:C.charcoal,display:'flex',justifyContent:'center',overflowY:'auto'}
   const I={width:'100%',maxWidth:560,padding:'32px 18px 64px'}
 
@@ -3537,16 +3542,23 @@ export default function Home(){
             const st=item?.statement||item,thread=item?.thread,opening=item?.opening,vq=item?.valueQuality
             return(<FadeIn key={i} delay={40+i*35}>
               <div style={{background:C.cream,borderRadius:16,padding:14,boxShadow:C.glow,border:`1.5px solid ${rvM[i]==='fits'?C.celadon:rvM[i]==='no'?C.terra:rvM[i]==='notquite'?C.ochre:C.line}`,transition:'border-color 0.2s'}}>
-                {item?.coreValue&&(
-                  <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:8}}>
-                    <span style={{fontSize:10,color:C.stone,fontFamily:'DM Sans,sans-serif'}}>{TRANS[lang].coreValueLabel}</span>
-                    <span style={{fontSize:11,color:C.celadonD,background:C.celadonP+'55',padding:'2px 9px',borderRadius:10,fontFamily:'DM Sans,sans-serif',fontWeight:600}}>{item.coreValue}</span>
-                  </div>
-                )}
                 {thread&&<p style={{fontSize:11,letterSpacing:'0.07em',textTransform:'uppercase',color:C.ash,margin:'0 0 6px',fontFamily:'DM Sans,sans-serif'}}>{thread}</p>}
                 <p style={{fontSize:15,lineHeight:1.8,marginBottom:opening?8:12,fontFamily:'DM Sans,sans-serif',color:C.charcoal}}>{st}</p>
-                {vq&&<p style={{fontSize:11,color:C.stone,fontFamily:'DM Sans,sans-serif',marginBottom:opening?6:10,letterSpacing:'0.04em',textTransform:'uppercase',opacity:0.7}}>{vq}</p>}
-                {opening&&<p style={{fontSize:13,color:C.stone,fontFamily:'DM Sans,sans-serif',fontStyle:'italic',marginBottom:10,lineHeight:1.6}}>{opening}</p>}
+                {opening&&<p style={{fontSize:13,color:C.stone,fontFamily:'DM Sans,sans-serif',fontStyle:'italic',marginBottom:12,lineHeight:1.6}}>{opening}</p>}
+                {item?.coreValue&&(
+                  <div style={{background:rvCV[i]==='yes'?C.celadonP+'33':rvCV[i]==='notquite'?C.ochre+'18':C.slip,borderRadius:12,padding:'10px 12px',marginBottom:10,border:`1.5px solid ${rvCV[i]==='yes'?C.celadon:rvCV[i]==='notquite'?C.ochre:C.line}`,transition:'all 0.2s'}}>
+                    <p style={{fontSize:10,letterSpacing:'0.07em',textTransform:'uppercase',color:C.ash,margin:'0 0 5px',fontFamily:'DM Sans,sans-serif'}}>{TRANS[lang].coreValueLabel}</p>
+                    <div style={{display:'flex',alignItems:'center',gap:7,marginBottom:8,flexWrap:'wrap'}}>
+                      <span style={{fontSize:13,color:C.celadonD,background:C.celadonP+'55',padding:'3px 11px',borderRadius:10,fontFamily:'DM Sans,sans-serif',fontWeight:600}}>{item.coreValue}</span>
+                      {vq&&<span style={{fontSize:12,color:C.stone,fontFamily:'DM Sans,sans-serif',opacity:0.85}}>· {vq}</span>}
+                    </div>
+                    <p style={{fontSize:12,color:C.stone,fontFamily:'DM Sans,sans-serif',margin:'0 0 7px',lineHeight:1.4}}>{TRANS[lang].valueConfirmLabel}</p>
+                    <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
+                      <button onClick={()=>setRvCV({...rvCV,[i]:rvCV[i]==='yes'?null:'yes'})} style={{padding:'4px 12px',borderRadius:12,border:`1.5px solid ${rvCV[i]==='yes'?C.celadon:C.line}`,background:rvCV[i]==='yes'?C.celadon+'22':'transparent',color:rvCV[i]==='yes'?C.charcoal:C.ash,fontSize:11,fontFamily:'DM Sans,sans-serif',cursor:'pointer',transition:'all 0.15s'}}>{TRANS[lang].valueYes}</button>
+                      <button onClick={()=>setRvCV({...rvCV,[i]:rvCV[i]==='notquite'?null:'notquite'})} style={{padding:'4px 12px',borderRadius:12,border:`1.5px solid ${rvCV[i]==='notquite'?C.ochre:C.line}`,background:rvCV[i]==='notquite'?C.ochre+'22':'transparent',color:rvCV[i]==='notquite'?C.charcoal:C.ash,fontSize:11,fontFamily:'DM Sans,sans-serif',cursor:'pointer',transition:'all 0.15s'}}>{TRANS[lang].valueNotQuite}</button>
+                    </div>
+                  </div>
+                )}
                 <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
                   {[{k:'fits',l:TRANS[lang].fits,c:C.celadon},{k:'notquite',l:TRANS[lang].close,c:C.ochre},{k:'no',l:TRANS[lang].remove,c:C.terra}].map(o=>(
                     <button key={o.k} onClick={()=>setRvM({...rvM,[i]:o.k})} style={{padding:'5px 13px',borderRadius:14,border:`1.5px solid ${rvM[i]===o.k?o.c:C.line}`,background:rvM[i]===o.k?o.c+'22':'transparent',color:rvM[i]===o.k?C.charcoal:C.ash,fontSize:12,fontFamily:'DM Sans,sans-serif',cursor:'pointer',transition:'all 0.15s'}}>{o.l}</button>
