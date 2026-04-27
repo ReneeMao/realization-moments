@@ -1240,7 +1240,7 @@ Each thread must have:
 1. thread: a short title, 3-7 words
 2. statement: 1-2 gentle sentences reflecting a possible value already present in the user's words
 3. opening: one small check-back question that lets the user confirm, adjust, or reject it
-4. coreValue: (optional) only include this field if there is clear, specific evidence in the story for a particular value. Choose from: "Security", "Tradition & Family", "Achievement", "Power", "Benevolence", "Universalism", "Self-direction", "Stimulation". If the story does not give you enough to be specific, omit this field entirely — do not guess. If you include it, it should name a quality the person was already acting on, not a theme of the situation.
+4. coreValue: always include this field. Read the story carefully and name the one value from this list that seems most alive in how the person moved through the experience — even if they never named it themselves. Choose from: "Security", "Tradition & Family", "Achievement", "Power", "Benevolence", "Universalism", "Self-direction", "Stimulation". Base your choice on what the person was protecting, reaching for, caring about, or refusing to abandon — not just the topic of the story. You are offering a tentative reading for them to confirm or adjust.
 
 The 4 threads should cover different angles:
 1. Something newly visible
@@ -1291,23 +1291,25 @@ No explanation.
     "thread": "short title",
     "statement": "1-2 gentle sentences.",
     "opening": "A small check-back question.",
-    "coreValue": "only if clearly supported — one of the 8 clusters — otherwise omit this field"
-  },
-  {
-    "thread": "short title",
-    "statement": "1-2 gentle sentences.",
-    "opening": "A small check-back question."
+    "coreValue": "one of the 8 clusters"
   },
   {
     "thread": "short title",
     "statement": "1-2 gentle sentences.",
     "opening": "A small check-back question.",
-    "coreValue": "only if clearly supported"
+    "coreValue": "one of the 8 clusters"
   },
   {
     "thread": "short title",
     "statement": "1-2 gentle sentences.",
-    "opening": "A small check-back question."
+    "opening": "A small check-back question.",
+    "coreValue": "one of the 8 clusters"
+  },
+  {
+    "thread": "short title",
+    "statement": "1-2 gentle sentences.",
+    "opening": "A small check-back question.",
+    "coreValue": "one of the 8 clusters"
   }
 ]
 
