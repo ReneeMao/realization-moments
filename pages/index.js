@@ -1472,7 +1472,7 @@ Do not decide what the story means.
 
 CORE VALUES IN THE CLOSING NOTE
 
-Each confirmed thread has a `confirmedImpliedValues` array — the specific values the person chose as present in their story (e.g. "Compassion", "Trust", "Creativity", "Justice").
+Each confirmed thread has a "confirmedImpliedValues" array — the specific values the person chose as present in their story (e.g. "Compassion", "Trust", "Creativity", "Justice").
 These are not broad labels. They are the exact words the person tapped to confirm.
 Use them — but weave them in as directions the person was moving toward, not as diagnoses or identity claims.
 
@@ -1492,7 +1492,7 @@ Do not say:
 - "You demonstrated creativity."
 - "According to your values, you should..."
 
-If the confirmed threads have no `confirmedImpliedValues`, fall back to `valueQuality`.
+If the confirmed threads have no "confirmedImpliedValues", fall back to "valueQuality".
 If both are empty, stay with the story's surface — do not invent a value.
 
 WHAT TO INCLUDE
