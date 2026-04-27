@@ -1373,26 +1373,22 @@ Return ONLY valid JSON in this exact shape:
   {
     "thread": "short title, 3-6 words",
     "coreValue": "one of: Security | Tradition & Family | Achievement | Power | Benevolence | Universalism | Self-direction | Stimulation",
-    "statement": "warm validating reflection, 2 sentences, specific to what they wrote",
-    "opening": "one soft confirmation sentence — not a question asking for more sharing"
+    "statement": "warm validating reflection, 2 sentences, specific to what they wrote"
   },
   {
     "thread": "short title, 3-6 words",
     "coreValue": "one of the 8 clusters",
-    "statement": "warm validating reflection, 2 sentences",
-    "opening": "one soft confirmation sentence"
+    "statement": "warm validating reflection, 2 sentences"
   },
   {
     "thread": "short title, 3-6 words",
     "coreValue": "one of the 8 clusters",
-    "statement": "warm validating reflection, 2 sentences",
-    "opening": "one soft confirmation sentence"
+    "statement": "warm validating reflection, 2 sentences"
   },
   {
     "thread": "short title, 3-6 words",
     "coreValue": "one of the 8 clusters",
-    "statement": "warm validating reflection, 2 sentences",
-    "opening": "one soft confirmation sentence"
+    "statement": "warm validating reflection, 2 sentences"
   }
 ]
 
@@ -2797,8 +2793,9 @@ const TRANS = {
     continue:'Continue',
     listening:'Listening', exploring:'Exploring',
     takeWhat:"Take what resonates. Skip what doesn't.",
-    emerging:"What's emerging", fourThreads:"Four reflections on what you shared. Mark what feels true — and adjust any that don't quite fit.",
-    fits:'✓ Fits', close:'~ Close', remove:'✗ Remove',
+    emerging:"What's emerging", fourThreads:"These reflections are grounded in what you shared and the values we noticed. Mark what feels accurate — adjust anything that doesn't.",
+    fits:'✓ Yes, this', close:'~ Close, not quite', remove:'✗ Doesn\'t fit',
+    coreValueLabel:'Value at the heart of this:',
     optionalDetail:'Adjust the wording if this doesn\'t quite fit:',
     optionalDetailHint:'For items you marked as fitting, you can expand here.',
     optionalDetailPlaceholder:'Rewrite it in your own words, or leave as is…',
@@ -2855,7 +2852,7 @@ const TRANS = {
     stage3RespondAtLeastOne: 'Respond to at least one',
     stage3OneOf: (i, n) => `Question ${i} of ${n}`,
     // Stage 4 min-2 rule
-    stage4MinHint: 'Mark at least 2 threads to continue. The rest are optional.',
+    stage4MinHint: 'Mark at least 2 to continue. No need to answer anything — just say whether it feels true.',
     // Errors / fallbacks (used when /api/reflect fails)
     errGenericSummary: 'Could not generate synthesis.',
     synthesizeThemes: 'Synthesize themes across this period',
@@ -2921,7 +2918,7 @@ const TRANS = {
     continue:'继续',
     listening:'正在聆听', exploring:'深入探索',
     takeWhat:'取有共鸣的，跳过不合适的。',
-    emerging:'正在浮现', fourThreads:'四条关于你所分享内容的回应。标注哪些感觉真实——如果有不太准确的，也可以调整。',
+    emerging:'正在浮现', fourThreads:'这些回应来自你所分享的内容，以及我们注意到的价值观。标注哪些感觉准确——不准确的，可以调整。',
     fits:'✓ 符合', close:'~ 接近', remove:'✗ 移除',
     optionalDetail:'如果措辞不太准确，可以在这里调整：',
     optionalDetailHint:'对于你标注为符合的部分，可以在这里展开说明。',
@@ -2958,7 +2955,7 @@ const TRANS = {
     stage3Prev: '上一题',
     stage3RespondAtLeastOne: '至少回答一个',
     stage3OneOf: (i, n) => `第 ${i} / ${n} 题`,
-    stage4MinHint: '至少标记 2 条线索以继续。其余可以留空。',
+    stage4MinHint: '标记至少 2 条以继续。不需要回答任何问题——只需说说是否感觉准确。',
     errGenericSummary: '无法生成回顾。',
     synthesizeThemes: '整合这段时间的主题',
     synthesizeBtn: '整合回顾 ✦',
@@ -3523,21 +3520,23 @@ export default function Home(){
             const st=item?.statement||item,thread=item?.thread,opening=item?.opening
             return(<FadeIn key={i} delay={40+i*35}>
               <div style={{background:C.cream,borderRadius:16,padding:14,boxShadow:C.glow,border:`1.5px solid ${rvM[i]==='fits'?C.celadon:rvM[i]==='no'?C.terra:rvM[i]==='notquite'?C.ochre:C.line}`,transition:'border-color 0.2s'}}>
-                <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:6,flexWrap:'wrap',gap:4}}>
-                  {thread&&<p style={{fontSize:12,letterSpacing:'0.08em',textTransform:'uppercase',color:C.ash,margin:0,fontFamily:'DM Sans,sans-serif'}}>{thread}</p>}
-                  {item?.coreValue&&<span style={{fontSize:10,color:C.celadonD,background:C.celadonP+'44',padding:'2px 8px',borderRadius:10,fontFamily:'DM Sans,sans-serif',fontWeight:500}}>{item.coreValue}</span>}
-                </div>
-                <p style={{fontSize:15,lineHeight:1.75,marginBottom:8,fontFamily:'DM Sans,sans-serif'}}>{st}</p>
-                {opening&&<p style={{fontSize:13,color:C.stone,lineHeight:1.6,marginBottom:8,fontFamily:'DM Sans,sans-serif',background:C.slip,borderRadius:8,padding:'7px 10px'}}>{opening}</p>}
-                <div style={{display:'flex',gap:5}}>
+                {item?.coreValue&&(
+                  <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:8}}>
+                    <span style={{fontSize:10,color:C.stone,fontFamily:'DM Sans,sans-serif'}}>{TRANS[lang].coreValueLabel}</span>
+                    <span style={{fontSize:11,color:C.celadonD,background:C.celadonP+'55',padding:'2px 9px',borderRadius:10,fontFamily:'DM Sans,sans-serif',fontWeight:600}}>{item.coreValue}</span>
+                  </div>
+                )}
+                {thread&&<p style={{fontSize:11,letterSpacing:'0.07em',textTransform:'uppercase',color:C.ash,margin:'0 0 6px',fontFamily:'DM Sans,sans-serif'}}>{thread}</p>}
+                <p style={{fontSize:15,lineHeight:1.8,marginBottom:12,fontFamily:'DM Sans,sans-serif',color:C.charcoal}}>{st}</p>
+                <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
                   {[{k:'fits',l:TRANS[lang].fits,c:C.celadon},{k:'notquite',l:TRANS[lang].close,c:C.ochre},{k:'no',l:TRANS[lang].remove,c:C.terra}].map(o=>(
-                    <button key={o.k} onClick={()=>setRvM({...rvM,[i]:o.k})} style={{padding:'3px 10px',borderRadius:14,border:`1.5px solid ${rvM[i]===o.k?o.c:C.line}`,background:rvM[i]===o.k?o.c+'18':'transparent',color:rvM[i]===o.k?C.charcoal:C.ash,fontSize:11,fontFamily:'DM Sans,sans-serif',cursor:'pointer',transition:'all 0.15s'}}>{o.l}</button>
+                    <button key={o.k} onClick={()=>setRvM({...rvM,[i]:o.k})} style={{padding:'5px 13px',borderRadius:14,border:`1.5px solid ${rvM[i]===o.k?o.c:C.line}`,background:rvM[i]===o.k?o.c+'22':'transparent',color:rvM[i]===o.k?C.charcoal:C.ash,fontSize:12,fontFamily:'DM Sans,sans-serif',cursor:'pointer',transition:'all 0.15s'}}>{o.l}</button>
                   ))}
                 </div>
                 {(rvM[i]==='fits'||rvM[i]==='notquite') && (
-                  <div style={{marginTop:8,borderTop:`1px solid ${C.line}`,paddingTop:8}}>
-                    <p style={{fontSize:13,color:C.ash,fontFamily:'DM Sans,sans-serif',marginBottom:4}}>{TRANS[lang].optionalDetail}</p>
-                    <textarea value={stmtDetail[i]||''} onChange={e=>setStmtDetail({...stmtDetail,[i]:e.target.value})} placeholder={TRANS[lang].optionalDetailPlaceholder} style={{width:'100%',minHeight:60,padding:10,borderRadius:10,border:`1.5px solid ${C.line}`,background:C.white,color:C.charcoal,fontSize:14,lineHeight:1.6,fontFamily:'DM Sans,sans-serif',resize:'none',outline:'none',boxSizing:'border-box'}} onFocus={e=>e.target.style.borderColor=C.celadon} onBlur={e=>e.target.style.borderColor=C.line}/>
+                  <div style={{marginTop:10,borderTop:`1px solid ${C.line}`,paddingTop:10}}>
+                    <p style={{fontSize:12,color:C.ash,fontFamily:'DM Sans,sans-serif',marginBottom:5}}>{TRANS[lang].optionalDetail}</p>
+                    <textarea value={stmtDetail[i]||''} onChange={e=>setStmtDetail({...stmtDetail,[i]:e.target.value})} placeholder={TRANS[lang].optionalDetailPlaceholder} style={{width:'100%',minHeight:52,padding:10,borderRadius:10,border:`1.5px solid ${C.line}`,background:C.white,color:C.charcoal,fontSize:14,lineHeight:1.6,fontFamily:'DM Sans,sans-serif',resize:'none',outline:'none',boxSizing:'border-box'}} onFocus={e=>e.target.style.borderColor=C.celadon} onBlur={e=>e.target.style.borderColor=C.line}/>
                   </div>
                 )}
               </div>
