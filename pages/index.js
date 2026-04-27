@@ -1240,6 +1240,7 @@ Each thread must have:
 1. thread: a short title, 3-7 words
 2. statement: 1-2 gentle sentences reflecting a possible value already present in the user's words
 3. opening: one small check-back question that lets the user confirm, adjust, or reject it
+4. coreValue: (optional) only include this field if there is clear, specific evidence in the story for a particular value. Choose from: "Security", "Tradition & Family", "Achievement", "Power", "Benevolence", "Universalism", "Self-direction", "Stimulation". If the story does not give you enough to be specific, omit this field entirely — do not guess. If you include it, it should name a quality the person was already acting on, not a theme of the situation.
 
 The 4 threads should cover different angles:
 1. Something newly visible
@@ -1289,7 +1290,8 @@ No explanation.
   {
     "thread": "short title",
     "statement": "1-2 gentle sentences.",
-    "opening": "A small check-back question."
+    "opening": "A small check-back question.",
+    "coreValue": "only if clearly supported — one of the 8 clusters — otherwise omit this field"
   },
   {
     "thread": "short title",
@@ -1299,7 +1301,8 @@ No explanation.
   {
     "thread": "short title",
     "statement": "1-2 gentle sentences.",
-    "opening": "A small check-back question."
+    "opening": "A small check-back question.",
+    "coreValue": "only if clearly supported"
   },
   {
     "thread": "short title",
@@ -1818,6 +1821,8 @@ const pSynth = (periodLabel, reflections, lang) => {
     if (r.focalPointText) lines.push(`Focus: ${r.focalPointText}`)
     if (Array.isArray(r.confirmedThreads) && r.confirmedThreads.length)
       lines.push(`Threads kept: ${r.confirmedThreads.join(' / ')}`)
+    if (Array.isArray(r.confirmedCoreValues) && r.confirmedCoreValues.length)
+      lines.push(`Values confirmed: ${r.confirmedCoreValues.join(', ')}`)
     if (r.closingNote) lines.push(`Closing note: ${r.closingNote.slice(0, 200)}`)
     return lines.join('\n')
   }).join('\n\n---\n\n')
@@ -1851,6 +1856,11 @@ This note should do three things:
 
    To find this: look for what recurs across sessions — a tension, a care, a question, a way they respond to difficulty.
    Name it softly. You are offering a possible lens, not a verdict.
+
+   If the reflections include "Values confirmed" entries, use them.
+   Weave those values gently into your observation — not as a label, but as a quality you noticed running through how they moved through things.
+   If the values repeat across sessions, name that quietly: something like "there may be something about [value] that keeps showing up in how you navigate these moments."
+   If there are no confirmed values, you can still notice what seems to matter to them based on what they wrote and protected.
 
 3. END with one quiet sentence that opens something rather than closes it.
    A question they might sit with. An observation that invites them to keep looking.
@@ -2493,6 +2503,55 @@ function Pot({
             <linearGradient id={`flameCore-${size}`} x1="0" x2="0" y1="1" y2="0">
               <stop offset="0%" stopColor="#FFD700" />
               <stop offset="100%" stopColor="#FFFFF0" stopOpacity="0.6" />
+            </linearGradient>
+          </defs>
+        </g>
+      )}
+
+      {phase === 'shaped' && (
+        <g opacity="0.82">
+          {/* Left hand — palm pressing the clay */}
+          <path
+            d={`M${w*0.02} ${h*0.62}
+               C${w*0.00} ${h*0.55} ${w*0.02} ${h*0.46} ${w*0.08} ${h*0.42}
+               C${w*0.13} ${h*0.38} ${w*0.19} ${h*0.40} ${w*0.21} ${h*0.46}
+               C${w*0.23} ${h*0.52} ${w*0.22} ${h*0.60} ${w*0.20} ${h*0.67}
+               C${w*0.17} ${h*0.74} ${w*0.10} ${h*0.76} ${w*0.05} ${h*0.72}
+               C${w*0.02} ${h*0.69} ${w*0.02} ${h*0.65} ${w*0.02} ${h*0.62} Z`}
+            fill="url(#handL)"
+            stroke="#C4A882"
+            strokeWidth="0.8"
+          />
+          {/* Left fingers — three gentle arcs */}
+          <path d={`M${w*0.10} ${h*0.38} C${w*0.08} ${h*0.30} ${w*0.11} ${h*0.24} ${w*0.14} ${h*0.28}`} stroke="#C4A882" strokeWidth="1.4" strokeLinecap="round" fill="none"/>
+          <path d={`M${w*0.15} ${h*0.36} C${w*0.14} ${h*0.27} ${w*0.17} ${h*0.21} ${w*0.20} ${h*0.25}`} stroke="#C4A882" strokeWidth="1.4" strokeLinecap="round" fill="none"/>
+          <path d={`M${w*0.19} ${h*0.38} C${w*0.19} ${h*0.30} ${w*0.22} ${h*0.24} ${w*0.24} ${h*0.28}`} stroke="#C4A882" strokeWidth="1.3" strokeLinecap="round" fill="none"/>
+
+          {/* Right hand — mirror */}
+          <path
+            d={`M${w*0.98} ${h*0.62}
+               C${w*1.00} ${h*0.55} ${w*0.98} ${h*0.46} ${w*0.92} ${h*0.42}
+               C${w*0.87} ${h*0.38} ${w*0.81} ${h*0.40} ${w*0.79} ${h*0.46}
+               C${w*0.77} ${h*0.52} ${w*0.78} ${h*0.60} ${w*0.80} ${h*0.67}
+               C${w*0.83} ${h*0.74} ${w*0.90} ${h*0.76} ${w*0.95} ${h*0.72}
+               C${w*0.98} ${h*0.69} ${w*0.98} ${h*0.65} ${w*0.98} ${h*0.62} Z`}
+            fill="url(#handR)"
+            stroke="#C4A882"
+            strokeWidth="0.8"
+          />
+          {/* Right fingers */}
+          <path d={`M${w*0.90} ${h*0.38} C${w*0.92} ${h*0.30} ${w*0.89} ${h*0.24} ${w*0.86} ${h*0.28}`} stroke="#C4A882" strokeWidth="1.4" strokeLinecap="round" fill="none"/>
+          <path d={`M${w*0.85} ${h*0.36} C${w*0.86} ${h*0.27} ${w*0.83} ${h*0.21} ${w*0.80} ${h*0.25}`} stroke="#C4A882" strokeWidth="1.4" strokeLinecap="round" fill="none"/>
+          <path d={`M${w*0.81} ${h*0.38} C${w*0.81} ${h*0.30} ${w*0.78} ${h*0.24} ${w*0.76} ${h*0.28}`} stroke="#C4A882" strokeWidth="1.3" strokeLinecap="round" fill="none"/>
+
+          <defs>
+            <linearGradient id="handL" x1="0" x2="1" y1="0" y2="0">
+              <stop offset="0%" stopColor="#E8C9A0" />
+              <stop offset="100%" stopColor="#D4A574" stopOpacity="0.7" />
+            </linearGradient>
+            <linearGradient id="handR" x1="1" x2="0" y1="0" y2="0">
+              <stop offset="0%" stopColor="#E8C9A0" />
+              <stop offset="100%" stopColor="#D4A574" stopOpacity="0.7" />
             </linearGradient>
           </defs>
         </g>
@@ -3205,7 +3264,7 @@ export default function Home(){
   useEffect(()=>{sr.current?.scrollTo({top:0,behavior:'smooth'})},[stage])
   useEffect(()=>{loadReflections().then(setPast)},[])
   const reset=useCallback(()=>{setSC(null);setStory('');setS1('');setFocal('');setRC([]);setCR({});setOC(null);setRvS([]);setRvM({});setStmtDetail({});setOT(null);setOTx('');setSvd(null);setVw(null);setNm(false);setDR('');setDT('');setErr('');setS3Mode('focus');setS3Idx(0);setCheckinEm([]);setCheckinTx('')},[])
-  const sd=useCallback(()=>({timestamp:Date.now(),entryCard:selC?.label,userStory:story,stage1Response:s1,focalPointText:focal,cardResponses:cR,confirmedStatements:rvS.filter((_,i)=>rvM[i]==='fits'||rvM[i]==='notquite').map(s=>s?.statement||s),outputType:oT,outputText:oTx,stmtDetails:stmtDetail,checkinEmotions:checkinEm,checkinText:checkinTx}),[selC,story,s1,focal,cR,rvS,rvM,stmtDetail,oT,oTx,checkinEm,checkinTx])
+  const sd=useCallback(()=>({timestamp:Date.now(),entryCard:selC?.label,userStory:story,stage1Response:s1,focalPointText:focal,cardResponses:cR,confirmedStatements:rvS.filter((_,i)=>rvM[i]==='fits'||rvM[i]==='notquite').map(s=>s?.statement||s),confirmedCoreValues:rvS.filter((_,i)=>rvM[i]==='fits'||rvM[i]==='notquite').map(s=>s?.coreValue).filter(Boolean),outputType:oT,outputText:oTx,stmtDetails:stmtDetail,checkinEmotions:checkinEm,checkinText:checkinTx}),[selC,story,s1,focal,cR,rvS,rvM,stmtDetail,oT,oTx,checkinEm,checkinTx])
   const W={minHeight:'100vh',background:C.kiln,fontFamily:'DM Serif Display,Georgia,serif',color:C.charcoal,display:'flex',justifyContent:'center',overflowY:'auto'}
   const I={width:'100%',maxWidth:560,padding:'32px 18px 64px'}
 
