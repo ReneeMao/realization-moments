@@ -1168,7 +1168,7 @@ const pS4 = (card, story, s1, focal, cr, lang) => {
 
   return `${SYS}
 
-STAGE: CHECK-BACK THREADS
+STAGE: GLAZED CHECK-BACK
 
 Entry card:
 "${card}"
@@ -1194,220 +1194,122 @@ ${ct || ''}
 </USER_ANSWERS>
 
 TASK
-Offer exactly 4 possible threads for the person to check — not to push them further, but to let them confirm whether your reading feels accurate and adjust it if not.
+Offer exactly 4 possible threads for the person to check.
+This is the "glazed" step.
+The glaze should not explain the whole story.
+The glaze should not turn the story into a lesson.
+The glaze should gently reflect what may be beginning to show on the surface after the person has stayed with the moment for a little while.
+Each thread should help the person notice a possible value that may already be present in their story.
 
-These are not conclusions.
-These are not insights.
-These are not interpretations of who the person is.
-They are possible reflections the person may confirm, adjust, or set aside.
+IMPORTANT
+Do not use the phrase "core value" unless the user used it first.
+Do not use ACT terms.
+Do not mention acceptance, commitment, mindfulness, defusion, or values.
+Do not sound like a therapist, coach, professor, or self-help book.
 
-Use the user's own words as much as possible.
-Do not introduce themes that are not already present.
-Do not make the story more coherent than the user made it.
-Do not make the story more hopeful than it currently is.
-Do not decide what the story means.
+ACT VALUES GUIDANCE
+Use this silently.
+A value is not:
+- a goal
+- an achievement
+- a personality trait
+- a lesson
+- a rule
+- a perfect version of the self
+- a demand to take action immediately
 
-ACT VALUES FRAMEWORK
+A value is:
+- a quality of how someone may want to move through life
+- a direction they may return to
+- something shown through small choices, longings, refusals, care, protection, honesty, tenderness, courage, dignity, freedom, connection, steadiness, or repair
+- something that can be present even when the situation is painful, unresolved, or unfinished
 
-Each thread should help the person recognize a value they may have already been living out — not as an ideal they aspire to, but as a quality of how they actually moved through the situation.
+Look for values in:
+- what the person cared about
+- what hurt because it mattered
+- what they tried to protect
+- what they could not fully accept as normal
+- what they reached for, even quietly
+- what they refused to erase
+- what kind of relationship they wanted with themselves, others, or the world
+- what kind of person they were trying to be in that moment, without making it an identity claim
 
-In ACT (Acceptance and Commitment Therapy), values are understood as desired qualities of ongoing action — not outcomes to achieve, not rules to follow, not fixed traits. They are about how a person acts, not what they get. A value like "connection" does not mean the person is connected — it means they kept reaching toward connection even when it was hard.
+THREAD REQUIREMENTS
+Return exactly 4 threads.
+Each thread must have:
+1. thread: a short title, 3-7 words
+2. statement: 1-2 gentle sentences reflecting a possible value already present in the user's words
+3. opening: one small check-back question that lets the user confirm, adjust, or reject it
 
-When writing the "coreValue" and "statement":
-- Look for what the person was already doing, protecting, reaching for, or refusing to abandon — even within the difficulty
-- The coreValue should name a quality visible in their actual behavior or choices in the story, not just a theme in what happened to them
-- The statement should gently reflect back: "In how you moved through this, there may be something about [value] — not as a goal, but as something already present in how you acted"
-- Hold the value lightly and tentatively — offer it as a possible reflection, not a conclusion
-- Values do not need justification; do not ask the person to prove or explain them
-- Distinguish values from goals: a goal is something finished (getting the job, resolving the conflict); a value is something ongoing (showing up with honesty, caring for people around you)
-- Do not label the person as "a person who values X" — instead point to a moment: "there may be something about how you [specific action] that speaks to [value]"
+The 4 threads should cover different angles:
+1. Something newly visible
+2. Something still unresolved
+3. Something that may quietly guide them
+4. Something they may want to carry forward
 
-THREAD DIRECTIONS
+WRITING STYLE
+Use simple, warm, grounded language.
+Stay close to the user's own words.
+Use "maybe," "it sounds like," "there may be," or "I wonder if."
+Do not over-polish.
+Do not make the story more coherent than it is.
+Do not make the story more hopeful than it is.
+Do not push action.
+Do not say "you should."
+Do not say "this shows that."
+Do not say "your value is."
+Do not say "you are someone who."
 
-Create one thread for each direction:
+The tone should feel like:
+- a careful mirror
+- a quiet pause
+- a soft check-back
+- not an interpretation
 
-1. What may be clearer
-A thread about something the person may be seeing or naming more clearly now.
+GOOD EXAMPLES OF STATEMENTS
+- "Maybe part of what mattered here was being honest with yourself, even when the honesty did not make things easier."
+- "There may be a wish here to stay connected without disappearing into what others need from you."
+- "It sounds like something in you was trying to protect a quieter truth, even before you had words for it."
+- "Maybe this is not asking you to solve everything yet. It may simply be asking what kind of care you do not want to lose."
 
-2. What still feels unfinished
-A thread about something that still feels tender, unresolved, or not ready to be named.
+BAD EXAMPLES
+- "Your core value is authenticity."
+- "This means you are resilient."
+- "You need to commit to living according to your values."
+- "This experience helped you grow."
+- "You are learning to reclaim your agency."
+- "The lesson is to choose yourself."
 
-3. What mattered
-A thread about what the person seemed to care about, protect, want, or refuse to let disappear — and how this shows up as a value already alive in how they acted.
+OUTPUT FORMAT
+Return ONLY valid JSON.
+No markdown.
+No explanation.
 
-4. What may be opening
-A thread about a small possible opening, question, or next place to stay with.
-
-FOR EACH THREAD
-
-Each thread must include:
-- "thread": a short title, 3-6 words
-- "coreValue": the one Schwartz value cluster this thread most connects to. Choose from exactly these options:
-    "Security", "Tradition & Family", "Achievement", "Power", "Benevolence", "Universalism", "Self-direction", "Stimulation"
-  Choose the one that genuinely fits based on what the person was doing or protecting, not just the topic of the story.
-- "statement": a warm, validating reflection — 2 sentences.
-  Sentence 1: name what seems true about how the person moved through this — what they did, protected, reached for, or chose.
-  Sentence 2: gently name the value or quality that may be alive in that, held tentatively — or acknowledge the weight of what they were carrying.
-
-The statement should:
-- be warm and validating — make the person feel genuinely seen in their actions, not just their situation
-- connect the coreValue to a specific behavior, choice, or moment in what they wrote — not to the topic in general
-- use ACT-style value language: point to how they acted, not who they are
-- use their own words and phrases
-- be specific to what they actually wrote, not generic
-- use simple language, be tentative, avoid identity claims, advice, praise, clinical language
-- feel like a mirror, not a message
-
-LANGUAGE FOR TENTATIVENESS
-
-Use phrases like:
-- "Maybe..."
-- "It sounds like..."
-- "There may be..."
-- "I wonder if..."
-- "This might be..."
-- "One possible thread is..."
-- "This does not have to be the whole story..."
-
-Avoid phrases like:
-- "This means..."
-- "This shows..."
-- "The insight is..."
-- "The core issue is..."
-- "You are..."
-- "Your pattern is..."
-- "You need to..."
-- "You should..."
-
-DOUBLE LISTENING
-
-Each thread should hold both:
-1. something difficult, pressured, painful, confusing, unfair, or unfinished
-2. something about how the person responded, noticed, cared, protected, questioned, endured, or stayed connected
-
-Do not skip the hardship.
-Do not rush to the hopeful part.
-Do not make the hopeful part bigger than the user made it.
-
-PROBLEM LANGUAGE
-
-Keep the problem separate from the person.
-
-Instead of:
-"You are stuck."
-Say:
-"It sounds like this situation kept pulling you back into the same place."
-
-Instead of:
-"You are afraid."
-Say:
-"It sounds like fear had a strong voice there."
-
-Instead of:
-"You are conflicted."
-Say:
-"It sounds like more than one expectation was speaking at once."
-
-Instead of:
-"You lack confidence."
-Say:
-"It sounds like something in that moment made it hard to trust your place in the room."
-
-Instead of:
-"You are people-pleasing."
-Say:
-"It sounds like the pressure to be easy to accept became very loud."
-
-RE-AUTHORING RESTRAINT
-
-You may notice possible values, hopes, care, protest, connection, or small openings.
-But do not name a full new story for the person.
-
-Good:
-"Maybe that small refusal matters."
-"Something in that answer seems worth staying near."
-"There may be a wish there that has not had much room yet."
-"That detail sounds small, but it may be carrying something important."
-
-Avoid:
-"This is your preferred story."
-"This reveals your true self."
-"This proves your resilience."
-"You are reclaiming your agency."
-"This is a turning point in your identity."
-
-MEANING-MAKING RESTRAINT
-
-Meaning can be offered as a possibility, not delivered as an answer.
-
-Good:
-"Maybe this is not ready to become a conclusion yet."
-"It may be enough to notice that this part still feels unfinished."
-"This might be one thread to keep, if it feels true to you."
-
-Avoid:
-"This means you value independence."
-"This means you are healing."
-"This means you are ready to move forward."
-"This shows that your past shaped your current pattern."
-
-CULTURE AND CONTEXT
-
-If cultural, family, migration, language, school, workplace, money, gender, race, or institutional pressure appears, name it softly.
-
-Good:
-"Some of this pressure may not have started inside you."
-"It sounds like the room did not leave much space for all parts of you."
-"Maybe this was not only a personal question, but also a question shaped by expectations around you."
-
-Avoid:
-"This is bicultural identity conflict."
-"This is internalized oppression."
-"This is acculturation stress."
-"You need to integrate both cultures."
-
-QUALITY CHECK
-
-Before returning the JSON, silently check:
-- Is each thread grounded in the user's own words?
-- Is each statement tentative?
-- Did I avoid the word "insight"?
-- Did I avoid identity claims?
-- Did I keep the problem outside the person?
-- Did I avoid advice?
-- Did I avoid generic praise?
-- Did I avoid forced hope?
-- Did I leave room for the person to disagree?
-- Does each opening question ask only one thing?
-
-Return ONLY valid JSON in this exact shape:
 [
   {
-    "thread": "short title, 3-6 words",
-    "coreValue": "one of: Security | Tradition & Family | Achievement | Power | Benevolence | Universalism | Self-direction | Stimulation",
-    "statement": "warm validating reflection, 2 sentences, specific to what they wrote"
+    "thread": "short title",
+    "statement": "1-2 gentle sentences.",
+    "opening": "A small check-back question."
   },
   {
-    "thread": "short title, 3-6 words",
-    "coreValue": "one of the 8 clusters",
-    "statement": "warm validating reflection, 2 sentences"
+    "thread": "short title",
+    "statement": "1-2 gentle sentences.",
+    "opening": "A small check-back question."
   },
   {
-    "thread": "short title, 3-6 words",
-    "coreValue": "one of the 8 clusters",
-    "statement": "warm validating reflection, 2 sentences"
+    "thread": "short title",
+    "statement": "1-2 gentle sentences.",
+    "opening": "A small check-back question."
   },
   {
-    "thread": "short title, 3-6 words",
-    "coreValue": "one of the 8 clusters",
-    "statement": "warm validating reflection, 2 sentences"
+    "thread": "short title",
+    "statement": "1-2 gentle sentences.",
+    "opening": "A small check-back question."
   }
 ]
 
-Do not include markdown.
-Do not include any text outside the JSON.
 ${langNote(lang)}`;
-};
+}
 
 /* pS5 — CLOSING NOTE (Stage 5)
 
@@ -2559,23 +2461,23 @@ function Pot({
 
       {phase === 'bisque' && (
         <g>
-          {/* Outer flame — wide, slow */}
+          {/* Outer flame — large, wide */}
           <path
-            d={`M${w*0.5} ${h*0.98} C${w*0.37} ${h*0.93} ${w*0.30} ${h*0.87} ${w*0.35} ${h*0.80} C${w*0.38} ${h*0.74} ${w*0.44} ${h*0.76} ${w*0.5} ${h*0.72} C${w*0.56} ${h*0.76} ${w*0.62} ${h*0.74} ${w*0.65} ${h*0.80} C${w*0.70} ${h*0.87} ${w*0.63} ${h*0.93} ${w*0.5} ${h*0.98} Z`}
+            d={`M${w*0.5} ${h*1.01} C${w*0.30} ${h*0.96} ${w*0.18} ${h*0.88} ${w*0.24} ${h*0.76} C${w*0.28} ${h*0.67} ${w*0.38} ${h*0.70} ${w*0.5} ${h*0.62} C${w*0.62} ${h*0.70} ${w*0.72} ${h*0.67} ${w*0.76} ${h*0.76} C${w*0.82} ${h*0.88} ${w*0.70} ${h*0.96} ${w*0.5} ${h*1.01} Z`}
             fill={`url(#flameOuter-${size})`}
-            opacity="0.82"
+            opacity="0.78"
           />
-          {/* Middle flame — narrower */}
+          {/* Middle flame — taller tongue */}
           <path
-            d={`M${w*0.5} ${h*0.96} C${w*0.41} ${h*0.91} ${w*0.36} ${h*0.86} ${w*0.40} ${h*0.80} C${w*0.43} ${h*0.75} ${w*0.47} ${h*0.77} ${w*0.5} ${h*0.74} C${w*0.53} ${h*0.77} ${w*0.57} ${h*0.75} ${w*0.60} ${h*0.80} C${w*0.64} ${h*0.86} ${w*0.59} ${h*0.91} ${w*0.5} ${h*0.96} Z`}
+            d={`M${w*0.5} ${h*0.99} C${w*0.36} ${h*0.94} ${w*0.28} ${h*0.87} ${w*0.33} ${h*0.76} C${w*0.36} ${h*0.69} ${w*0.44} ${h*0.72} ${w*0.5} ${h*0.65} C${w*0.56} ${h*0.72} ${w*0.64} ${h*0.69} ${w*0.67} ${h*0.76} C${w*0.72} ${h*0.87} ${w*0.64} ${h*0.94} ${w*0.5} ${h*0.99} Z`}
             fill={`url(#flameMiddle-${size})`}
-            opacity="0.88"
+            opacity="0.90"
           />
-          {/* Inner core — hot white-yellow */}
+          {/* Inner core — bright hot tip */}
           <path
-            d={`M${w*0.5} ${h*0.94} C${w*0.45} ${h*0.91} ${w*0.43} ${h*0.87} ${w*0.46} ${h*0.83} C${w*0.48} ${h*0.80} ${w*0.5} ${h*0.81} C${w*0.52} ${h*0.80} ${w*0.54} ${h*0.83} ${w*0.57} ${h*0.87} C${w*0.57} ${h*0.91} ${w*0.55} ${h*0.94} ${w*0.5} ${h*0.94} Z`}
+            d={`M${w*0.5} ${h*0.97} C${w*0.43} ${h*0.93} ${w*0.40} ${h*0.87} ${w*0.43} ${h*0.80} C${w*0.46} ${h*0.75} ${w*0.5} ${h*0.76} C${w*0.54} ${h*0.75} ${w*0.57} ${h*0.80} ${w*0.60} ${h*0.87} C${w*0.57} ${h*0.93} ${w*0.57} ${h*0.97} ${w*0.5} ${h*0.97} Z`}
             fill={`url(#flameCore-${size})`}
-            opacity="0.95"
+            opacity="0.96"
           />
           <defs>
             <linearGradient id={`flameOuter-${size}`} x1="0" x2="0" y1="1" y2="0">
@@ -3578,7 +3480,8 @@ export default function Home(){
                   </div>
                 )}
                 {thread&&<p style={{fontSize:11,letterSpacing:'0.07em',textTransform:'uppercase',color:C.ash,margin:'0 0 6px',fontFamily:'DM Sans,sans-serif'}}>{thread}</p>}
-                <p style={{fontSize:15,lineHeight:1.8,marginBottom:12,fontFamily:'DM Sans,sans-serif',color:C.charcoal}}>{st}</p>
+                <p style={{fontSize:15,lineHeight:1.8,marginBottom:opening?8:12,fontFamily:'DM Sans,sans-serif',color:C.charcoal}}>{st}</p>
+                {opening&&<p style={{fontSize:13,color:C.stone,fontFamily:'DM Sans,sans-serif',fontStyle:'italic',marginBottom:10,lineHeight:1.6}}>{opening}</p>}
                 <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
                   {[{k:'fits',l:TRANS[lang].fits,c:C.celadon},{k:'notquite',l:TRANS[lang].close,c:C.ochre},{k:'no',l:TRANS[lang].remove,c:C.terra}].map(o=>(
                     <button key={o.k} onClick={()=>setRvM({...rvM,[i]:o.k})} style={{padding:'5px 13px',borderRadius:14,border:`1.5px solid ${rvM[i]===o.k?o.c:C.line}`,background:rvM[i]===o.k?o.c+'22':'transparent',color:rvM[i]===o.k?C.charcoal:C.ash,fontSize:12,fontFamily:'DM Sans,sans-serif',cursor:'pointer',transition:'all 0.15s'}}>{o.l}</button>
