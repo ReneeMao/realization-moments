@@ -1269,12 +1269,12 @@ ${ct || ''}
 </USER_ANSWERS>
 
 TASK
-Offer exactly 4 possible threads for the person to check back against their own experience.
+Offer exactly 4 possible threads for the person to check — not to push them further, but to let them confirm whether your reading feels accurate and adjust it if not.
 
 These are not conclusions.
 These are not insights.
 These are not interpretations of who the person is.
-They are possible threads the person may confirm, revise, reject, or ignore.
+They are possible reflections the person may confirm, adjust, or set aside.
 
 Use the user's own words as much as possible.
 Do not introduce themes that are not already present.
@@ -1287,39 +1287,39 @@ THREAD DIRECTIONS
 Create one thread for each direction:
 
 1. What may be clearer
-A tentative thread about something the person may be seeing, naming, or noticing more clearly now.
+A thread about something the person may be seeing or naming more clearly now.
 
 2. What still feels unfinished
-A tentative thread about something that still feels tender, unresolved, complicated, or not ready to be named.
+A thread about something that still feels tender, unresolved, or not ready to be named.
 
 3. What mattered
-A tentative thread about what the person seemed to care about, protect, want, miss, resist, or refuse to let disappear.
+A thread about what the person seemed to care about, protect, want, or refuse to let disappear.
 
 4. What may be opening
-A tentative thread about a small possible opening, direction, question, connection, or next place to stay with.
+A thread about a small possible opening, question, or next place to stay with.
 
 FOR EACH THREAD
 
 Each thread must include:
 - "thread": a short title, 3-6 words
-- "statement": one tentative reflection, 1 sentence
-- "opening": one gentle check-back question, 1 sentence
+- "coreValue": the one Schwartz value cluster this thread most connects to. Choose from exactly these options:
+    "Security", "Tradition & Family", "Achievement", "Power", "Benevolence", "Universalism", "Self-direction", "Stimulation"
+  Choose the one that genuinely fits. Do not force a match.
+- "statement": a warm, validating reflection — 2 sentences. The first sentence names what seems true in their story. The second sentence acknowledges its weight or significance, without minimizing or rushing past it.
+- "opening": one soft confirmation sentence — NOT a question that asks for more sharing. This should feel like: "Does this land for you?" or "You can adjust this if it doesn't quite fit." NOT: "Can you tell me more about..."
 
 The statement should:
-- use simple language
-- stay close to the user's words
-- be tentative
-- avoid identity claims
-- avoid advice
-- avoid praise
-- avoid clinical or academic language
-- avoid making the user sound like the problem
+- be warm and validating — make the person feel genuinely seen
+- use their own words and phrases
+- name both the difficulty and what they seemed to care about within it
+- be specific to what they actually wrote, not generic
+- use simple language, be tentative, avoid identity claims, advice, praise, clinical language
 
-The opening question should:
-- help the person confirm, revise, or reject the thread
-- ask only one thing
-- feel optional and gentle
-- not push for action, growth, closure, or deeper trauma details
+The opening confirmation should:
+- gently invite the person to say whether this feels accurate
+- NOT push for more sharing, more detail, or deeper exploration
+- feel like a light check: "Does this feel true?" "You can change the wording if it doesn't fit."
+- be 1 sentence only
 
 LANGUAGE FOR TENTATIVENESS
 
@@ -1447,23 +1447,27 @@ Return ONLY valid JSON in this exact shape:
 [
   {
     "thread": "short title, 3-6 words",
-    "statement": "one tentative reflection",
-    "opening": "one gentle check-back question"
+    "coreValue": "one of: Security | Tradition & Family | Achievement | Power | Benevolence | Universalism | Self-direction | Stimulation",
+    "statement": "warm validating reflection, 2 sentences, specific to what they wrote",
+    "opening": "one soft confirmation sentence — not a question asking for more sharing"
   },
   {
     "thread": "short title, 3-6 words",
-    "statement": "one tentative reflection",
-    "opening": "one gentle check-back question"
+    "coreValue": "one of the 8 clusters",
+    "statement": "warm validating reflection, 2 sentences",
+    "opening": "one soft confirmation sentence"
   },
   {
     "thread": "short title, 3-6 words",
-    "statement": "one tentative reflection",
-    "opening": "one gentle check-back question"
+    "coreValue": "one of the 8 clusters",
+    "statement": "warm validating reflection, 2 sentences",
+    "opening": "one soft confirmation sentence"
   },
   {
     "thread": "short title, 3-6 words",
-    "statement": "one tentative reflection",
-    "opening": "one gentle check-back question"
+    "coreValue": "one of the 8 clusters",
+    "statement": "warm validating reflection, 2 sentences",
+    "opening": "one soft confirmation sentence"
   }
 ]
 
@@ -2868,11 +2872,11 @@ const TRANS = {
     continue:'Continue',
     listening:'Listening', exploring:'Exploring',
     takeWhat:"Take what resonates. Skip what doesn't.",
-    emerging:"What's emerging", fourThreads:"Four possible threads. Mark what fits — or comes close.",
+    emerging:"What's emerging", fourThreads:"Four reflections on what you shared. Mark what feels true — and adjust any that don't quite fit.",
     fits:'✓ Fits', close:'~ Close', remove:'✗ Remove',
-    optionalDetail:'Want to add more context?',
+    optionalDetail:'Adjust the wording if this doesn\'t quite fit:',
     optionalDetailHint:'For items you marked as fitting, you can expand here.',
-    optionalDetailPlaceholder:'Add more detail (optional)…',
+    optionalDetailPlaceholder:'Rewrite it in your own words, or leave as is…',
     oneMoreStep:'One more step', suggestedFor:'Suggested for this reflection:',
     orChoose:'or choose',
     seeLabel:"What I'm seeing now", carryLabel:'What matters going forward', keepLabel:'What I want to keep with me',
@@ -2992,11 +2996,11 @@ const TRANS = {
     continue:'继续',
     listening:'正在聆听', exploring:'深入探索',
     takeWhat:'取有共鸣的，跳过不合适的。',
-    emerging:'正在浮现', fourThreads:'四条可能的线索。标注哪些符合你的感受。',
+    emerging:'正在浮现', fourThreads:'四条关于你所分享内容的回应。标注哪些感觉真实——如果有不太准确的，也可以调整。',
     fits:'✓ 符合', close:'~ 接近', remove:'✗ 移除',
-    optionalDetail:'想补充更多细节吗？',
+    optionalDetail:'如果措辞不太准确，可以在这里调整：',
     optionalDetailHint:'对于你标注为符合的部分，可以在这里展开说明。',
-    optionalDetailPlaceholder:'补充更多细节（可选）…',
+    optionalDetailPlaceholder:'用你自己的话改写，或者就这样留着…',
     oneMoreStep:'最后一步', suggestedFor:'为这次反思推荐：',
     orChoose:'或选择',
     seeLabel:'我现在看到的', carryLabel:'值得带走的', keepLabel:'我想留住的',
@@ -3594,9 +3598,12 @@ export default function Home(){
             const st=item?.statement||item,thread=item?.thread,opening=item?.opening
             return(<FadeIn key={i} delay={40+i*35}>
               <div style={{background:C.cream,borderRadius:16,padding:14,boxShadow:C.glow,border:`1.5px solid ${rvM[i]==='fits'?C.celadon:rvM[i]==='no'?C.terra:rvM[i]==='notquite'?C.ochre:C.line}`,transition:'border-color 0.2s'}}>
-                {thread&&<p style={{fontSize:12,letterSpacing:'0.08em',textTransform:'uppercase',color:C.ash,marginBottom:5,fontFamily:'DM Sans,sans-serif'}}>{thread}</p>}
-                <p style={{fontSize:15,lineHeight:1.7,marginBottom:6,fontFamily:'DM Sans,sans-serif'}}>{st}</p>
-                {opening&&<p style={{fontSize:14,color:C.stone,lineHeight:1.6,marginBottom:8,fontStyle:'italic',fontFamily:'DM Sans,sans-serif',borderTop:`1px solid ${C.line}`,paddingTop:6}}>{opening}</p>}
+                <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:6,flexWrap:'wrap',gap:4}}>
+                  {thread&&<p style={{fontSize:12,letterSpacing:'0.08em',textTransform:'uppercase',color:C.ash,margin:0,fontFamily:'DM Sans,sans-serif'}}>{thread}</p>}
+                  {item?.coreValue&&<span style={{fontSize:10,color:C.celadonD,background:C.celadonP+'44',padding:'2px 8px',borderRadius:10,fontFamily:'DM Sans,sans-serif',fontWeight:500}}>{item.coreValue}</span>}
+                </div>
+                <p style={{fontSize:15,lineHeight:1.75,marginBottom:8,fontFamily:'DM Sans,sans-serif'}}>{st}</p>
+                {opening&&<p style={{fontSize:13,color:C.stone,lineHeight:1.6,marginBottom:8,fontFamily:'DM Sans,sans-serif',background:C.slip,borderRadius:8,padding:'7px 10px'}}>{opening}</p>}
                 <div style={{display:'flex',gap:5}}>
                   {[{k:'fits',l:TRANS[lang].fits,c:C.celadon},{k:'notquite',l:TRANS[lang].close,c:C.ochre},{k:'no',l:TRANS[lang].remove,c:C.terra}].map(o=>(
                     <button key={o.k} onClick={()=>setRvM({...rvM,[i]:o.k})} style={{padding:'3px 10px',borderRadius:14,border:`1.5px solid ${rvM[i]===o.k?o.c:C.line}`,background:rvM[i]===o.k?o.c+'18':'transparent',color:rvM[i]===o.k?C.charcoal:C.ash,fontSize:11,fontFamily:'DM Sans,sans-serif',cursor:'pointer',transition:'all 0.15s'}}>{o.l}</button>
