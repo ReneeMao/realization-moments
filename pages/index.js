@@ -1168,152 +1168,77 @@ const pS4 = (card, story, s1, focal, cr, lang) => {
 
   return `${SYS}
 
-STAGE: GLAZED CHECK-BACK
+STAGE: EMERGENCE CHECK-BACK
 
-Entry card:
-"${card}"
+Entry: "${card}"
 
-Original story:
+Story:
 <USER_STORY>
 ${story}
 </USER_STORY>
 
-Earlier reflection:
-<EARLIER_REFLECTION>
-${s1 || ''}
-</EARLIER_REFLECTION>
-
-Chosen focus:
-<FOCAL_POINT>
-${focal || ''}
-</FOCAL_POINT>
+Earlier reflection: "${s1}"
+Focal point: "${focal}"
 
 Their answers:
-<USER_ANSWERS>
-${ct || ''}
-</USER_ANSWERS>
+${ct}
 
-TASK
-Offer exactly 4 possible threads for the person to check.
-This is the "glazed" step.
-The glaze should not explain the whole story.
-The glaze should not turn the story into a lesson.
-The glaze should gently reflect what may be beginning to show on the surface after the person has stayed with the moment for a little while.
-Each thread should help the person notice a possible value that may already be present in their story.
+Generate EXACTLY 4 items, one for each category in order:
 
-IMPORTANT
-Do not use the phrase "core value" unless the user used it first.
-Do not use ACT terms.
-Do not mention acceptance, commitment, mindfulness, defusion, or values.
-Do not sound like a therapist, coach, professor, or self-help book.
+1. WHAT MAY BE NEWLY SEEN
+Look for any "rupture in the knowing context" (Miller & C'de Baca): something that can no longer be seen the way it was before.
+Name it as ONE possible shift in how they understand this, using their words.
+Offer it as a possibility they may confirm, revise, or reject — not a determination.
 
-ACT VALUES GUIDANCE
-Use this silently.
-A value is not:
-- a goal
-- an achievement
-- a personality trait
-- a lesson
-- a rule
-- a perfect version of the self
-- a demand to take action immediately
+2. WHAT STILL FEELS UNRESOLVED
+Not everything resolves, and that is not a failure (Denborough).
+Name the unresolved thing without pushing it toward resolution.
+Hold it with care. Do not attempt to provide closure.
 
-A value is:
-- a quality of how someone may want to move through life
-- a direction they may return to
-- something shown through small choices, longings, refusals, care, protection, honesty, tenderness, courage, dignity, freedom, connection, steadiness, or repair
-- something that can be present even when the situation is painful, unresolved, or unfinished
+3. WHAT SEEMS TO MATTER ENOUGH TO GUIDE
+Han Layer 3 (values alignment): what value, care, or commitment surfaces in what they've said?
+Connect experience to intrinsic motivation.
+Name it tentatively as a thread of a preferred story (White), not a conclusion about who they are.
 
-Look for values in:
-- what the person cared about
-- what hurt because it mattered
-- what they tried to protect
-- what they could not fully accept as normal
-- what they reached for, even quietly
-- what they refused to erase
-- what kind of relationship they wanted with themselves, others, or the world
-- what kind of person they were trying to be in that moment, without making it an identity claim
+4. WHO YOU MAY BE BECOMING
+Han Layer 4 (empowered agency) + Denborough's migration of identity: identity is not fixed.
+Notice one possible shift toward agency or direction that may be emerging.
+Keep it open — as a direction beginning to form, not an arrival.
+If the person is still in the exploration phase, name that as meaningful: "being in the middle of this question is already part of the work."
 
-THREAD REQUIREMENTS
-Return exactly 4 threads.
-Each thread must have:
-1. thread: a short title, 3-7 words
-2. statement: 1-2 gentle sentences reflecting a possible value already present in the user's words
-3. opening: one small check-back question that lets the user confirm, adjust, or reject it
-4. coreValue: always include this field. Read the story carefully and name the one value from this list that seems most alive in how the person moved through the experience — even if they never named it themselves. Choose from: "Security", "Tradition & Family", "Achievement", "Power", "Benevolence", "Universalism", "Self-direction", "Stimulation". Base your choice on what the person was protecting, reaching for, caring about, or refusing to abandon — not just the topic of the story. You are offering a tentative reading for them to confirm or adjust.
+QUANTUM CHANGE LENS (Miller & C'de Baca 2001)
+Watch for three signals of deeper change:
+1. CRYSTALLIZATION — pieces that seemed separate suddenly cohere; name what property has changed.
+2. VALUES INVERSION — something backgrounded has become foregrounded; name the new ordering.
+3. IDENTITY RECONFIGURATION — priorities or self-understanding reorganizing; name the direction forming.
+If any signal is present, name it in the insight field.
 
-The 4 threads should cover different angles:
-1. Something newly visible
-2. Something still unresolved
-3. Something that may quietly guide them
-4. Something they may want to carry forward
+CORE VALUES
+For each thread, name the value cluster most alive in how the person moved through this experience.
+Choose from: Security | Tradition & Family | Achievement | Power | Benevolence | Universalism | Self-direction | Stimulation
+Base this on what the person was protecting, reaching for, or refusing to abandon — not just the topic.
+Do not use the label in the statement or insight text — it is a quiet reading for the user to confirm.
 
-WRITING STYLE
-Use simple, warm, grounded language.
-Stay close to the user's own words.
-Use "maybe," "it sounds like," "there may be," or "I wonder if."
-Do not over-polish.
-Do not make the story more coherent than it is.
-Do not make the story more hopeful than it is.
-Do not push action.
-Do not say "you should."
-Do not say "this shows that."
-Do not say "your value is."
-Do not say "you are someone who."
+FOR EACH ITEM RETURN:
+- "thread": short title using the person's own language (4-7 words)
+- "statement": one tentative recognition grounded in their words — "It seems like...", "Could it be that...", "There may be something here about..."
+- "insight": one sentence naming what this thread suggests at an identity or relational level — what it might mean for who they are, how they relate, or what they value. Ground it in their own words. Name any Quantum Change signal here if present.
+- "opening": one genuine question that helps them go further — test fit, probe an assumption, clarify a discrepancy, connect to values, notice what may endure, or imagine a possible self.
+- "coreValue": one of the 8 clusters above
 
-The tone should feel like:
-- a careful mirror
-- a quiet pause
-- a soft check-back
-- not an interpretation
+Do not conclude. Do not explain the person to themselves.
+No polished therapeutic language, no ACT terminology, no self-help phrases.
+Stay close to their own words.
 
-GOOD EXAMPLES OF STATEMENTS
-- "Maybe part of what mattered here was being honest with yourself, even when the honesty did not make things easier."
-- "There may be a wish here to stay connected without disappearing into what others need from you."
-- "It sounds like something in you was trying to protect a quieter truth, even before you had words for it."
-- "Maybe this is not asking you to solve everything yet. It may simply be asking what kind of care you do not want to lose."
-
-BAD EXAMPLES
-- "Your core value is authenticity."
-- "This means you are resilient."
-- "You need to commit to living according to your values."
-- "This experience helped you grow."
-- "You are learning to reclaim your agency."
-- "The lesson is to choose yourself."
-
-OUTPUT FORMAT
-Return ONLY valid JSON.
-No markdown.
-No explanation.
-
+Return ONLY valid JSON, no markdown:
 [
-  {
-    "thread": "short title",
-    "statement": "1-2 gentle sentences.",
-    "opening": "A small check-back question.",
-    "coreValue": "one of the 8 clusters"
-  },
-  {
-    "thread": "short title",
-    "statement": "1-2 gentle sentences.",
-    "opening": "A small check-back question.",
-    "coreValue": "one of the 8 clusters"
-  },
-  {
-    "thread": "short title",
-    "statement": "1-2 gentle sentences.",
-    "opening": "A small check-back question.",
-    "coreValue": "one of the 8 clusters"
-  },
-  {
-    "thread": "short title",
-    "statement": "1-2 gentle sentences.",
-    "opening": "A small check-back question.",
-    "coreValue": "one of the 8 clusters"
-  }
+  {"thread":"...","statement":"...","insight":"...","opening":"...","coreValue":"..."},
+  {"thread":"...","statement":"...","insight":"...","opening":"...","coreValue":"..."},
+  {"thread":"...","statement":"...","insight":"...","opening":"...","coreValue":"..."},
+  {"thread":"...","statement":"...","insight":"...","opening":"...","coreValue":"..."}
 ]
 
-${langNote(lang)}`;
+${langNote(lang)}`
 }
 
 /* pS5 — CLOSING NOTE (Stage 5)
@@ -2510,56 +2435,61 @@ function Pot({
         </g>
       )}
 
+      <path d={bodyPath} fill={`url(#potBase-${size}-${accent})`} stroke="#D8CEBF" strokeWidth="1.1" />
+
       {phase === 'shaped' && (
-        <g opacity="0.82">
-          {/* Left hand — palm pressing the clay */}
-          <path
-            d={`M${w*0.02} ${h*0.62}
-               C${w*0.00} ${h*0.55} ${w*0.02} ${h*0.46} ${w*0.08} ${h*0.42}
-               C${w*0.13} ${h*0.38} ${w*0.19} ${h*0.40} ${w*0.21} ${h*0.46}
-               C${w*0.23} ${h*0.52} ${w*0.22} ${h*0.60} ${w*0.20} ${h*0.67}
-               C${w*0.17} ${h*0.74} ${w*0.10} ${h*0.76} ${w*0.05} ${h*0.72}
-               C${w*0.02} ${h*0.69} ${w*0.02} ${h*0.65} ${w*0.02} ${h*0.62} Z`}
-            fill="url(#handL)"
-            stroke="#C4A882"
-            strokeWidth="0.8"
-          />
-          {/* Left fingers — three gentle arcs */}
-          <path d={`M${w*0.10} ${h*0.38} C${w*0.08} ${h*0.30} ${w*0.11} ${h*0.24} ${w*0.14} ${h*0.28}`} stroke="#C4A882" strokeWidth="1.4" strokeLinecap="round" fill="none"/>
-          <path d={`M${w*0.15} ${h*0.36} C${w*0.14} ${h*0.27} ${w*0.17} ${h*0.21} ${w*0.20} ${h*0.25}`} stroke="#C4A882" strokeWidth="1.4" strokeLinecap="round" fill="none"/>
-          <path d={`M${w*0.19} ${h*0.38} C${w*0.19} ${h*0.30} ${w*0.22} ${h*0.24} ${w*0.24} ${h*0.28}`} stroke="#C4A882" strokeWidth="1.3" strokeLinecap="round" fill="none"/>
-
-          {/* Right hand — mirror */}
-          <path
-            d={`M${w*0.98} ${h*0.62}
-               C${w*1.00} ${h*0.55} ${w*0.98} ${h*0.46} ${w*0.92} ${h*0.42}
-               C${w*0.87} ${h*0.38} ${w*0.81} ${h*0.40} ${w*0.79} ${h*0.46}
-               C${w*0.77} ${h*0.52} ${w*0.78} ${h*0.60} ${w*0.80} ${h*0.67}
-               C${w*0.83} ${h*0.74} ${w*0.90} ${h*0.76} ${w*0.95} ${h*0.72}
-               C${w*0.98} ${h*0.69} ${w*0.98} ${h*0.65} ${w*0.98} ${h*0.62} Z`}
-            fill="url(#handR)"
-            stroke="#C4A882"
-            strokeWidth="0.8"
-          />
-          {/* Right fingers */}
-          <path d={`M${w*0.90} ${h*0.38} C${w*0.92} ${h*0.30} ${w*0.89} ${h*0.24} ${w*0.86} ${h*0.28}`} stroke="#C4A882" strokeWidth="1.4" strokeLinecap="round" fill="none"/>
-          <path d={`M${w*0.85} ${h*0.36} C${w*0.86} ${h*0.27} ${w*0.83} ${h*0.21} ${w*0.80} ${h*0.25}`} stroke="#C4A882" strokeWidth="1.4" strokeLinecap="round" fill="none"/>
-          <path d={`M${w*0.81} ${h*0.38} C${w*0.81} ${h*0.30} ${w*0.78} ${h*0.24} ${w*0.76} ${h*0.28}`} stroke="#C4A882" strokeWidth="1.3" strokeLinecap="round" fill="none"/>
-
+        <g>
           <defs>
-            <linearGradient id="handL" x1="0" x2="1" y1="0" y2="0">
-              <stop offset="0%" stopColor="#E8C9A0" />
-              <stop offset="100%" stopColor="#D4A574" stopOpacity="0.7" />
+            <linearGradient id={`handL-${size}`} x1="0" x2="1" y1="0" y2="0">
+              <stop offset="0%" stopColor="#D4A882" stopOpacity="0.25"/>
+              <stop offset="100%" stopColor="#C49468" stopOpacity="0.72"/>
             </linearGradient>
-            <linearGradient id="handR" x1="1" x2="0" y1="0" y2="0">
-              <stop offset="0%" stopColor="#E8C9A0" />
-              <stop offset="100%" stopColor="#D4A574" stopOpacity="0.7" />
+            <linearGradient id={`handR-${size}`} x1="1" x2="0" y1="0" y2="0">
+              <stop offset="0%" stopColor="#D4A882" stopOpacity="0.25"/>
+              <stop offset="100%" stopColor="#C49468" stopOpacity="0.72"/>
             </linearGradient>
           </defs>
+          {/* Left palm — flat against the clay, fingers curling up */}
+          <path
+            d={`M${w*0.18} ${h*0.76}
+               C${w*0.11} ${h*0.74} ${w*0.07} ${h*0.68} ${w*0.08} ${h*0.58}
+               C${w*0.09} ${h*0.50} ${w*0.13} ${h*0.44} ${w*0.18} ${h*0.41}
+               C${w*0.21} ${h*0.39} ${w*0.24} ${h*0.40} ${w*0.25} ${h*0.44}
+               C${w*0.26} ${h*0.49} ${w*0.24} ${h*0.55} ${w*0.23} ${h*0.62}
+               C${w*0.22} ${h*0.69} ${w*0.22} ${h*0.74} ${w*0.18} ${h*0.76} Z`}
+            fill={`url(#handL-${size})`}
+            stroke="#B8906A"
+            strokeWidth="0.7"
+          />
+          {/* Left thumb arc */}
+          <path d={`M${w*0.17} ${h*0.41} C${w*0.12} ${h*0.37} ${w*0.08} ${h*0.38} ${w*0.08} ${h*0.44}`}
+            stroke="#B8906A" strokeWidth="1.0" strokeLinecap="round" fill="none" opacity="0.6"/>
+          {/* Left knuckle lines */}
+          <path d={`M${w*0.20} ${h*0.43} C${w*0.21} ${h*0.40} ${w*0.22} ${h*0.37}`} stroke="#B8906A" strokeWidth="0.55" strokeLinecap="round" fill="none" opacity="0.45"/>
+          <path d={`M${w*0.23} ${h*0.47} C${w*0.24} ${h*0.44} ${w*0.25} ${h*0.41}`} stroke="#B8906A" strokeWidth="0.55" strokeLinecap="round" fill="none" opacity="0.45"/>
+          <path d={`M${w*0.25} ${h*0.52} C${w*0.26} ${h*0.49} ${w*0.27} ${h*0.46}`} stroke="#B8906A" strokeWidth="0.50" strokeLinecap="round" fill="none" opacity="0.40"/>
+
+          {/* Right palm — mirror */}
+          <path
+            d={`M${w*0.82} ${h*0.76}
+               C${w*0.89} ${h*0.74} ${w*0.93} ${h*0.68} ${w*0.92} ${h*0.58}
+               C${w*0.91} ${h*0.50} ${w*0.87} ${h*0.44} ${w*0.82} ${h*0.41}
+               C${w*0.79} ${h*0.39} ${w*0.76} ${h*0.40} ${w*0.75} ${h*0.44}
+               C${w*0.74} ${h*0.49} ${w*0.76} ${h*0.55} ${w*0.77} ${h*0.62}
+               C${w*0.78} ${h*0.69} ${w*0.78} ${h*0.74} ${w*0.82} ${h*0.76} Z`}
+            fill={`url(#handR-${size})`}
+            stroke="#B8906A"
+            strokeWidth="0.7"
+          />
+          {/* Right thumb arc */}
+          <path d={`M${w*0.83} ${h*0.41} C${w*0.88} ${h*0.37} ${w*0.92} ${h*0.38} ${w*0.92} ${h*0.44}`}
+            stroke="#B8906A" strokeWidth="1.0" strokeLinecap="round" fill="none" opacity="0.6"/>
+          {/* Right knuckle lines */}
+          <path d={`M${w*0.80} ${h*0.43} C${w*0.79} ${h*0.40} ${w*0.78} ${h*0.37}`} stroke="#B8906A" strokeWidth="0.55" strokeLinecap="round" fill="none" opacity="0.45"/>
+          <path d={`M${w*0.77} ${h*0.47} C${w*0.76} ${h*0.44} ${w*0.75} ${h*0.41}`} stroke="#B8906A" strokeWidth="0.55" strokeLinecap="round" fill="none" opacity="0.45"/>
+          <path d={`M${w*0.75} ${h*0.52} C${w*0.74} ${h*0.49} ${w*0.73} ${h*0.46}`} stroke="#B8906A" strokeWidth="0.50" strokeLinecap="round" fill="none" opacity="0.40"/>
         </g>
       )}
-
-      <path d={bodyPath} fill={`url(#potBase-${size}-${accent})`} stroke="#D8CEBF" strokeWidth="1.1" />
 
       <ellipse cx={w*0.5} cy={neckY} rx={rimW} ry={h*0.06} fill={rimFill} stroke="#D8CEBF" strokeWidth="1.1" />
       <ellipse cx={w*0.5} cy={neckY+1} rx={rimW*0.72} ry={h*0.035} fill="#CFC2AE" opacity="0.42" />
@@ -3531,7 +3461,7 @@ export default function Home(){
         </FadeIn>
         <div style={{display:'flex',flexDirection:'column',gap:10,marginBottom:20}}>
           {threads.map((item,i)=>{
-            const st=item?.statement||item,thread=item?.thread,opening=item?.opening
+            const st=item?.statement||item,thread=item?.thread,opening=item?.opening,insight=item?.insight
             return(<FadeIn key={i} delay={40+i*35}>
               <div style={{background:C.cream,borderRadius:16,padding:14,boxShadow:C.glow,border:`1.5px solid ${rvM[i]==='fits'?C.celadon:rvM[i]==='no'?C.terra:rvM[i]==='notquite'?C.ochre:C.line}`,transition:'border-color 0.2s'}}>
                 {item?.coreValue&&(
@@ -3541,7 +3471,8 @@ export default function Home(){
                   </div>
                 )}
                 {thread&&<p style={{fontSize:11,letterSpacing:'0.07em',textTransform:'uppercase',color:C.ash,margin:'0 0 6px',fontFamily:'DM Sans,sans-serif'}}>{thread}</p>}
-                <p style={{fontSize:15,lineHeight:1.8,marginBottom:opening?8:12,fontFamily:'DM Sans,sans-serif',color:C.charcoal}}>{st}</p>
+                <p style={{fontSize:15,lineHeight:1.8,marginBottom:insight?8:opening?8:12,fontFamily:'DM Sans,sans-serif',color:C.charcoal}}>{st}</p>
+                {insight&&<p style={{fontSize:13,color:C.celadonD,fontFamily:'DM Sans,sans-serif',marginBottom:opening?6:10,lineHeight:1.65,borderLeft:`2px solid ${C.celadonP}`,paddingLeft:10}}>{insight}</p>}
                 {opening&&<p style={{fontSize:13,color:C.stone,fontFamily:'DM Sans,sans-serif',fontStyle:'italic',marginBottom:10,lineHeight:1.6}}>{opening}</p>}
                 <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
                   {[{k:'fits',l:TRANS[lang].fits,c:C.celadon},{k:'notquite',l:TRANS[lang].close,c:C.ochre},{k:'no',l:TRANS[lang].remove,c:C.terra}].map(o=>(
