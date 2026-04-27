@@ -393,6 +393,7 @@ Listen for two storylines at the same time:
 
 1. The difficulty:
 What felt hard, heavy, confusing, unfair, painful, pressured, lonely, or unfinished?
+What force — internal or external — was pressing on the person?
 
 2. The response:
 How did the person respond inside that difficulty, even in small ways?
@@ -407,6 +408,9 @@ Possible responses may include:
 - something they did, even quietly
 - someone or something they stayed connected to
 - a small moment when the difficulty was not the whole story
+- something they were still longing for, even if it never arrived — the spark of that longing is real and matters
+- what the difficulty was pressing against — shame and pain often press against something the person still cares about; the value is what was being squeezed
+- the kind of person they wanted to be in that moment, even if the situation did not let them be it
 
 Do not skip the hardship.
 Do not rush to the hopeful part.
@@ -1241,34 +1245,48 @@ STEP 3 — VALUE EXCAVATION
 
 For each thread, choose a coreValue and valueQuality AFTER finding the narrative anchor — not before. The value should emerge from what the person wrote, not be assigned to it.
 
-A value is not a goal, achievement, personality trait, or fixed identity. It is a quality of how someone moves through life — visible in small choices, longings, refusals, protection, honesty, tenderness, courage, dignity, freedom, connection, steadiness, repair, or curiosity.
+VALUES ARE DIRECTIONS, NOT DESTINATIONS
 
-Look for values in:
-- what hurt because it mattered
-- what the person tried to protect
-- what they could not accept as normal
-- what they reached for, even quietly
-- what they refused to erase
-- what kind of relationship they wanted — with others, themselves, or the world
-- what structural pressure they were moving inside of or against
+A value is a desired quality of ongoing action — how someone wants to move through life, how they want to be in the world. It is:
+- NOT a goal (goals can be reached; values are never "completed")
+- NOT an outcome, achievement, or destination
+- NOT a personality trait or fixed identity
+- NOT something proven, earned, or assigned by another person
+- NOT something that requires the situation to be resolved before it can be present
+
+A value is always a direction — something a person orients toward, even imperfectly, even in the middle of difficulty.
+
+THE SPARK OF LONGING
+Even in painful, unresolved, or confusing stories, there is usually a longing — some ambiguous "more" the person was still reaching toward. That longing IS the value signal. It does not need to be loud or dramatic. A small wish counts. A quiet refusal counts. Look for what the person was still reaching for inside the hardship. Do not rush past it.
+
+SHAME, PAIN, AND VALUES
+When someone shares something that involves shame, failure, embarrassment, or hurt, the value often appears in what shame was pressing against — what the person refused to let fully disappear, even under pressure. The pain signals the value. What hurt because it mattered? What did the difficulty press against? That is where the value lives.
+
+VALUE CLARIFICATION — use these questions silently:
+- What was this person still reaching for inside the difficulty, even quietly?
+- What did the difficulty press against? What quality was being squeezed?
+- What did they refuse to fully give up, even when it would have been easier to?
+- What kind of person did they want to be in this situation, even if they could not be it?
+- What do they want to stand for in the face of what happened?
+- What domains of life are at stake — relationships, self-development, work/contribution, community, personal integrity, belonging, creativity?
 
 CORE VALUE OPTIONS — choose exactly one per thread:
 Security | Benevolence | Universalism | Self-direction | Stimulation | Hedonism | Achievement | Power | Tradition | Conformity
 
-CORE VALUE MEANING GUIDE (use silently):
-Security: safety, steadiness, protection, grounding, stability, peace, or wanting life to feel less threatening.
-Benevolence: care, kindness, loyalty, tenderness, responsibility, repair, protecting someone, or wanting relationships held gently.
-Universalism: fairness, dignity, justice, inclusion, compassion, cultural awareness, shared humanity, or not wanting anyone's experience to be erased.
-Self-direction: honesty, choice, freedom, creativity, curiosity, self-trust, having one's own voice, or wanting space to decide.
-Stimulation: aliveness, courage, change, movement, exploration, possibility, or wanting life to feel less closed.
-Hedonism: pleasure, rest, joy, softness, ease, beauty, play, comfort, or wanting to feel life again.
-Achievement: effort, growth, competence, persistence, learning, capability, or wanting to do something with care and skill.
-Power: boundaries, influence, respect, being taken seriously, having room, being less controlled, or reclaiming one's position.
-Tradition: family history, ancestry, culture, rituals, continuity, memory, inherited meaning, or carrying something forward with care.
-Conformity: restraint, harmony, responsibility, not harming others, meeting expectations, or trying to live carefully within relationships or systems.
+CORE VALUE MEANING GUIDE (use silently — frame as direction, not trait):
+Security: moving toward safety, steadiness, or ground — the longing for life to feel less threatening, or to protect something or someone from harm.
+Benevolence: moving toward care, loyalty, tenderness, or repair — wanting to hold relationships gently, to not let someone down, or to stay connected even when it's hard.
+Universalism: moving toward fairness, dignity, or belonging — not wanting anyone's experience to be erased, wanting the room to hold everyone, refusing to accept injustice as normal.
+Self-direction: moving toward honesty, voice, freedom, or self-trust — wanting space to decide, to be genuinely oneself, or to not disappear inside others' expectations.
+Stimulation: moving toward aliveness, possibility, or change — wanting life to feel less closed, or to step toward something new even when it is uncertain.
+Hedonism: moving toward rest, joy, softness, or ease — the longing to feel life again, to be nourished, to not be only the person who carries.
+Achievement: moving toward effort, growth, or competence — wanting to do something with real care and skill, or to not be reduced to less than what one can give.
+Power: moving toward having room, being taken seriously, or reclaiming ground — refusing to be controlled, to be ignored, or to have one's position diminished.
+Tradition: moving toward continuity, memory, or inherited meaning — wanting to carry something forward with care, or to remain connected to what came before.
+Conformity: moving toward harmony, responsibility, or not causing harm — trying to live carefully within relationships and systems, wanting to be someone others can rely on.
 
-valueQuality — plain human language only, drawn from the person's story:
-Examples: honesty, care, tenderness, steadiness, dignity, freedom, curiosity, protection, belonging, courage, repair, openness, rest, fairness, creativity, self-trust, connection, responsibility, aliveness, spaciousness
+valueQuality — one plain human word, drawn from the person's story language:
+Examples: honesty, care, tenderness, steadiness, dignity, freedom, curiosity, protection, belonging, courage, repair, openness, rest, fairness, creativity, self-trust, connection, responsibility, aliveness, spaciousness, loyalty, presence, integrity, voice
 
 Do not repeat the same coreValue more than twice. Do not repeat the same valueQuality.
 
