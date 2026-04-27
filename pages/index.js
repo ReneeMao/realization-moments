@@ -1207,6 +1207,21 @@ Do not make the story more coherent than the user made it.
 Do not make the story more hopeful than it currently is.
 Do not decide what the story means.
 
+ACT VALUES FRAMEWORK
+
+Each thread should help the person recognize a value they may have already been living out — not as an ideal they aspire to, but as a quality of how they actually moved through the situation.
+
+In ACT (Acceptance and Commitment Therapy), values are understood as desired qualities of ongoing action — not outcomes to achieve, not rules to follow, not fixed traits. They are about how a person acts, not what they get. A value like "connection" does not mean the person is connected — it means they kept reaching toward connection even when it was hard.
+
+When writing the "coreValue" and "statement":
+- Look for what the person was already doing, protecting, reaching for, or refusing to abandon — even within the difficulty
+- The coreValue should name a quality visible in their actual behavior or choices in the story, not just a theme in what happened to them
+- The statement should gently reflect back: "In how you moved through this, there may be something about [value] — not as a goal, but as something already present in how you acted"
+- Hold the value lightly and tentatively — offer it as a possible reflection, not a conclusion
+- Values do not need justification; do not ask the person to prove or explain them
+- Distinguish values from goals: a goal is something finished (getting the job, resolving the conflict); a value is something ongoing (showing up with honesty, caring for people around you)
+- Do not label the person as "a person who values X" — instead point to a moment: "there may be something about how you [specific action] that speaks to [value]"
+
 THREAD DIRECTIONS
 
 Create one thread for each direction:
@@ -1218,7 +1233,7 @@ A thread about something the person may be seeing or naming more clearly now.
 A thread about something that still feels tender, unresolved, or not ready to be named.
 
 3. What mattered
-A thread about what the person seemed to care about, protect, want, or refuse to let disappear.
+A thread about what the person seemed to care about, protect, want, or refuse to let disappear — and how this shows up as a value already alive in how they acted.
 
 4. What may be opening
 A thread about a small possible opening, question, or next place to stay with.
@@ -1229,22 +1244,19 @@ Each thread must include:
 - "thread": a short title, 3-6 words
 - "coreValue": the one Schwartz value cluster this thread most connects to. Choose from exactly these options:
     "Security", "Tradition & Family", "Achievement", "Power", "Benevolence", "Universalism", "Self-direction", "Stimulation"
-  Choose the one that genuinely fits. Do not force a match.
-- "statement": a warm, validating reflection — 2 sentences. The first sentence names what seems true in their story. The second sentence acknowledges its weight or significance, without minimizing or rushing past it.
-- "opening": one soft confirmation sentence — NOT a question that asks for more sharing. This should feel like: "Does this land for you?" or "You can adjust this if it doesn't quite fit." NOT: "Can you tell me more about..."
+  Choose the one that genuinely fits based on what the person was doing or protecting, not just the topic of the story.
+- "statement": a warm, validating reflection — 2 sentences.
+  Sentence 1: name what seems true about how the person moved through this — what they did, protected, reached for, or chose.
+  Sentence 2: gently name the value or quality that may be alive in that, held tentatively — or acknowledge the weight of what they were carrying.
 
 The statement should:
-- be warm and validating — make the person feel genuinely seen
+- be warm and validating — make the person feel genuinely seen in their actions, not just their situation
+- connect the coreValue to a specific behavior, choice, or moment in what they wrote — not to the topic in general
+- use ACT-style value language: point to how they acted, not who they are
 - use their own words and phrases
-- name both the difficulty and what they seemed to care about within it
 - be specific to what they actually wrote, not generic
 - use simple language, be tentative, avoid identity claims, advice, praise, clinical language
-
-The opening confirmation should:
-- gently invite the person to say whether this feels accurate
-- NOT push for more sharing, more detail, or deeper exploration
-- feel like a light check: "Does this feel true?" "You can change the wording if it doesn't fit."
-- be 1 sentence only
+- feel like a mirror, not a message
 
 LANGUAGE FOR TENTATIVENESS
 
@@ -2517,7 +2529,7 @@ function Pot({
   const glazeOpacity =
     phase === 'clay' ? 0
     : phase === 'shaped' ? 0.08
-    : phase === 'bisque' ? 0.12
+    : phase === 'bisque' ? 0
     : phase === 'glazed' ? 0.65
     : 0.72
 
@@ -2544,6 +2556,45 @@ function Pot({
       </defs>
 
       <ellipse cx={w*0.5} cy={h*0.88} rx={w*0.24} ry={h*0.05} fill="#D7CCBA" opacity="0.22" />
+
+      {phase === 'bisque' && (
+        <g>
+          {/* Outer flame — wide, slow */}
+          <path
+            d={`M${w*0.5} ${h*0.98} C${w*0.37} ${h*0.93} ${w*0.30} ${h*0.87} ${w*0.35} ${h*0.80} C${w*0.38} ${h*0.74} ${w*0.44} ${h*0.76} ${w*0.5} ${h*0.72} C${w*0.56} ${h*0.76} ${w*0.62} ${h*0.74} ${w*0.65} ${h*0.80} C${w*0.70} ${h*0.87} ${w*0.63} ${h*0.93} ${w*0.5} ${h*0.98} Z`}
+            fill={`url(#flameOuter-${size})`}
+            opacity="0.82"
+          />
+          {/* Middle flame — narrower */}
+          <path
+            d={`M${w*0.5} ${h*0.96} C${w*0.41} ${h*0.91} ${w*0.36} ${h*0.86} ${w*0.40} ${h*0.80} C${w*0.43} ${h*0.75} ${w*0.47} ${h*0.77} ${w*0.5} ${h*0.74} C${w*0.53} ${h*0.77} ${w*0.57} ${h*0.75} ${w*0.60} ${h*0.80} C${w*0.64} ${h*0.86} ${w*0.59} ${h*0.91} ${w*0.5} ${h*0.96} Z`}
+            fill={`url(#flameMiddle-${size})`}
+            opacity="0.88"
+          />
+          {/* Inner core — hot white-yellow */}
+          <path
+            d={`M${w*0.5} ${h*0.94} C${w*0.45} ${h*0.91} ${w*0.43} ${h*0.87} ${w*0.46} ${h*0.83} C${w*0.48} ${h*0.80} ${w*0.5} ${h*0.81} C${w*0.52} ${h*0.80} ${w*0.54} ${h*0.83} ${w*0.57} ${h*0.87} C${w*0.57} ${h*0.91} ${w*0.55} ${h*0.94} ${w*0.5} ${h*0.94} Z`}
+            fill={`url(#flameCore-${size})`}
+            opacity="0.95"
+          />
+          <defs>
+            <linearGradient id={`flameOuter-${size}`} x1="0" x2="0" y1="1" y2="0">
+              <stop offset="0%" stopColor="#FF6B1A" />
+              <stop offset="60%" stopColor="#FF9A3C" />
+              <stop offset="100%" stopColor="#FFCC55" stopOpacity="0.3" />
+            </linearGradient>
+            <linearGradient id={`flameMiddle-${size}`} x1="0" x2="0" y1="1" y2="0">
+              <stop offset="0%" stopColor="#FF8C00" />
+              <stop offset="55%" stopColor="#FFB830" />
+              <stop offset="100%" stopColor="#FFEE88" stopOpacity="0.4" />
+            </linearGradient>
+            <linearGradient id={`flameCore-${size}`} x1="0" x2="0" y1="1" y2="0">
+              <stop offset="0%" stopColor="#FFD700" />
+              <stop offset="100%" stopColor="#FFFFF0" stopOpacity="0.6" />
+            </linearGradient>
+          </defs>
+        </g>
+      )}
 
       <path d={bodyPath} fill={`url(#potBase-${size}-${accent})`} stroke="#D8CEBF" strokeWidth="1.1" />
 
