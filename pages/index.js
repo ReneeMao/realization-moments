@@ -2273,6 +2273,56 @@ function dlFile(text, filename) {
   URL.revokeObjectURL(u)
 }
 
+// Obsidian-friendly Markdown export. YAML frontmatter + the reflection body
+// in Markdown, so the file drops straight into a vault and is fully
+// searchable/linkable there — independent of Supabase.
+function ymlEscape(s = '') {
+  return String(s).replace(/"/g, '\\"')
+}
+
+function buildObsidianMarkdown(d) {
+  const dt = new Date(d.timestamp || Date.now())
+  const dateStr = dt.toISOString().slice(0, 10)
+  const timeStr = dt.toTimeString().slice(0, 5)
+  const title = `Realization Moment — ${dateStr}`
+
+  const fm = [
+    '---',
+    `title: "${ymlEscape(title)}"`,
+    `date: ${dateStr}`,
+    `time: "${timeStr}"`,
+    `entry_card: "${ymlEscape(d.entryCard || '')}"`,
+    d.outputType ? `output_type: "${ymlEscape(d.outputType)}"` : null,
+    'tags:',
+    '  - realization-moments',
+    '---',
+    '',
+  ].filter(Boolean).join('\n')
+
+  const L = []
+  L.push(`# ${title}`, '')
+  L.push(`**Starting point:** ${d.entryCard || ''}`, '')
+  if (d.userStory) L.push('## My Story', '', d.userStory, '')
+  if (d.stage1Response) L.push('## What I Heard Back', '', d.stage1Response, '')
+  if (d.focalPointText) L.push('## Going Deeper', '', d.focalPointText, '')
+  if (d.cardResponses) {
+    const entries = Object.entries(d.cardResponses).filter(([, t]) => t?.trim())
+    if (entries.length) {
+      L.push('## Reflections', '')
+      entries.forEach(([l, t]) => L.push(`### ${l}`, '', t, ''))
+    }
+  }
+  if (d.confirmedStatements?.length) {
+    L.push('## What Stayed True', '')
+    d.confirmedStatements.forEach(s => L.push(`- ${s}`))
+    L.push('')
+  }
+  if (d.outputText) L.push('## My Artifact', '', `> ${String(d.outputText).replace(/\n/g, '\n> ')}`, '')
+  L.push('---', '*This is yours. Partial, revisable, not a record of truth.*')
+
+  return fm + L.join('\n')
+}
+
 /* ─── POT VISUAL SYSTEM ─── */
 function hashString(str = '') {
   let h = 0
@@ -2586,9 +2636,25 @@ function Pot({
           <stop offset="0%" stopColor="#FFFDF8" stopOpacity="0.75" />
           <stop offset="100%" stopColor="#FFFDF8" stopOpacity="0" />
         </radialGradient>
+
+        {/* Soft ambient shadow beneath the pot, for a grounded, lifted-off-the-page feel */}
+        <radialGradient id={`ground-${size}-${accent}`} cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="#B5A88F" stopOpacity="0.32" />
+          <stop offset="70%" stopColor="#B5A88F" stopOpacity="0.14" />
+          <stop offset="100%" stopColor="#B5A88F" stopOpacity="0" />
+        </radialGradient>
+
+        {/* Left-to-right body shading — gives the silhouette roundness rather
+            than a flat cutout, the way light wraps a real ceramic form. */}
+        <linearGradient id={`shade-${size}-${accent}`} x1="0" x2="1" y1="0" y2="0">
+          <stop offset="0%"  stopColor="#3A3530" stopOpacity="0.16" />
+          <stop offset="30%" stopColor="#3A3530" stopOpacity="0" />
+          <stop offset="72%" stopColor="#3A3530" stopOpacity="0" />
+          <stop offset="100%" stopColor="#3A3530" stopOpacity="0.13" />
+        </linearGradient>
       </defs>
 
-      <ellipse cx={w*0.5} cy={h*0.88} rx={w*0.24} ry={h*0.05} fill="#D7CCBA" opacity="0.22" />
+      <ellipse cx={w*0.5} cy={h*0.9} rx={w*0.3} ry={h*0.065} fill={`url(#ground-${size}-${accent})`} />
 
       {phase === 'bisque' && (
         <g>
@@ -2630,6 +2696,8 @@ function Pot({
       )}
 
       <path d={bodyPath} fill={`url(#potBase-${size}-${accent})`} stroke="#D8CEBF" strokeWidth="1.1" />
+      {/* Roundness shading — sits under the glaze/plant layers, above the base fill */}
+      <path d={bodyPath} fill={`url(#shade-${size}-${accent})`} />
 
 {phase === 'shaped' && (
         <g>
@@ -2662,6 +2730,11 @@ function Pot({
 
       <ellipse cx={w*0.5} cy={neckY} rx={rimW} ry={h*0.06} fill={rimFill} stroke="#D8CEBF" strokeWidth="1.1" />
       <ellipse cx={w*0.5} cy={neckY+1} rx={rimW*0.72} ry={h*0.035} fill="#CFC2AE" opacity="0.42" />
+      {/* Rim highlight — thin crescent of light catching the lip edge */}
+      <path
+        d={`M${w*0.5 - rimW*0.82} ${neckY - h*0.018} A${rimW*0.82} ${h*0.05} 0 0 1 ${w*0.5 + rimW*0.15} ${neckY - h*0.056}`}
+        fill="none" stroke="#FFFDF8" strokeWidth="0.9" strokeLinecap="round" opacity="0.55"
+      />
 
       {glazeOpacity > 0 && (
         <>
@@ -2712,6 +2785,8 @@ function Pot({
 
           {/* Specular shine — present on all glaze styles */}
           <ellipse cx={w*0.42} cy={h*0.48} rx={w*0.16} ry={h*0.18} fill={`url(#shine-${size}-${accent})`} opacity="0.65" />
+          {/* Crisp hot highlight — small, brighter point where a kiln light would catch wet glaze */}
+          <ellipse cx={w*0.38} cy={h*0.42} rx={w*0.035} ry={h*0.05} fill="#FFFDF8" opacity="0.55" />
         </>
       )}
 
@@ -3158,7 +3233,7 @@ const TRANS = {
 
 
 /* ─── JOURNEY ARTIFACT ─── */
-function Journey({data,onEdit,onExport,lang='en'}) {
+function Journey({data,onEdit,onExport,onExportMd,lang='en'}) {
   const T = TRANS[lang]
   const pv = derivePotVisual(data, 0)
   const [exp,setExp] = useState(null)
@@ -3283,6 +3358,7 @@ function Journey({data,onEdit,onExport,lang='en'}) {
           {!editing && <Btn v="secondary" onClick={()=>setEditing(true)} style={{fontSize:11,padding:'5px 11px'}}>Edit</Btn>}
           <Btn v="secondary" onClick={()=>navigator.clipboard?.writeText(data.outputText)} style={{fontSize:11,padding:'5px 11px'}}>{T.copy}</Btn>
           <Btn v="secondary" onClick={onExport} style={{fontSize:11,padding:'5px 11px'}}>{T.exportTxt}</Btn>
+          {onExportMd && <Btn v="secondary" onClick={onExportMd} style={{fontSize:11,padding:'5px 11px'}}>Export .md</Btn>}
         </div>
       </div>
 
@@ -3394,7 +3470,7 @@ export default function Home(){
     </div></div></>)
 
   if(stage==='history'){
-    if(vw)return(<div style={W} ref={sr}><div style={I}><FadeIn><Btn v="secondary" onClick={()=>setVw(null)} style={{fontSize:11,padding:'5px 11px',marginBottom:12}}>← Back</Btn><Journey data={vw} lang={lang} onEdit={async t=>{await updateReflectionOutput(vw.id,t);setVw({...vw,outputText:t});setPast(await loadReflections())}} onExport={()=>dlFile(buildExportText(vw),`reflection-${new Date(vw.timestamp).toISOString().slice(0,10)}.txt`)}/></FadeIn></div></div>)
+    if(vw)return(<div style={W} ref={sr}><div style={I}><FadeIn><Btn v="secondary" onClick={()=>setVw(null)} style={{fontSize:11,padding:'5px 11px',marginBottom:12}}>← Back</Btn><Journey data={vw} lang={lang} onEdit={async t=>{await updateReflectionOutput(vw.id,t);setVw({...vw,outputText:t});setPast(await loadReflections())}} onExport={()=>dlFile(buildExportText(vw),`reflection-${new Date(vw.timestamp).toISOString().slice(0,10)}.txt`)} onExportMd={()=>dlFile(buildObsidianMarkdown(vw),`realization-moment-${new Date(vw.timestamp).toISOString().slice(0,10)}.md`)}/></FadeIn></div></div>)
     return(<div style={W} ref={sr}><div style={I}><Hist items={past} lang={lang} onBack={()=>setStage('landing')} onView={r=>setVw(r)} onDel={async id=>{await deleteReflection(id);setPast(await loadReflections())}}/></div></div>)
   }
 
@@ -3775,7 +3851,7 @@ export default function Home(){
     </div></div>)
   }
 
-  if(stage==='artifact'){const d=sd();return(<div style={W} ref={sr}><div style={I}>{ld?<Dots/>:<FadeIn><Journey data={d} onEdit={t=>setOTx(t)} onExport={()=>dlFile(buildExportText(d),`reflection-${new Date().toISOString().slice(0,10)}.txt`)}/><div style={{display:'flex',justifyContent:'center',gap:8,marginTop:20}}><Btn onClick={async()=>{const d2=sd();const id=await saveReflection(d2);if(id)setSvd(id);setPast(await loadReflections());setStage('closing')}}>{svd?TRANS[lang].saved:TRANS[lang].saveFinish}</Btn><Btn v="secondary" onClick={()=>setStage('closing')}>{TRANS[lang].finish}</Btn></div></FadeIn>}</div></div>)}
+  if(stage==='artifact'){const d=sd();return(<div style={W} ref={sr}><div style={I}>{ld?<Dots/>:<FadeIn><Journey data={d} onEdit={t=>setOTx(t)} onExport={()=>dlFile(buildExportText(d),`reflection-${new Date().toISOString().slice(0,10)}.txt`)}/><div style={{display:'flex',justifyContent:'center',gap:8,marginTop:20}}><Btn onClick={async()=>{const d2=sd();const id=await saveReflection(d2);if(id){setSvd(id);dlFile(buildObsidianMarkdown(d2),`realization-moment-${new Date().toISOString().slice(0,10)}.md`)}setPast(await loadReflections());setStage('closing')}}>{svd?TRANS[lang].saved:TRANS[lang].saveFinish}</Btn><Btn v="secondary" onClick={()=>setStage('closing')}>{TRANS[lang].finish}</Btn></div></FadeIn>}</div></div>)}
 
   if(stage==='closing'){const _pvc=derivePotVisual({entryCard:selC?.label,userStory:story,confirmedStatements:rvS.filter((_,i)=>rvM[i]==='fits'||rvM[i]==='notquite').map(s=>s?.statement||s),outputType:oT,checkinEmotions:checkinEm},0);return(<div style={W} ref={sr}><div style={{...I,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',minHeight:'55vh'}}><FadeIn><div style={{textAlign:'center',maxWidth:320}}><Pot phase="blooming" size={64} {..._pvc} showFace/><p style={{fontSize:16,lineHeight:1.75,margin:'16px 0 6px'}}>{TRANS[lang].thisIsYours}</p><p style={{fontSize:15,lineHeight:1.55,color:C.stone,marginBottom:4,fontFamily:'DM Sans,sans-serif'}}>{TRANS[lang].toKeep}</p><Sep/><p style={{fontSize:15,color:C.ash,marginBottom:22,fontFamily:'DM Sans,sans-serif'}}>{TRANS[lang].thankyou}</p><div style={{display:'flex',gap:8,justifyContent:'center',flexWrap:'wrap'}}><Btn v="secondary" onClick={()=>{reset();setStage('landing')}}>{TRANS[lang].home}</Btn>{(svd||past.length>0)&&<Btn v="soft" onClick={()=>{setStage('history');setVw(null)}}>{TRANS[lang].pastReflections}</Btn>}</div></div></FadeIn><FadeIn delay={80}><div style={{marginTop:20,background:C.slip,borderRadius:14,padding:'12px 16px',border:`1px dashed ${C.celadonP}`,maxWidth:300,margin:'20px auto 0'}}><p style={{fontSize:14,color:C.stone,fontFamily:'DM Sans,sans-serif',lineHeight:1.65,margin:0,textAlign:'center'}}>{TRANS[lang].synthesisReminder}</p></div></FadeIn></div></div>)}
   return null
